@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './common/database/database.module';
-import { envValidationSchema } from './common/Global/config/env.validation';
 import databaseConfig from './common/Global/config/database.config';
 import jwtConfig from './common/Global/config/jwt.config';
 import mainConfig from './common/Global/config/main.config';
 import { RedisService } from './common/Global/cache/redis.service';
-
+import { envValidationSchema } from './common/Global/config/env.validation';
 
 @Module({
   imports: [
@@ -22,7 +21,7 @@ import { RedisService } from './common/Global/cache/redis.service';
   controllers: [],
   providers: [RedisService],
   exports: [RedisService],
-  
+
   
 })
 export class AppModule {}
