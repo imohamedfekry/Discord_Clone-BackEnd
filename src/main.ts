@@ -11,5 +11,12 @@ async function bootstrap() {
   await app.listen(port ?? 3000);
   console.log(`Server is running on port ${port ?? 3000}`);
   console.log(`Server is running on ${configService.get<string>('main.NODE_ENV') ?? 'development'} environment`);
+  const user = await app.get(UserRepository).create({
+    username: 'test',
+    email: 'test@test.com',
+    password: 'test',
+    phone: '1234567890',
+  } as Prisma.UserCreateInput);
+  console.log(`User created: ${user.username}`);
 }
 bootstrap();

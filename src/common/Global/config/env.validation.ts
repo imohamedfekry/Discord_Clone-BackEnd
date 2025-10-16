@@ -18,7 +18,10 @@ export const envValidationSchema = Joi.object({
   DB_USER: Joi.string().when('DATABASE_URL', { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
   DB_PASS: Joi.string().when('DATABASE_URL', { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
   DB_NAME: Joi.string().when('DATABASE_URL', { is: Joi.exist(), then: Joi.optional(), otherwise: Joi.required() }),
-
+  PEPPER: Joi.string().default('your-super-secret-pepper-here'),
+  ENCRYPTION_KEY: Joi.string().default('your-super-secret-encryption-key-here'),
+  ENCRYPTION_ALGORITHM: Joi.string().default('aes-256-cbc'),
+  ENCRYPTION_IV: Joi.string().default('12547896325489JH'),
   CACHE_HOST: Joi.string().default('localhost'),
   CACHE_PORT: Joi.number().default(6379),
   CACHE_PASS: Joi.string().optional(),
