@@ -1,32 +1,41 @@
 import { NestApplication, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { snowflake } from './common/utils/snowflake';
-import { UserRepository } from './common/database/repositories/user.repository';
-import { Prisma } from '@prisma/client';
 import { SwaggerModule } from '@nestjs/swagger';
 import { DocumentBuilder } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
+import CatchAllFilter from './common/filters/catchAll.filter';
+import CustomHttpException from './common/filters/customHttpException.filter';
 async function bootstrap() {
   const app = await NestFactory.create<NestApplication>(AppModule);
+  
+  // Set global prefix for all routes
+  app.setGlobalPrefix('api/v1');
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      disableErrorMessages: process.env.NODE_ENV === 'production',
+      stopAtFirstError: true,
+      transform: true,
+      validateCustomDecorators: true,
+    }),
+  );
+  app.useGlobalFilters(new CatchAllFilter(), new CustomHttpException());
   const config = new DocumentBuilder()
-  .setTitle('My API')
-  .setDescription('API documentation')
+  .setTitle('Discord Clone API')
+  .setDescription('Discord Clone Backend API Documentation')
   .setVersion('1.0')
   .addBearerAuth()
   .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api/docs', app, document);
   const configService = app.get(ConfigService);
   const port = configService.get<number>('main.PORT') ?? 3000;
   await app.listen(port ?? 3000);
-  console.log(`Server is running on port ${port ?? 3000}`);
-  console.log(`Server is running on ${configService.get<string>('main.NODE_ENV') ?? 'development'} environment`);
-  // const user = await app.get(UserRepository).create({
-  //   username: 'test',
-  //   email: 'test@test.com',
-  //   password: 'test',
-  //   phone: '1234567890',
-  // } as Prisma.UserCreateInput);
-  // console.log(`User created: ${user.username}`);
+  console.log(`🚀 Server is running on port ${port ?? 3000}`);
+  console.log(`🌍 Environment: ${configService.get<string>('main.NODE_ENV') ?? 'development'}`);
+  console.log(`📚 API Documentation: http://localhost:${port ?? 3000}/api/docs`);
+  console.log(`🔗 API Base URL: http://localhost:${port ?? 3000}/api/v1`);
 }
 bootstrap();

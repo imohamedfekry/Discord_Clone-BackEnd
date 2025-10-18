@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/co
 import { UserRepository } from '../../common/database/repositories/user.repository';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { JwtHelper, verifyHash } from '../../common/Global/security';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +30,7 @@ export class AuthService {
       email: registerDto.email,
       password: registerDto.password,
       phone: registerDto.phone,
-    } as any);
+    } as Prisma.UserCreateInput);
 
     // Generate JWT tokens
     const accessToken = this.jwtHelper.generateToken({ sub: user.id });
@@ -60,19 +61,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     // Generate JWT tokens
-    const accessToken = this.jwtHelper.generateToken({ sub: user.id });
+    const accessToken = this.jwtHelper.generateToken({ sub: user.id, type: 'access' });
     const refreshToken = this.jwtHelper.generateToken({ sub: user.id, type: 'refresh' });
 
-    return {
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-      },
-      accessToken,
-      refreshToken,
-    };
+    return { accessToken, refreshToken };
   }
 
 }

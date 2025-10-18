@@ -32,7 +32,10 @@ export interface UserContext {
   id: string;
   username: string;
   email: string;
+  phone: string;
   avatar?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ValidationError {
