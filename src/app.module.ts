@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './common/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { HealthModule } from './modules/health/health.module';
 import { GlobalModule } from './common/Global/global.module';
 import databaseConfig from './common/Global/config/database.config';
 import jwtConfig from './common/Global/config/jwt.config';
@@ -21,6 +22,7 @@ import { envValidationSchema } from './common/Global/config/env.validation';
     DatabaseModule,
     AuthModule,
     UsersModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [],

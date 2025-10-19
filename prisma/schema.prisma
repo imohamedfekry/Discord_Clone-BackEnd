@@ -8,12 +8,129 @@ generator client {
 }
 
 model User {
-  id        String   @id
+  id        BigInt   @id
   username  String   @unique
-  email     String   @unique
-  phone     String   @unique
+  email     String?  @unique
+  phone     String?  @unique
   password  String
   avatar    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // relations
+  sentMessages     Message[]          @relation("SentMessages")
+  receivedMessages Message[]          @relation("ReceivedMessages")
+  friendships1     Friendship[]       @relation("UserFriend1")
+  friendships2     Friendship[]       @relation("UserFriend2")
+  conversations    ConversationUser[]
+  messageReceipts  MessageReceipt[]
+  sourceRelations  UserRelation[]     @relation("SourceUser")
+  targetRelations  UserRelation[]     @relation("TargetUser")
+
+  @@index([username])
+}
+
+model Friendship {
+  id        BigInt           @id
+  user1     User             @relation("UserFriend1", fields: [user1Id], references: [id])
+  user1Id   BigInt
+  user2     User             @relation("UserFriend2", fields: [user2Id], references: [id])
+  user2Id   BigInt
+  status    FriendshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id])
+  @@index([user2Id])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
+model Conversation {
+  id        BigInt   @id
+  isGroup   Boolean  @default(false)
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages     Message[]
+  participants ConversationUser[]
+
+  @@index([isGroup])
+}
+
+model ConversationUser {
+  id                BigInt       @id
+  user              User         @relation(fields: [userId], references: [id])
+  userId            BigInt
+  conversation      Conversation @relation(fields: [conversationId], references: [id])
+  conversationId    BigInt
+  joinedAt          DateTime     @default(now())
+  nickname          String?
+  // last_read points to last message id read by this user in this convo (for unread count)
+  lastReadMessageId BigInt?
+
+  @@unique([userId, conversationId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             BigInt        @id
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  conversationId BigInt?
+  sender         User          @relation("SentMessages", fields: [senderId], references: [id])
+  senderId       BigInt
+  // for 1:1 DMs we may also optionally store receiverId (convenience)
+  receiver       User?         @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId     BigInt?
+  content        String
+  attachments    Json? // array of {url, type, size}
+  editedAt       DateTime?
+  deletedAt      DateTime?
+  createdAt      DateTime      @default(now())
+
+  receipts MessageReceipt[]
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+model MessageReceipt {
+  id        BigInt   @id
+  message   Message  @relation(fields: [messageId], references: [id])
+  messageId BigInt
+  user      User     @relation(fields: [userId], references: [id])
+  userId    BigInt
+  readAt    DateTime @default(now())
+
+  @@unique([messageId, userId])
+  @@index([userId])
+}
+
+model UserRelation {
+  id        BigInt       @id
+  source    User         @relation("SourceUser", fields: [sourceId], references: [id])
+  sourceId  BigInt
+  target    User         @relation("TargetUser", fields: [targetId], references: [id])
+  targetId  BigInt
+  type      RelationType
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([sourceId, targetId, type])
+  @@index([sourceId])
+  @@index([targetId])
+}
+
+enum RelationType {
+  BLOCKED
+  IGNORED
+  MUTED
 }

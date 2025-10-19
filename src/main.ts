@@ -8,7 +8,11 @@ import CatchAllFilter from './common/filters/catchAll.filter';
 import CustomHttpException from './common/filters/customHttpException.filter';
 async function bootstrap() {
   const app = await NestFactory.create<NestApplication>(AppModule);
-  
+  app.enableCors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  });
   // Set global prefix for all routes
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(

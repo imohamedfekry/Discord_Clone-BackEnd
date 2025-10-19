@@ -7,7 +7,8 @@ export class UserRepository {
   constructor(private prisma: PrismaService) {}
 
   async findById(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id: BigInt(id) } });
+    return user ? { ...user, id: user.id.toString() } : null;
   }
 
   async findByEmail(email: string) {
@@ -22,12 +23,12 @@ export class UserRepository {
     return this.prisma.user.create({ data });
   }
 
-    async update(id: string, data: Prisma.UserUpdateInput) {
-    return this.prisma.user.update({ where: { id }, data });
+  async update(id: string, data: Prisma.UserUpdateInput) {
+    return this.prisma.user.update({ where: { id: BigInt(id) }, data });
   }
 
   async delete(id: string) {
-    return this.prisma.user.delete({ where: { id } });
+    return this.prisma.user.delete({ where: { id: BigInt(id) } });
   }
 
 }

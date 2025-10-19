@@ -33,12 +33,12 @@ export class AuthService {
     } as Prisma.UserCreateInput);
 
     // Generate JWT tokens
-    const accessToken = this.jwtHelper.generateToken({ sub: user.id });
-    const refreshToken = this.jwtHelper.generateToken({ sub: user.id, type: 'refresh' });
+    const accessToken = this.jwtHelper.generateToken({ sub: user.id.toString() });
+    const refreshToken = this.jwtHelper.generateToken({ sub: user.id.toString(), type: 'refresh' });
 
     return {
       user: {
-        id: user.id,
+        id: user.id.toString(),
         username: user.username,
         email: user.email,
         avatar: user.avatar,
@@ -61,8 +61,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     // Generate JWT tokens
-    const accessToken = this.jwtHelper.generateToken({ sub: user.id, type: 'access' });
-    const refreshToken = this.jwtHelper.generateToken({ sub: user.id, type: 'refresh' });
+    const accessToken = this.jwtHelper.generateToken({ sub: user.id.toString(), type: 'access' });
+    const refreshToken = this.jwtHelper.generateToken({ sub: user.id.toString(), type: 'refresh' });
 
     return { accessToken, refreshToken };
   }
