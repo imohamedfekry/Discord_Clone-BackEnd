@@ -1,0 +1,426 @@
+{
+	"info": {
+		"_postman_id": "user2-bob-002",
+		"name": "User 2 - Bob (Friend User)",
+		"description": "Discord Clone API - User 2 (Bob) - Friend testing user for Alice",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Bob access token saved');",
+									"    }",
+									"    if (response.data && response.data.user && response.data.user.id) {",
+									"        pm.collectionVariables.set('userId', response.data.user.id);",
+									"        console.log('✅ Bob user ID saved:', response.data.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bob_dev\",\n  \"email\": \"bob@discordclone.com\",\n  \"password\": \"bob123456\",\n  \"phone\": \"+1234567891\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Bob logged in successfully');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"bob@discordclone.com\",\n  \"password\": \"bob123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile Management",
+			"item": [
+				{
+					"name": "Get Bob Profile",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Bob Global Name",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"globalName\": \"Bob Smith\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/global-name",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "global-name"]
+						}
+					}
+				},
+				{
+					"name": "Update Bob Custom Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customStatus\": \"Testing Discord Clone API\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/custom-status",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "custom-status"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Friends Management",
+			"item": [
+				{
+					"name": "Get Bob Incoming Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (Array.isArray(response.data) && response.data.length > 0) {",
+									"        pm.collectionVariables.set('friendshipId', response.data[0].id);",
+									"        console.log('✅ Bob friendship ID saved:', response.data[0].id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/incoming",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "requests", "incoming"]
+						}
+					}
+				},
+				{
+					"name": "Accept Alice Friend Request",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"friendshipId\": \"{{friendshipId}}\",\n  \"status\": \"ACCEPTED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/respond",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "respond"]
+						}
+					}
+				},
+				{
+					"name": "Send Friend Request to Charlie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"charlie_dev\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/request",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "request"]
+						}
+					}
+				},
+				{
+					"name": "Get Bob Friends List",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Relations",
+			"item": [
+				{
+					"name": "Block Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.collectionVariables.set('relationId', response.data.id);",
+									"        console.log('✅ Alice blocked successfully');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"BLOCKED\",\n  \"note\": \"Unwanted contact\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Ignore Charlie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{charlieUserId}}\",\n  \"type\": \"IGNORED\",\n  \"note\": \"Too many messages\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Mute Alice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"MUTED\",\n  \"note\": \"Too many notifications\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get All Relations",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get Blocked Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/blocked",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "blocked"]
+						}
+					}
+				},
+				{
+					"name": "Get Ignored Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/ignored",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "ignored"]
+						}
+					}
+				},
+				{
+					"name": "Get Muted Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/muted",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "muted"]
+						}
+					}
+				},
+				{
+					"name": "Check Relation with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/check?targetUserId={{aliceUserId}}&type=BLOCKED",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "check"],
+							"query": [
+								{"key": "targetUserId", "value": "{{aliceUserId}}"},
+								{"key": "type", "value": "BLOCKED"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Relation Note",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"BLOCKED\",\n  \"note\": \"Updated reason for blocking\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/note",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "note"]
+						}
+					}
+				},
+				{
+					"name": "Remove Block from Alice",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"BLOCKED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get Relation Stats",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "stats"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{"key": "baseUrl", "value": "http://localhost:3000/api/v1", "type": "string"},
+		{"key": "accessToken", "value": "", "type": "string"},
+		{"key": "userId", "value": "", "type": "string"},
+		{"key": "friendshipId", "value": "", "type": "string"},
+		{"key": "aliceUserId", "value": "", "type": "string"},
+		{"key": "charlieUserId", "value": "", "type": "string"},
+		{"key": "relationId", "value": "", "type": "string"}
+	]
+}

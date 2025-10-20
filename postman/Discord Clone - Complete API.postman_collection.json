@@ -1,0 +1,1019 @@
+{
+	"info": {
+		"_postman_id": "3601508f-7190-4c00-a00e-eda742fc5aed",
+		"name": "Discord Clone - Complete API",
+		"description": "Complete API collection for Discord Clone with auto token management and profile updates\n\n## Features:\n- 🔐 Authentication (Register/Login)\n- 👤 User Profile Management (Get/Update)\n- 🔑 Password Updates\n- 🌍 Global Name Updates\n- 📝 Custom Status Updates\n- 👤 Username Updates\n- 👥 Friendship Management\n- 📋 Friends Lists\n- 🔍 Advanced Features (Mutual Friends, Status Check)\n\n## Auto Features:\n- ✅ Automatic token extraction and management\n- ✅ Auto-save user IDs and friendship IDs\n- ✅ Smart variable updates\n- ✅ Response logging and validation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39613056"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Readiness Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health/ready",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Liveness Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health/live",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health",
+								"live"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Auto-extract tokens and user data from register response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    // Extract tokens if available",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Access token saved from register:', response.data.accessToken);",
+									"    }",
+									"    ",
+									"    if (response.data && response.data.refreshToken) {",
+									"        pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+									"        console.log('✅ Refresh token saved from register:', response.data.refreshToken);",
+									"    }",
+									"    ",
+									"    // Extract user ID if available",
+									"    if (response.data && response.data.user && response.data.user.id) {",
+									"        pm.collectionVariables.set('userId', response.data.user.id);",
+									"        console.log('✅ User ID saved from register:', response.data.user.id);",
+									"    }",
+									"    ",
+									"    // Log success",
+									"    if (pm.response.code === 200 || pm.response.code === 201) {",
+									"        console.log('✅ Registration successful!');",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{username}}\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"phone\": \"{{phone}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Auto-extract tokens from login response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    // Extract tokens",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Access token saved from login:', response.data.accessToken);",
+									"    }",
+									"    ",
+									"    if (response.data && response.data.refreshToken) {",
+									"        pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+									"        console.log('✅ Refresh token saved from login:', response.data.refreshToken);",
+									"    }",
+									"    ",
+									"    // Log success",
+									"    if (pm.response.code === 200) {",
+									"        console.log('✅ Login successful!');",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Profile",
+			"item": [
+				{
+					"name": "Get Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Auto-extract user ID from profile response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.data && response.data.id) {",
+									"        pm.collectionVariables.set('userId', response.data.id);",
+									"        console.log('✅ User ID saved from profile:', response.data.id);",
+									"    }",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        console.log('✅ Profile retrieved successfully!');",
+									"        console.log('Profile data:', JSON.stringify(response.data, null, 2));",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log password update response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        console.log('✅ Password updated successfully!');",
+									"        console.log('Updated at:', response.data ? response.data.updatedAt : 'Unknown');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"{{currentPassword}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile",
+								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Global Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log global name update response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        console.log('✅ Global name updated successfully!');",
+									"        console.log('New global name:', response.data ? response.data.globalName : 'Unknown');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"globalName\": \"{{globalName}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/global-name",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile",
+								"global-name"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Custom Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log custom status update response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        console.log('✅ Custom status updated successfully!');",
+									"        console.log('New custom status:', response.data ? response.data.customStatus : 'Unknown');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customStatus\": \"{{customStatus}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/custom-status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile",
+								"custom-status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log username update response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        console.log('✅ Username updated successfully!');",
+									"        console.log('New username:', response.data ? response.data.username : 'Unknown');",
+									"        ",
+									"        // Update the username variable for future requests",
+									"        if (response.data && response.data.username) {",
+									"            pm.collectionVariables.set('username', response.data.username);",
+									"            console.log('✅ Username variable updated:', response.data.username);",
+									"        }",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{newUsername}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/username",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile",
+								"username"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Friends Management",
+			"item": [
+				{
+					"name": "Send Friend Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Auto-extract friendship ID from friend request response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (response.data && response.data.id) {",
+									"        pm.collectionVariables.set('friendshipId', response.data.id);",
+									"        console.log('✅ Friendship ID saved:', response.data.id);",
+									"    }",
+									"    ",
+									"    if (pm.response.code === 200 || pm.response.code === 201) {",
+									"        console.log('✅ Friend request sent successfully!');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{targetUserName}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/request",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"friends",
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Respond to Friend Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log response to friend request",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        console.log('✅ Friend request responded successfully!');",
+									"        console.log('Status:', response.data ? response.data.status : 'Unknown');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"friendshipId\": \"{{friendshipId}}\",\n  \"status\": \"ACCEPTED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/respond",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"friends",
+								"respond"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Friend",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log friend removal",
+									"if (pm.response && pm.response.json()) {",
+									"    if (pm.response.code === 200) {",
+									"        console.log('✅ Friend removed successfully!');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{targetUserId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/remove",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"friends",
+								"remove"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Friends List",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log friends list response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        const friendsCount = response.data && response.data.friends ? response.data.friends.length : 0;",
+									"        console.log('✅ Friends list retrieved successfully!');",
+									"        console.log('Friends count:', friendsCount);",
+									"        ",
+									"        // Auto-extract first friend's ID as target user for testing",
+									"        if (response.data && response.data.friends && response.data.friends.length > 0) {",
+									"            pm.collectionVariables.set('targetUserId', response.data.friends[0].id);",
+									"            console.log('✅ Target user ID set to first friend:', response.data.friends[0].id);",
+									"        }",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends?page=1&limit=20&status=ACCEPTED",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"friends"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "status",
+									"value": "ACCEPTED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Incoming Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Log incoming requests response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        const requestsCount = Array.isArray(response.data) ? response.data.length : 0;",
+									"        console.log('✅ Incoming requests retrieved successfully!');",
+									"        console.log('Incoming requests count:', requestsCount);",
+									"        ",
+									"        // Auto-extract first request's friendship ID",
+									"        if (Array.isArray(response.data) && response.data.length > 0) {",
+									"            pm.collectionVariables.set('friendshipId', response.data[0].id);",
+									"            console.log('✅ Friendship ID set to first incoming request:', response.data[0].id);",
+									"        }",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/incoming",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"friends",
+								"requests",
+								"incoming"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Outgoing Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Log outgoing requests response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        const requestsCount = Array.isArray(response.data) ? response.data.length : 0;",
+									"        console.log('✅ Outgoing requests retrieved successfully!');",
+									"        console.log('Outgoing requests count:', requestsCount);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/outgoing",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"friends",
+								"requests",
+								"outgoing"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Friends Discovery",
+			"item": [
+				{
+					"name": "Get Mutual Friends",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Log mutual friends response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        const mutualCount = Array.isArray(response.data) ? response.data.length : 0;",
+									"        console.log('✅ Mutual friends retrieved successfully!');",
+									"        console.log('Mutual friends count:', mutualCount);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/mutual/{{targetUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"friends",
+								"mutual",
+								"{{targetUserId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Friendship Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Log friendship status response",
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        console.log('✅ Friendship status checked successfully!');",
+									"        console.log('Are friends:', response.data ? response.data.areFriends : 'Unknown');",
+									"        console.log('Has pending request:', response.data ? response.data.hasPendingRequest : 'Unknown');",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/check/{{targetUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"friends",
+								"check",
+								"{{targetUserId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"console.log('🚀 Making request to:', pm.request.url.toString());",
+					"",
+					"// Check if access token exists for protected endpoints",
+					"if (pm.request.url.toString().includes('/users/') || pm.request.url.toString().includes('/auth/')) {",
+					"    const accessToken = pm.collectionVariables.get('accessToken');",
+					"    if (!accessToken) {",
+					"        console.log('⚠️  No access token found. Please login first.');",
+					"    } else {",
+					"        console.log('✅ Using access token:', accessToken.substring(0, 20) + '...');",
+					"    }",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"console.log('📊 Response status:', pm.response.code);",
+					"console.log('⏱️  Response time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Log response size",
+					"if (pm.response.responseSize) {",
+					"    console.log('📦 Response size:', pm.response.responseSize + ' bytes');",
+					"}",
+					"",
+					"// Check for errors",
+					"if (pm.response.code >= 400) {",
+					"    console.log('❌ Error response received');",
+					"    if (pm.response.json()) {",
+					"        console.log('Error details:', pm.response.json());",
+					"    }",
+					"} else {",
+					"    console.log('✅ Request successful');",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "targetUserId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "friendshipId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "username",
+			"value": "testuser",
+			"type": "string"
+		},
+		{
+			"key": "email",
+			"value": "test@example.com",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "password123",
+			"type": "string"
+		},
+		{
+			"key": "phone",
+			"value": "+1234567890",
+			"type": "string"
+		},
+		{
+			"key": "currentPassword",
+			"value": "password123",
+			"type": "string"
+		},
+		{
+			"key": "newPassword",
+			"value": "newPassword123",
+			"type": "string"
+		},
+		{
+			"key": "globalName",
+			"value": "John Doe",
+			"type": "string"
+		},
+		{
+			"key": "customStatus",
+			"value": "Playing Minecraft",
+			"type": "string"
+		},
+		{
+			"key": "newUsername",
+			"value": "newusername",
+			"type": "string"
+		},
+		{
+			"key": "targetUserName",
+			"value": "frienduser",
+			"type": "string"
+		}
+	]
+}

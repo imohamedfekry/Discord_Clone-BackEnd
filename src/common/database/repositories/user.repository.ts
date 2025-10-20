@@ -12,23 +12,31 @@ export class UserRepository {
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    return user ? { ...user, id: user.id.toString() } : null;
   }
 
   async findByUsername(username: string) {
-    return this.prisma.user.findUnique({ where: { username } });
+    const user = await this.prisma.user.findUnique({ where: { username } });
+    return user ? { ...user, id: user.id.toString() } : null;
   }
 
   async create(data: Prisma.UserCreateInput) {
-    return this.prisma.user.create({ data });
+    const user = await this.prisma.user.create({ data });
+    return { ...user, id: user.id.toString() };
   }
 
   async update(id: string, data: Prisma.UserUpdateInput) {
-    return this.prisma.user.update({ where: { id: BigInt(id) }, data });
+    const user = await this.prisma.user.update({ 
+      where: { id: BigInt(id) }, 
+      data 
+    });
+    return { ...user, id: user.id.toString() };
   }
 
   async delete(id: string) {
-    return this.prisma.user.delete({ where: { id: BigInt(id) } });
+    const user = await this.prisma.user.delete({ where: { id: BigInt(id) } });
+    return { ...user, id: user.id.toString() };
   }
 
 }

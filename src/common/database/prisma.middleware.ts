@@ -7,6 +7,10 @@ export function extendPrisma(prisma: PrismaClient) {
   return prisma.$extends({
     query: {
       $allModels: {
+        async $allOperations({ args, query }) {
+          const result = await query(args);
+          return convert(result);
+        },
         // Trigger on CREATE and UPDATE
         async create({ model, args, query }) {
           await handleIdsnowflake(model, args);
@@ -40,4 +44,17 @@ async function handelPhoneEncryption(model: string, args: any) {
     args.data.phone = encrypt(args.data.phone);
   }
   
+}
+// convert bigints to strings
+function convert(obj: any): any {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === 'bigint') return obj.toString();
+  if (Array.isArray(obj)) return obj.map(convert);
+  if (typeof obj === 'object') {
+    const out: Record<string, any> = {};
+    for (const key in obj) out[key] = convert(obj[key]);
+    return out;
+    
+  }
+  return obj;
 }

@@ -9,11 +9,11 @@ import {
   @ValidatorConstraint({ async: false })
   export class IsIdConstraint implements ValidatorConstraintInterface {
     validate(value: any): boolean {
-      return typeof value === 'string' && /^\d{17,19}$/.test(value);
+      return typeof value === 'string' && /^\d{16,19}$/.test(value);
     }
-  
+
     defaultMessage(args: ValidationArguments) {
-      return `${args.property} must be a valid ID (17-19 digits)`;
+      return `${args.property} must be a valid ID (16-19 digits)`;
     }
   }
   

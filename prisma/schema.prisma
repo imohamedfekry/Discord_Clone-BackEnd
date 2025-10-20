@@ -7,15 +7,26 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum UserStatus {
+  ONLINE
+  OFFLINE
+  IDLE
+  DND
+}
+
 model User {
-  id        BigInt   @id
-  username  String   @unique
-  email     String?  @unique
-  phone     String?  @unique
-  password  String
-  avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           BigInt     @id
+  username     String     @unique
+  globalName   String?     
+  email        String?    @unique
+  phone        String?    @unique
+  password     String
+  avatar       String?
+  status       UserStatus @default(OFFLINE)
+  customStatus String?
+  isBot        Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   // relations
   sentMessages     Message[]          @relation("SentMessages")
@@ -79,20 +90,47 @@ model ConversationUser {
   @@index([userId])
 }
 
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+  REPLY
+  VOICE
+}
+
 model Message {
-  id             BigInt        @id
+  id             BigInt        @id @default(autoincrement())
   conversation   Conversation? @relation(fields: [conversationId], references: [id])
   conversationId BigInt?
   sender         User          @relation("SentMessages", fields: [senderId], references: [id])
   senderId       BigInt
-  // for 1:1 DMs we may also optionally store receiverId (convenience)
   receiver       User?         @relation("ReceivedMessages", fields: [receiverId], references: [id])
   receiverId     BigInt?
-  content        String
-  attachments    Json? // array of {url, type, size}
-  editedAt       DateTime?
-  deletedAt      DateTime?
-  createdAt      DateTime      @default(now())
+
+  // محتوى الرسالة الأساسي
+  content String?
+  type    MessageType @default(TEXT)
+
+  // mentions system
+  mentionEveryone Boolean @default(false)
+  mentions        Json? // array of Mention objects
+  mentionRoles    Json? // array of MentionRole objects
+
+  // metadata
+  pinned      Boolean @default(false)
+  reactions   Json? // array of Reaction objects
+  attachments Json? // array of Attachment objects
+
+  // reply system
+  replyTo        BigInt?
+  repliedMessage Message?  @relation("MessageReplies", fields: [replyTo], references: [id])
+  replies        Message[] @relation("MessageReplies")
+
+  // timestamps
+  editedAt  DateTime?
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
 
   receipts MessageReceipt[]
 
@@ -123,6 +161,7 @@ model UserRelation {
   type      RelationType
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  note      String?
 
   @@unique([sourceId, targetId, type])
   @@index([sourceId])

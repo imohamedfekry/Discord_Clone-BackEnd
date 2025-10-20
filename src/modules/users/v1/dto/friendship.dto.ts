@@ -1,18 +1,29 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { FriendshipStatus } from '@prisma/client';
-import { IsId } from '../../../common/Global/validators/isId.validator';
-import { IsUsername } from '../../../common/Global/validators/username.validator';
+import { IsId } from '../../../../common/Global/validators/isId.validator';
+import { IsUsername } from '../../../../common/Global/validators/username.validator';
 
 export class SendFriendRequestDto {
   @ApiProperty({ 
-    description: 'The username of the user to send friend request to',
-    example: 'john_doe'
+    description: 'The username of the user to send friend request to (optional if userId is provided)',
+    example: 'john_doe',
+    required: false
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @IsUsername()
-  username: string;
+  username?: string;
+
+  @ApiProperty({ 
+    description: 'The ID of the user to send friend request to (optional if username is provided)',
+    example: '123456789012345678',
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  @IsId()
+  userId?: string;
 }
 
 export class RespondToFriendRequestDto {

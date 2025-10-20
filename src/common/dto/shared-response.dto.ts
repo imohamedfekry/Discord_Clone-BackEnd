@@ -21,6 +21,9 @@ export class UserProfileResponseDto {
   @ApiProperty({ description: 'Username' })
   username: string;
 
+  @ApiProperty({ description: 'Global name', required: false })
+  globalName?: string;
+
   @ApiProperty({ description: 'User email' })
   email: string;
 
@@ -30,11 +33,11 @@ export class UserProfileResponseDto {
   @ApiProperty({ description: 'User avatar URL', required: false })
   avatar?: string;
 
-  @ApiProperty({ description: 'User bio/description', required: false })
-  bio?: string;
-
   @ApiProperty({ description: 'User status', required: false })
-  status?: 'online' | 'offline' | 'away';
+  status?: string;
+
+  @ApiProperty({ description: 'Custom status message', required: false })
+  customStatus?: string;
 
   @ApiProperty({ description: 'User creation date' })
   createdAt: Date;

@@ -20,9 +20,9 @@ export class FriendshipRepository {
   }
 
   // Find friendship by ID
-  async findById(id: bigint) {
+  async findById(id: string) {
     return this.prisma.friendship.findUnique({
-      where: { id },
+      where: { id: BigInt(id) },
       include: {
         user1: true,
         user2: true,
