@@ -12,12 +12,14 @@ import {
   GetFriendsQueryDto,
   GetMutualFriendsDto,
   CheckFriendshipDto,
+  CancelFriendRequestDto,
 } from './dto/friendship.dto';
 import {
   UpdatePasswordDto,
   UpdateGlobalNameDto,
   UpdateCustomStatusDto,
   UpdateUsernameDto,
+  UpdatePresenceStatusDto,
 } from './dto/profile.dto';
 import {
   CreateUserRelationDto,
@@ -29,7 +31,6 @@ import {
 } from './dto/user-relation.dto';
 
 @ApiTags('User Profile')
-@ApiBearerAuth()
 @Controller({
   path: 'users',
   version: '1',
@@ -67,6 +68,12 @@ export class UsersController {
     return this.usersService.updateUsername(request.user, dto);
   }
 
+  @Put('profile/presence-status')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async updatePresenceStatus(@Request() request: any, @Body() dto: UpdatePresenceStatusDto) {
+    return this.usersService.updatePresenceStatus(request.user, dto);
+  }
+
   // Friendship endpoints
   @Post('friends/request')
   @UsePipes(new ValidationPipe({ transform: true }))
@@ -77,6 +84,11 @@ export class UsersController {
   @Put('friends/respond')
   async respondToFriendRequest(@Request() request: any, @Body() dto: RespondToFriendRequestDto) {
     return this.usersService.respondToFriendRequest(request.user, dto);
+  }
+
+  @Delete('friends/cancel')
+  async cancelFriendRequest(@Request() request: any, @Body() dto: CancelFriendRequestDto) {
+    return this.usersService.cancelFriendRequest(request.user, dto);
   }
 
   @Delete('friends/remove')

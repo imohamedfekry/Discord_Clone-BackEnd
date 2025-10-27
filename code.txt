@@ -1,0 +1,2235 @@
+The following is a digest of the repository "BackEnd_Discord".
+This digest is designed to be easily parsed by Large Language Models.
+
+--- SUMMARY ---
+Repository: BackEnd_Discord
+Files Analyzed: 74
+Total Text Size: 60.22 KB
+Estimated Tokens (text only): ~19,119
+
+--- DIRECTORY STRUCTURE ---
+BackEnd_Discord/
+├── postman/
+│   ├── User1_Alice.postman_collection.json
+│   ├── User2_Bob.postman_collection.json
+│   └── User3_Charlie.postman_collection.json
+├── prisma/
+│   ├── migrations/
+│   │   └── migration_lock.toml
+│   └── schema.prisma
+├── src/
+│   ├── common/
+│   │   ├── bootstrap/
+│   │   │   ├── app.bootstrap.ts [binary]
+│   │   │   └── index.ts [binary]
+│   │   ├── config/
+│   │   │   ├── app.config.ts [binary]
+│   │   │   ├── bootstrap.config.ts [binary]
+│   │   │   ├── index.ts [binary]
+│   │   │   └── swagger.config.ts [binary]
+│   │   ├── database/
+│   │   │   ├── repositories/
+│   │   │   │   ├── friendship.repository.ts [binary]
+│   │   │   │   ├── index.ts [binary]
+│   │   │   │   ├── user-relation.repository.ts [binary]
+│   │   │   │   └── user.repository.ts [binary]
+│   │   │   ├── database.module.ts [binary]
+│   │   │   ├── prisma.middleware.ts [binary]
+│   │   │   └── prisma.service.ts [binary]
+│   │   ├── decorators/
+│   │   │   ├── auth-user.decorator.ts [binary]
+│   │   │   └── public.decorator.ts [binary]
+│   │   ├── dto/
+│   │   │   ├── auth-response.dto.ts [binary]
+│   │   │   ├── index.ts [binary]
+│   │   │   └── shared-response.dto.ts [binary]
+│   │   ├── filters/
+│   │   │   ├── catchAll.filter.ts [binary]
+│   │   │   └── customHttpException.filter.ts [binary]
+│   │   ├── Global/
+│   │   │   ├── cache/
+│   │   │   │   └── redis.service.ts [binary]
+│   │   │   ├── config/
+│   │   │   │   ├── cache.config.ts [binary]
+│   │   │   │   ├── database.config.ts [binary]
+│   │   │   │   ├── env.validation.ts [binary]
+│   │   │   │   ├── jwt.config.ts [binary]
+│   │   │   │   ├── main.config.ts [binary]
+│   │   │   │   └── security.config.ts [binary]
+│   │   │   ├── Interceptors/
+│   │   │   │   └── BigInt.interceptors.ts [binary]
+│   │   │   ├── security/
+│   │   │   │   ├── cryption.helper.ts [binary]
+│   │   │   │   ├── hash.helper.ts [binary]
+│   │   │   │   ├── index.ts [binary]
+│   │   │   │   ├── jwt.helper.ts [binary]
+│   │   │   │   └── zod.validator.ts [binary]
+│   │   │   ├── validators/
+│   │   │   │   ├── isId.validator.ts [binary]
+│   │   │   │   ├── IsValidBirthdate.validator.ts [binary]
+│   │   │   │   └── username.validator.ts [binary]
+│   │   │   └── global.module.ts [binary]
+│   │   ├── guards/
+│   │   │   └── auth.guards.ts [binary]
+│   │   ├── interceptors/
+│   │   │   └── transform.interceptor.ts [binary]
+│   │   ├── shared/
+│   │   │   ├── constants.ts [binary]
+│   │   │   └── types.ts [binary]
+│   │   ├── Types/
+│   │   │   └── message.ts [binary]
+│   │   └── utils/
+│   │       ├── snowflake.ts [binary]
+│   │       └── validation.util.ts [binary]
+│   ├── modules/
+│   │   ├── auth/
+│   │   │   ├── decorators/
+│   │   │   │   └── auth-api.decorators.ts [binary]
+│   │   │   ├── dto/
+│   │   │   │   └── auth.dto.ts [binary]
+│   │   │   ├── auth.controller.ts [binary]
+│   │   │   ├── auth.module.ts [binary]
+│   │   │   └── auth.service.ts [binary]
+│   │   ├── health/
+│   │   │   ├── health.controller.ts [binary]
+│   │   │   ├── health.module.ts [binary]
+│   │   │   └── health.service.ts [binary]
+│   │   └── users/
+│   │       └── v1/
+│   │           ├── decorators/
+│   │           │   └── user-api.decorators.ts [binary]
+│   │           ├── dto/
+│   │           │   ├── friendship.dto.ts [binary]
+│   │           │   ├── profile.dto.ts [binary]
+│   │           │   └── user-relation.dto.ts [binary]
+│   │           ├── users.controller.ts [binary]
+│   │           ├── users.module.ts [binary]
+│   │           └── users.service.ts [binary]
+│   ├── app.module.ts [binary]
+│   └── main.ts [binary]
+├── test/
+│   ├── app.e2e-spec.ts [binary]
+│   └── jest-e2e.json
+├── eslint.config.mjs
+├── nest-cli.json
+├── package.json
+├── README.md
+├── tsconfig.build.json
+└── tsconfig.json
+
+
+--- FILE CONTENTS ---
+============================================================
+FILE: postman/User1_Alice.postman_collection.json
+============================================================
+{
+	"info": {
+		"_postman_id": "user1-alice-001",
+		"name": "User 1 - Alice (Main User)",
+		"description": "Discord Clone API - User 1 (Alice) - Main testing user with full permissions",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Alice access token saved');",
+									"    }",
+									"    if (response.data && response.data.user && response.data.user.id) {",
+									"        pm.collectionVariables.set('userId', response.data.user.id);",
+									"        console.log('✅ Alice user ID saved:', response.data.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice_dev\",\n  \"email\": \"alice@discordclone.com\",\n  \"password\": \"alice123456\",\n  \"phone\": \"+1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Alice logged in successfully');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"alice@discordclone.com\",\n  \"password\": \"alice123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile Management",
+			"item": [
+				{
+					"name": "Get Alice Profile",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Alice Global Name",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"globalName\": \"Alice Johnson\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/global-name",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "global-name"]
+						}
+					}
+				},
+				{
+					"name": "Update Alice Custom Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customStatus\": \"Working on Discord Clone\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/custom-status",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "custom-status"]
+						}
+					}
+				},
+				{
+					"name": "Update Alice Username",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"alice_updated\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/username",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "username"]
+						}
+					}
+				},
+				{
+					"name": "Update Alice Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"alice123456\",\n  \"newPassword\": \"alice_new_password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/password",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "password"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Friends Management",
+			"item": [
+				{
+					"name": "Send Friend Request to Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.collectionVariables.set('friendshipId', response.data.id);",
+									"        console.log('✅ Friend request to Bob sent');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bob_dev\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/request",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "request"]
+						}
+					}
+				},
+				{
+					"name": "Send Friend Request to Charlie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"charlie_dev\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/request",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "request"]
+						}
+					}
+				},
+				{
+					"name": "Get Alice Friends List",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends"]
+						}
+					}
+				},
+				{
+					"name": "Get Alice Incoming Requests",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/incoming",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "requests", "incoming"]
+						}
+					}
+				},
+				{
+					"name": "Get Alice Outgoing Requests",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/outgoing",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "requests", "outgoing"]
+						}
+					}
+				},
+				{
+					"name": "Get Mutual Friends with Bob",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/mutual/{{bobUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "mutual", "{{bobUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Check Friendship with Bob",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/check/{{bobUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "check", "{{bobUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Remove Friend Bob",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{bobUserId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/remove",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "remove"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Relations",
+			"item": [
+				{
+					"name": "Block Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.collectionVariables.set('relationId', response.data.id);",
+									"        console.log('✅ Bob blocked successfully');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{bobUserId}}\",\n  \"type\": \"BLOCKED\",\n  \"note\": \"Spam user\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Ignore Charlie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{charlieUserId}}\",\n  \"type\": \"IGNORED\",\n  \"note\": \"Annoying messages\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Mute Bob",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{bobUserId}}\",\n  \"type\": \"MUTED\",\n  \"note\": \"Too many notifications\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get All Relations",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get Blocked Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/blocked",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "blocked"]
+						}
+					}
+				},
+				{
+					"name": "Get Ignored Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/ignored",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "ignored"]
+						}
+					}
+				},
+				{
+					"name": "Get Muted Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/muted",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "muted"]
+						}
+					}
+				},
+				{
+					"name": "Check Relation with Bob",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/check?targetUserId={{bobUserId}}&type=BLOCKED",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "check"],
+							"query": [
+								{"key": "targetUserId", "value": "{{bobUserId}}"},
+								{"key": "type", "value": "BLOCKED"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Relation Note",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{bobUserId}}\",\n  \"type\": \"BLOCKED\",\n  \"note\": \"Updated reason for blocking\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/note",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "note"]
+						}
+					}
+				},
+				{
+					"name": "Remove Block from Bob",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{bobUserId}}\",\n  \"type\": \"BLOCKED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get Relation Stats",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "stats"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{"key": "baseUrl", "value": "http://localhost:3000/api/v1", "type": "string"},
+		{"key": "accessToken", "value": "", "type": "string"},
+		{"key": "userId", "value": "", "type": "string"},
+		{"key": "friendshipId", "value": "", "type": "string"},
+		{"key": "bobUserId", "value": "", "type": "string"},
+		{"key": "charlieUserId", "value": "", "type": "string"},
+		{"key": "relationId", "value": "", "type": "string"}
+	]
+}
+
+
+============================================================
+FILE: postman/User2_Bob.postman_collection.json
+============================================================
+{
+	"info": {
+		"_postman_id": "user2-bob-002",
+		"name": "User 2 - Bob (Friend User)",
+		"description": "Discord Clone API - User 2 (Bob) - Friend testing user for Alice",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Bob access token saved');",
+									"    }",
+									"    if (response.data && response.data.user && response.data.user.id) {",
+									"        pm.collectionVariables.set('userId', response.data.user.id);",
+									"        console.log('✅ Bob user ID saved:', response.data.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bob_dev\",\n  \"email\": \"bob@discordclone.com\",\n  \"password\": \"bob123456\",\n  \"phone\": \"+1234567891\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login Bob",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Bob logged in successfully');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"bob@discordclone.com\",\n  \"password\": \"bob123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile Management",
+			"item": [
+				{
+					"name": "Get Bob Profile",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Bob Global Name",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"globalName\": \"Bob Smith\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/global-name",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "global-name"]
+						}
+					}
+				},
+				{
+					"name": "Update Bob Custom Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customStatus\": \"Testing Discord Clone API\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/custom-status",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "custom-status"]
+						}
+					}
+				},
+				{
+					"name": "Update Bob Username",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bob_updated\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/username",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "username"]
+						}
+					}
+				},
+				{
+					"name": "Update Bob Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"bob123456\",\n  \"newPassword\": \"bob_new_password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/password",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "password"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Friends Management",
+			"item": [
+				{
+					"name": "Get Bob Incoming Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (Array.isArray(response.data) && response.data.length > 0) {",
+									"        pm.collectionVariables.set('friendshipId', response.data[0].id);",
+									"        console.log('✅ Bob friendship ID saved:', response.data[0].id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/incoming",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "requests", "incoming"]
+						}
+					}
+				},
+				{
+					"name": "Accept Alice Friend Request",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"friendshipId\": \"{{friendshipId}}\",\n  \"status\": \"ACCEPTED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/respond",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "respond"]
+						}
+					}
+				},
+				{
+					"name": "Send Friend Request to Charlie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"charlie_dev\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/request",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "request"]
+						}
+					}
+				},
+				{
+					"name": "Get Bob Friends List",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends"]
+						}
+					}
+				},
+				{
+					"name": "Get Bob Outgoing Requests",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/outgoing",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "requests", "outgoing"]
+						}
+					}
+				},
+				{
+					"name": "Get Mutual Friends with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/mutual/{{aliceUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "mutual", "{{aliceUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Check Friendship with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/check/{{aliceUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "check", "{{aliceUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Remove Friend Alice",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{aliceUserId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/remove",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "remove"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Relations",
+			"item": [
+				{
+					"name": "Block Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.collectionVariables.set('relationId', response.data.id);",
+									"        console.log('✅ Alice blocked successfully');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"BLOCKED\",\n  \"note\": \"Unwanted contact\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Ignore Charlie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{charlieUserId}}\",\n  \"type\": \"IGNORED\",\n  \"note\": \"Too many messages\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Mute Alice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"MUTED\",\n  \"note\": \"Too many notifications\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get All Relations",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get Blocked Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/blocked",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "blocked"]
+						}
+					}
+				},
+				{
+					"name": "Get Ignored Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/ignored",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "ignored"]
+						}
+					}
+				},
+				{
+					"name": "Get Muted Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/muted",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "muted"]
+						}
+					}
+				},
+				{
+					"name": "Check Relation with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/check?targetUserId={{aliceUserId}}&type=BLOCKED",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "check"],
+							"query": [
+								{"key": "targetUserId", "value": "{{aliceUserId}}"},
+								{"key": "type", "value": "BLOCKED"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Relation Note",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"BLOCKED\",\n  \"note\": \"Updated reason for blocking\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/note",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "note"]
+						}
+					}
+				},
+				{
+					"name": "Remove Block from Alice",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"BLOCKED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get Relation Stats",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "stats"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{"key": "baseUrl", "value": "http://localhost:3000/api/v1", "type": "string"},
+		{"key": "accessToken", "value": "", "type": "string"},
+		{"key": "userId", "value": "", "type": "string"},
+		{"key": "friendshipId", "value": "", "type": "string"},
+		{"key": "aliceUserId", "value": "", "type": "string"},
+		{"key": "charlieUserId", "value": "", "type": "string"},
+		{"key": "relationId", "value": "", "type": "string"}
+	]
+}
+
+
+============================================================
+FILE: postman/User3_Charlie.postman_collection.json
+============================================================
+{
+	"info": {
+		"_postman_id": "user3-charlie-003",
+		"name": "User 3 - Charlie (Third User)",
+		"description": "Discord Clone API - User 3 (Charlie) - Third testing user for mutual friends testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register Charlie",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Charlie access token saved');",
+									"    }",
+									"    if (response.data && response.data.user && response.data.user.id) {",
+									"        pm.collectionVariables.set('userId', response.data.user.id);",
+									"        console.log('✅ Charlie user ID saved:', response.data.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"charlie_dev\",\n  \"email\": \"charlie@discordclone.com\",\n  \"password\": \"charlie123456\",\n  \"phone\": \"+1234567892\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login Charlie",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"        console.log('✅ Charlie logged in successfully');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"charlie@discordclone.com\",\n  \"password\": \"charlie123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile Management",
+			"item": [
+				{
+					"name": "Get Charlie Profile",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Charlie Global Name",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"globalName\": \"Charlie Brown\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/global-name",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "global-name"]
+						}
+					}
+				},
+				{
+					"name": "Update Charlie Custom Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customStatus\": \"Learning Discord Clone Development\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/custom-status",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "custom-status"]
+						}
+					}
+				},
+				{
+					"name": "Update Charlie Username",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"charlie_updated\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/username",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "username"]
+						}
+					}
+				},
+				{
+					"name": "Update Charlie Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"charlie123456\",\n  \"newPassword\": \"charlie_new_password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/password",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "password"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Friends Management",
+			"item": [
+				{
+					"name": "Get Charlie Incoming Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (Array.isArray(response.data) && response.data.length > 0) {",
+									"        pm.collectionVariables.set('friendshipId', response.data[0].id);",
+									"        console.log('✅ Charlie friendship ID saved:', response.data[0].id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/incoming",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "requests", "incoming"]
+						}
+					}
+				},
+				{
+					"name": "Accept Alice Friend Request",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"friendshipId\": \"{{friendshipId}}\",\n  \"status\": \"ACCEPTED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/respond",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "respond"]
+						}
+					}
+				},
+				{
+					"name": "Accept Bob Friend Request",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"friendshipId\": \"{{friendshipId}}\",\n  \"status\": \"ACCEPTED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/respond",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "respond"]
+						}
+					}
+				},
+				{
+					"name": "Get Charlie Friends List",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends"]
+						}
+					}
+				},
+				{
+					"name": "Get Charlie Outgoing Requests",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/outgoing",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "requests", "outgoing"]
+						}
+					}
+				},
+				{
+					"name": "Get Mutual Friends with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/mutual/{{aliceUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "mutual", "{{aliceUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Mutual Friends with Bob",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/mutual/{{bobUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "mutual", "{{bobUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Check Friendship with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/check/{{aliceUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "check", "{{aliceUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Check Friendship with Bob",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/check/{{bobUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "check", "{{bobUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Remove Friend Alice",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{aliceUserId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/remove",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "remove"]
+						}
+					}
+				},
+				{
+					"name": "Remove Friend Bob",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{bobUserId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/remove",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "remove"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Relations",
+			"item": [
+				{
+					"name": "Block Alice",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response && pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.collectionVariables.set('relationId', response.data.id);",
+									"        console.log('✅ Alice blocked successfully');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"BLOCKED\",\n  \"note\": \"Unwanted contact\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Ignore Bob",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{bobUserId}}\",\n  \"type\": \"IGNORED\",\n  \"note\": \"Too many messages\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Mute Alice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"MUTED\",\n  \"note\": \"Too many notifications\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get All Relations",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get Blocked Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/blocked",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "blocked"]
+						}
+					}
+				},
+				{
+					"name": "Get Ignored Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/ignored",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "ignored"]
+						}
+					}
+				},
+				{
+					"name": "Get Muted Users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/muted",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "muted"]
+						}
+					}
+				},
+				{
+					"name": "Check Relation with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/check?targetUserId={{aliceUserId}}&type=BLOCKED",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "check"],
+							"query": [
+								{"key": "targetUserId", "value": "{{aliceUserId}}"},
+								{"key": "type", "value": "BLOCKED"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Relation Note",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"BLOCKED\",\n  \"note\": \"Updated reason for blocking\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/note",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "note"]
+						}
+					}
+				},
+				{
+					"name": "Remove Block from Alice",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"targetUserId\": \"{{aliceUserId}}\",\n  \"type\": \"BLOCKED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/relations",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations"]
+						}
+					}
+				},
+				{
+					"name": "Get Relation Stats",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/relations/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "relations", "stats"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{"key": "baseUrl", "value": "http://localhost:3000/api/v1", "type": "string"},
+		{"key": "accessToken", "value": "", "type": "string"},
+		{"key": "userId", "value": "", "type": "string"},
+		{"key": "friendshipId", "value": "", "type": "string"},
+		{"key": "aliceUserId", "value": "", "type": "string"},
+		{"key": "bobUserId", "value": "", "type": "string"},
+		{"key": "relationId", "value": "", "type": "string"}
+	]
+}
+
+
+============================================================
+FILE: prisma/migrations/migration_lock.toml
+============================================================
+# Please do not edit this file manually
+# It should be added in your version-control system (e.g., Git)
+provider = "postgresql"
+
+
+============================================================
+FILE: prisma/schema.prisma
+============================================================
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserStatus {
+  ONLINE
+  OFFLINE
+  IDLE
+  DND
+}
+
+model User {
+  id           BigInt     @id
+  username     String     @unique
+  globalName   String?
+  email        String?    @unique
+  phone        String?    @unique
+  password     String
+  avatar       String?
+  birthdate    DateTime?
+
+  status       UserStatus @default(OFFLINE)
+  customStatus String?
+  isBot        Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  // relations
+  sentMessages     Message[]          @relation("SentMessages")
+  receivedMessages Message[]          @relation("ReceivedMessages")
+  friendships1     Friendship[]       @relation("UserFriend1")
+  friendships2     Friendship[]       @relation("UserFriend2")
+  conversations    ConversationUser[]
+  messageReceipts  MessageReceipt[]
+  sourceRelations  UserRelation[]     @relation("SourceUser")
+  targetRelations  UserRelation[]     @relation("TargetUser")
+
+  @@index([username])
+}
+
+model Friendship {
+  id        BigInt           @id
+  user1     User             @relation("UserFriend1", fields: [user1Id], references: [id])
+  user1Id   BigInt
+  user2     User             @relation("UserFriend2", fields: [user2Id], references: [id])
+  user2Id   BigInt
+  status    FriendshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id])
+  @@index([user2Id])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
+model Conversation {
+  id        BigInt   @id
+  isGroup   Boolean  @default(false)
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages     Message[]
+  participants ConversationUser[]
+
+  @@index([isGroup])
+}
+
+model ConversationUser {
+  id                BigInt       @id
+  user              User         @relation(fields: [userId], references: [id])
+  userId            BigInt
+  conversation      Conversation @relation(fields: [conversationId], references: [id])
+  conversationId    BigInt
+  joinedAt          DateTime     @default(now())
+  nickname          String?
+  // last_read points to last message id read by this user in this convo (for unread count)
+  lastReadMessageId BigInt?
+
+  @@unique([userId, conversationId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+  REPLY
+  VOICE
+}
+
+model Message {
+  id             BigInt        @id @default(autoincrement())
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  conversationId BigInt?
+  sender         User          @relation("SentMessages", fields: [senderId], references: [id])
+  senderId       BigInt
+  receiver       User?         @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId     BigInt?
+
+  // محتوى الرسالة الأساسي
+  content String?
+  type    MessageType @default(TEXT)
+
+  // mentions system
+  mentionEveryone Boolean @default(false)
+  mentions        Json? // array of Mention objects
+  mentionRoles    Json? // array of MentionRole objects
+
+  // metadata
+  pinned      Boolean @default(false)
+  reactions   Json? // array of Reaction objects
+  attachments Json? // array of Attachment objects
+
+  // reply system
+  replyTo        BigInt?
+  repliedMessage Message?  @relation("MessageReplies", fields: [replyTo], references: [id])
+  replies        Message[] @relation("MessageReplies")
+
+  // timestamps
+  editedAt  DateTime?
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  receipts MessageReceipt[]
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+model MessageReceipt {
+  id        BigInt   @id
+  message   Message  @relation(fields: [messageId], references: [id])
+  messageId BigInt
+  user      User     @relation(fields: [userId], references: [id])
+  userId    BigInt
+  readAt    DateTime @default(now())
+
+  @@unique([messageId, userId])
+  @@index([userId])
+}
+
+model UserRelation {
+  id        BigInt       @id
+  source    User         @relation("SourceUser", fields: [sourceId], references: [id])
+  sourceId  BigInt
+  target    User         @relation("TargetUser", fields: [targetId], references: [id])
+  targetId  BigInt
+  type      RelationType
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  note      String?
+
+  @@unique([sourceId, targetId, type])
+  @@index([sourceId])
+  @@index([targetId])
+}
+
+enum RelationType {
+  BLOCKED
+  IGNORED
+  MUTED
+}
+
+
+============================================================
+FILE: test/jest-e2e.json
+============================================================
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  }
+}
+
+
+============================================================
+FILE: eslint.config.mjs
+============================================================
+// @ts-check
+import eslint from '@eslint/js';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
+export default tseslint.config(
+  {
+    ignores: ['eslint.config.mjs'],
+  },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  eslintPluginPrettierRecommended,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+      sourceType: 'commonjs',
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn'
+    },
+  },
+);
+
+
+============================================================
+FILE: nest-cli.json
+============================================================
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true
+  }
+}
+
+
+============================================================
+FILE: package.json
+============================================================
+{
+  "name": "discord_clone",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/jwt": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.2.1",
+    "@prisma/client": "^6.17.1",
+    "@sapphire/snowflake": "^3.5.5",
+    "argon2": "^0.44.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "ioredis": "^5.8.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@nestjs/testing": "^11.0.1",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.10.7",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "globals": "^16.0.0",
+    "jest": "^30.0.0",
+    "prettier": "^3.4.2",
+    "prisma": "^6.17.1",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}
+
+
+============================================================
+FILE: README.md
+============================================================
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
+
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
+
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+
+## Description
+
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+
+## Project setup
+
+```bash
+$ npm install
+```
+
+## Compile and run the project
+
+```bash
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+```
+
+## Run tests
+
+```bash
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
+```
+
+## Deployment
+
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+
+```bash
+$ npm install -g @nestjs/mau
+$ mau deploy
+```
+
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+
+## Resources
+
+Check out a few resources that may come in handy when working with NestJS:
+
+- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+
+## Support
+
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
+## Stay in touch
+
+- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
+
+## License
+
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+============================================================
+FILE: tsconfig.build.json
+============================================================
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}
+
+
+============================================================
+FILE: tsconfig.json
+============================================================
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2023",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false
+  }
+}

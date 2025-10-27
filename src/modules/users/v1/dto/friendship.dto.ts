@@ -109,3 +109,14 @@ export class CheckFriendshipDto {
   @IsId()
   userId: string;
 }
+
+export class CancelFriendRequestDto {
+  @ApiProperty({ 
+    description: 'The ID of the friendship request to cancel',
+    example: '123456789012345678'
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsId()
+  friendshipId: string;
+}

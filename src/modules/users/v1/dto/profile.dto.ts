@@ -1,5 +1,6 @@
-import { IsString, IsOptional, MaxLength, MinLength, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, MaxLength, MinLength, IsNotEmpty, IsStrongPassword, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { PresenceStatus } from '../../../../common/presence/presence.types';
 
 export class UpdatePasswordDto {
   @ApiProperty({ 
@@ -8,6 +9,7 @@ export class UpdatePasswordDto {
   })
   @IsString()
   @IsNotEmpty()
+  @IsStrongPassword()
   currentPassword: string;
 
   @ApiProperty({ 
@@ -16,8 +18,7 @@ export class UpdatePasswordDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @MaxLength(128, { message: 'Password must not exceed 128 characters' })
+  @IsStrongPassword()
   newPassword: string;
 }
 
@@ -55,4 +56,17 @@ export class UpdateUsernameDto {
   @MinLength(3, { message: 'Username must be at least 3 characters long' })
   @MaxLength(32, { message: 'Username must not exceed 32 characters' })
   username: string;
+}
+
+export class UpdatePresenceStatusDto {
+  @ApiProperty({ 
+    description: 'Presence status',
+    enum: PresenceStatus,
+    example: PresenceStatus.IDLE
+  })
+  @IsEnum(PresenceStatus, { 
+    message: `Status must be one of: ${Object.values(PresenceStatus).join(', ')}` 
+  })
+  @IsNotEmpty()
+  status: PresenceStatus;
 }

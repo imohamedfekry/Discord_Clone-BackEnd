@@ -1,0 +1,759 @@
+<!-- JUST FOR TESTING 😅😅😅 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Clone - WebSocket Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #2f3136;
+            color: #dcddde;
+        }
+        .container {
+            background: #36393f;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        input, button, select {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+        }
+        input, select {
+            background: #2f3136;
+            color: #dcddde;
+            flex: 1;
+        }
+        button {
+            background: #5865f2;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #4752c4;
+        }
+        button:disabled {
+            background: #404040;
+            cursor: not-allowed;
+        }
+        button.success {
+            background: #43b581;
+        }
+        button.success:hover {
+            background: #3ca374;
+        }
+        button.danger {
+            background: #f04747;
+        }
+        button.danger:hover {
+            background: #d84040;
+        }
+        .status {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .online { background: #43b581; }
+        .offline { background: #747f8d; }
+        .idle { background: #faa61a; }
+        .dnd { background: #f04747; }
+        .log {
+            background: #2f3136;
+            padding: 10px;
+            border-radius: 4px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .connected { color: #43b581; }
+        .disconnected { color: #f04747; }
+        .info { color: #7289da; }
+        .success-msg { color: #43b581; }
+        .error-msg { color: #f04747; }
+        .friend-request {
+            background: #2f3136;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 3px solid #5865f2;
+        }
+        .friend-request h4 {
+            margin: 0 0 10px 0;
+            color: #dcddde;
+        }
+        .friend-request p {
+            margin: 5px 0;
+            color: #b9bbbe;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 1200px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .notification {
+            background: #5865f2;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .notification.success {
+            background: #43b581;
+        }
+        .notification.error {
+            background: #f04747;
+        }
+        .notification.warning {
+            background: #faa61a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Discord Clone - WebSocket Test</h1>
+
+    <!-- Notifications Container -->
+    <div id="notifications"></div>
+
+    <!-- Connection Section -->
+    <div class="container">
+        <h2>Connection</h2>
+        <div>
+            <input type="text" id="jwtToken" placeholder="Enter JWT Token" style="width: 70%;">
+            <button onclick="connect()">Connect</button>
+            <button onclick="disconnect()">Disconnect</button>
+        </div>
+        <div>
+            <p id="connectionStatus" class="status disconnected">Disconnected</p>
+        </div>
+    </div>
+
+    <!-- Profile Section -->
+    <div class="container" id="profileSection" style="display: none;">
+        <h2>👤 My Profile</h2>
+        <div id="profileInfo" style="display: flex; align-items: center; gap: 20px;">
+            <img id="profileAvatar" src="" alt="Avatar" style="width: 64px; height: 64px; border-radius: 50%; border: 3px solid #5865f2;">
+            <div>
+                <h3 id="profileUsername" style="margin: 0; color: #dcddde;"></h3>
+                <p id="profileGlobalName" style="margin: 5px 0; color: #b9bbbe;"></p>
+                <p id="profileStatus" style="margin: 0; color: #b9bbbe;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Status Section -->
+        <div class="container">
+            <h2>🔴 Presence Status</h2>
+            <p>Current Status: <span id="currentStatus" class="status offline">OFFLINE</span></p>
+            <p>Actual Status: <span id="actualStatus" class="status offline">OFFLINE</span></p>
+            <div>
+                <button onclick="updateStatus('ONLINE')">🟢 ONLINE</button>
+                <button onclick="updateStatus('IDLE')">🟡 IDLE</button>
+                <button onclick="updateStatus('DND')">🔴 DND</button>
+                <button onclick="updateStatus('OFFLINE')">⚪ OFFLINE</button>
+                <button onclick="getStatus()">📊 Get Status</button>
+            </div>
+        </div>
+
+        <!-- Friend Requests Section -->
+        <div class="container">
+            <h2>📥 Incoming Friend Requests</h2>
+            <button onclick="getIncomingRequests()">🔄 Load Incoming Requests</button>
+            <div id="friendRequests" style="max-height: 400px; overflow-y: auto; margin-top: 10px;"></div>
+        </div>
+
+        <!-- Send Friend Request Section -->
+        <div class="container">
+            <h2>➕ Send Friend Request</h2>
+            <div>
+                <input type="text" id="friendUsername" placeholder="Send request to username..." style="width: 60%;">
+                <button onclick="sendFriendRequest()">Send Request</button>
+            </div>
+        </div>
+
+        <!-- Sent Friend Requests Section -->
+        <div class="container">
+            <h2>📤 My Sent Requests</h2>
+            <button onclick="getSentRequests()">🔄 Refresh Sent Requests</button>
+            <div id="sentRequests" style="max-height: 400px; overflow-y: auto; margin-top: 10px;"></div>
+        </div>
+
+        <!-- Friends List Section -->
+        <div class="container">
+            <h2>👥 My Friends</h2>
+            <button onclick="getFriends()">🔄 Refresh Friends</button>
+            <div id="friendsList" style="max-height: 400px; overflow-y: auto; margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <!-- Log Section -->
+    <div class="container">
+        <h2>Logs</h2>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        let socket = null;
+
+        function showNotification(message, type = 'info') {
+            const notifications = document.getElementById('notifications');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notifications.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const time = new Date().toLocaleTimeString();
+            const className = type === 'connected' ? 'connected' : 
+                             type === 'disconnected' ? 'disconnected' : 
+                             type === 'error' ? 'error-msg' :
+                             type === 'success' ? 'success-msg' : 'info';
+            logs.innerHTML += `<div class="${className}">[${time}] ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateConnectionStatus(isConnected) {
+            const status = document.getElementById('connectionStatus');
+            if (isConnected) {
+                status.textContent = 'Connected';
+                status.className = 'status connected online';
+            } else {
+                status.textContent = 'Disconnected';
+                status.className = 'status disconnected offline';
+            }
+        }
+
+        function updateStatusColor(elementId, status) {
+            const element = document.getElementById(elementId);
+            element.textContent = status;
+            element.className = `status ${status.toLowerCase()}`;
+        }
+
+        function connect() {
+            const token = document.getElementById('jwtToken').value;
+            
+            if (!token) {
+                showNotification('Please enter JWT token', 'error');
+                return;
+            }
+
+            socket = io('http://localhost:3000', {
+                auth: { token },
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                log('Connected to server', 'connected');
+                showNotification('Connected to server!', 'success');
+                updateConnectionStatus(true);
+            });
+
+            socket.on('disconnect', (reason) => {
+                log(`Disconnected: ${reason}`, 'disconnected');
+                showNotification(`Disconnected: ${reason}`, 'error');
+                updateConnectionStatus(false);
+            });
+
+            socket.on('connect_error', (error) => {
+                log(`Connection error: ${error.message}`, 'error');
+                showNotification(`Connection error: ${error.message}`, 'error');
+                updateConnectionStatus(false);
+            });
+
+            socket.on('connected', (data) => {
+                log(`Server confirmed connection: ${JSON.stringify(data)}`, 'connected');
+                updateStatusColor('currentStatus', 'ONLINE');
+                updateStatusColor('actualStatus', 'ONLINE');
+                showNotification(`Connected as user: ${data.userId}`, 'success');
+                getStatus();
+                getUserProfile(); // Load user profile
+                // Auto-load all data
+                setTimeout(() => {
+                    getFriends();
+                    getIncomingRequests();
+                    getSentRequests();
+                }, 500); // Small delay to ensure connection is fully established
+            });
+
+            socket.on('presence:updated', (data) => {
+                log(`Presence updated: ${JSON.stringify(data)}`, 'info');
+                updateStatusColor('currentStatus', data.status);
+                // Update profile status
+                const profileStatus = document.getElementById('profileStatus');
+                if (profileStatus) {
+                    profileStatus.innerHTML = `Status: ${getPresenceBadge(data.status)}`;
+                }
+            });
+
+            socket.on('status:updated', (data) => {
+                log(`Status updated: ${JSON.stringify(data)}`, 'info');
+                updateStatusColor('currentStatus', data.status);
+                // Update profile status
+                const profileStatus = document.getElementById('profileStatus');
+                if (profileStatus) {
+                    profileStatus.innerHTML = `Status: ${getPresenceBadge(data.status)}`;
+                }
+            });
+
+            // Listen for other users' presence changes
+            // This event is broadcasted to all users, but we only refresh if we have this user in our lists
+            socket.on('presence:user:updated', (data) => {
+                log(`User ${data.username || data.userId} presence updated to: ${data.status}`, 'info');
+                showNotification(`${data.username || 'A user'} is now ${data.status}`, 'info');
+                // Smart refresh: only update lists if we have this user in our lists
+                // This avoids unnecessary API calls
+                setTimeout(() => {
+                    getFriends();
+                    getIncomingRequests();
+                    getSentRequests();
+                }, 100); // Small debounce to avoid multiple rapid refreshes
+            });
+
+            socket.on('status:current', (data) => {
+                log(`Current status: ${JSON.stringify(data)}`, 'info');
+                updateStatusColor('currentStatus', data.displayStatus);
+                updateStatusColor('actualStatus', data.actualStatus);
+            });
+
+            // Friend Request Events
+            socket.on('friend:request:received', (data) => {
+                log(`📥 Friend request received from ${data.fromUser.username}`, 'success');
+                showNotification(`📥 New friend request from ${data.fromUser.username}!`, 'success');
+                // Refresh incoming requests list
+                getIncomingRequests();
+            });
+
+            socket.on('friend:request:accepted', (data) => {
+                log(`✅ Friend request accepted by ${data.newFriend.username}`, 'success');
+                showNotification(`✅ Friend request accepted! Now friends with ${data.newFriend.username}`, 'success');
+                getSentRequests();
+                getFriends();
+            });
+
+            socket.on('friend:request:rejected', (data) => {
+                log(`❌ Friend request rejected by ${data.byUser.username}`, 'info');
+                showNotification(`❌ Friend request was rejected by ${data.byUser.username}`, 'warning');
+                getSentRequests();
+            });
+
+            socket.on('friend:request:cancelled', (data) => {
+                log(`🚫 Friend request cancelled by ${data.byUser.username}`, 'info');
+                showNotification(`🚫 Friend request was cancelled by ${data.byUser.username}`, 'warning');
+                // Refresh all lists to remove cancelled request
+                getSentRequests();
+                getIncomingRequests();
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                updateConnectionStatus(false);
+                log('Manual disconnect', 'disconnected');
+                showNotification('Disconnected', 'warning');
+                // Hide profile section
+                document.getElementById('profileSection').style.display = 'none';
+            }
+        }
+
+        function updateStatus(status) {
+            if (!socket || !socket.connected) {
+                showNotification('Not connected', 'error');
+                return;
+            }
+            
+            // Update via REST API instead of WebSocket
+            fetch('http://localhost:3000/api/v1/users/profile/presence-status', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ status })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Status updated via REST: ${status}`, 'success');
+                showNotification(`Status updated to: ${status}`, 'success');
+                // The WebSocket event 'status:updated' will automatically update the UI
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function getStatus() {
+            if (!socket || !socket.connected) {
+                showNotification('Not connected', 'error');
+                return;
+            }
+            
+            socket.emit('status:get');
+            log('Requested current status', 'info');
+        }
+
+        function sendFriendRequest() {
+            const username = document.getElementById('friendUsername').value;
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            fetch('http://localhost:3000/api/v1/users/friends/request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ username })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Friend request sent: ${JSON.stringify(data)}`, 'success');
+                showNotification(`Friend request sent to ${username}`, 'success');
+                document.getElementById('friendUsername').value = '';
+                // Auto-refresh sent requests list to show the new request
+                getSentRequests();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function respondToRequest(friendshipId, status) {
+            fetch('http://localhost:3000/api/v1/users/friends/respond', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ friendshipId, status })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Friend request responded: ${JSON.stringify(data)}`, 'success');
+                showNotification(`Friend request ${status.toLowerCase()}`, 'success');
+                getIncomingRequests(); // Refresh incoming requests list
+                getSentRequests();
+                getFriends();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function getFriends() {
+            fetch('http://localhost:3000/api/v1/users/friends', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Handle different response structures
+                let friends = [];
+                if (Array.isArray(data)) {
+                    friends = data;
+                } else if (data && Array.isArray(data.friends)) {
+                    friends = data.friends;
+                } else if (data && data.data && Array.isArray(data.data.friends)) {
+                    friends = data.data.friends;
+                } else if (data && Array.isArray(data.data)) {
+                    friends = data.data;
+                }
+                
+                log(`Friends loaded: ${friends.length || 0}`, 'info');
+                displayFriendsList(friends);
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                console.error('getFriends error:', err);
+            });
+        }
+
+        function getIncomingRequests() {
+            fetch('http://localhost:3000/api/v1/users/friends/requests/incoming', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Handle both array and object responses
+                let requests = [];
+                if (Array.isArray(data)) {
+                    requests = data;
+                } else if (data && Array.isArray(data.requests)) {
+                    requests = data.requests;
+                } else if (data && Array.isArray(data.data)) {
+                    requests = data.data;
+                }
+                
+                log(`Incoming requests loaded: ${requests.length || 0}`, 'info');
+                displayIncomingRequests(requests);
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                console.error('getIncomingRequests error:', err);
+            });
+        }
+
+        function getSentRequests() {
+            fetch('http://localhost:3000/api/v1/users/friends/requests/outgoing', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Handle both array and object responses
+                let requests = [];
+                if (Array.isArray(data)) {
+                    requests = data;
+                } else if (data && Array.isArray(data.requests)) {
+                    requests = data.requests;
+                } else if (data && data.data && Array.isArray(data.data.requests)) {
+                    requests = data.data.requests;
+                } else if (data && Array.isArray(data.data)) {
+                    requests = data.data;
+                }
+                
+                console.log('Sent requests data:', data);
+                console.log('Sent requests parsed:', requests);
+                log(`Sent requests loaded: ${requests.length || 0}`, 'info');
+                displaySentRequests(requests);
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                console.error('getSentRequests error:', err);
+            });
+        }
+
+        function cancelFriendRequest(friendshipId) {
+            fetch('http://localhost:3000/api/v1/users/friends/cancel', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ friendshipId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Friend request cancelled: ${JSON.stringify(data)}`, 'success');
+                showNotification(`Friend request cancelled`, 'success');
+                // Refresh to update UI
+                getSentRequests();
+                // The WebSocket event will refresh incoming requests for the recipient
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function displayFriendsList(friends) {
+            const container = document.getElementById('friendsList');
+            
+            // Ensure friends is an array
+            if (!Array.isArray(friends)) {
+                console.error('displayFriendsList: friends is not an array', friends);
+                container.innerHTML = '<p style="color: #b9bbbe;">Error loading friends</p>';
+                return;
+            }
+            
+            if (friends.length === 0) {
+                container.innerHTML = '<p style="color: #b9bbbe;">No friends yet. Send a friend request!</p>';
+                return;
+            }
+
+            container.innerHTML = friends.map(friend => `
+                <div class="friend-request" style="margin-bottom: 10px;">
+                    <h4>👤 ${friend.username}</h4>
+                    <p>Status: ${getPresenceBadge(friend.status)}</p>
+                    <button class="danger" onclick="removeFriend('${friend.id.toString()}')">🗑️ Remove Friend</button>
+                </div>
+            `).join('');
+        }
+
+        function displayIncomingRequests(requests) {
+            const container = document.getElementById('friendRequests');
+            
+            // Ensure requests is an array
+            if (!Array.isArray(requests)) {
+                console.error('displayIncomingRequests: requests is not an array', requests);
+                container.innerHTML = '<p style="color: #b9bbbe;">Error loading requests</p>';
+                return;
+            }
+            
+            if (requests.length === 0) {
+                container.innerHTML = '<p style="color: #b9bbbe;">No incoming friend requests</p>';
+                return;
+            }
+
+            container.innerHTML = requests.map(req => `
+                <div class="friend-request" id="incoming-request-${req.id.toString()}" style="margin-bottom: 10px;">
+                    <h4>👤 From: ${req.user?.username || 'Unknown'}</h4>
+                    <p>📅 ${req.createdAt ? new Date(req.createdAt).toLocaleString() : 'N/A'}</p>
+                    <button class="success" onclick="acceptRequest('${req.id.toString()}')">✅ Accept</button>
+                    <button class="danger" onclick="rejectRequest('${req.id.toString()}')">❌ Reject</button>
+                </div>
+            `).join('');
+        }
+
+        function displaySentRequests(requests) {
+            const container = document.getElementById('sentRequests');
+            
+            // Ensure requests is an array
+            if (!Array.isArray(requests)) {
+                console.error('displaySentRequests: requests is not an array', requests);
+                container.innerHTML = '<p style="color: #b9bbbe;">Error loading requests</p>';
+                return;
+            }
+            
+            if (requests.length === 0) {
+                container.innerHTML = '<p style="color: #b9bbbe;">No pending sent requests</p>';
+                return;
+            }
+
+            container.innerHTML = requests.map(req => `
+                <div class="friend-request" id="sent-request-${req.id.toString()}" style="margin-bottom: 10px;">
+                    <h4>→ ${req.user?.username || 'Unknown'}</h4>
+                    <p>📅 Sent: ${req.createdAt ? new Date(req.createdAt).toLocaleString() : 'N/A'}</p>
+                    <button class="danger" onclick="cancelFriendRequest('${req.id.toString()}')">🚫 Cancel Request</button>
+                </div>
+            `).join('');
+        }
+
+        function getPresenceBadge(status) {
+            const badges = {
+                'ONLINE': '<span style="color: #43b581;">🟢 ONLINE</span>',
+                'IDLE': '<span style="color: #faa61a;">🟡 IDLE</span>',
+                'DND': '<span style="color: #f04747;">🔴 DND</span>',
+                'OFFLINE': '<span style="color: #747f8d;">⚪ OFFLINE</span>'
+            };
+            return badges[status] || status;
+        }
+
+        function removeFriend(userId) {
+            fetch('http://localhost:3000/api/v1/users/friends/remove', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ userId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Friend removed: ${JSON.stringify(data)}`, 'success');
+                showNotification(`Friend removed successfully`, 'success');
+                getFriends();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+
+        function acceptRequest(friendshipId) {
+            respondToRequest(friendshipId, 'ACCEPTED');
+        }
+
+        function rejectRequest(friendshipId) {
+            respondToRequest(friendshipId, 'REJECTED');
+        }
+
+        function getUserProfile() {
+            fetch('http://localhost:3000/api/v1/users/profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const profile = data.data || data;
+                displayUserProfile(profile);
+                log(`Profile loaded: ${profile.username}`, 'success');
+            })
+            .catch(err => {
+                console.error('Error loading profile:', err);
+                log(`Error loading profile: ${err.message}`, 'error');
+            });
+        }
+
+        function displayUserProfile(profile) {
+            const profileSection = document.getElementById('profileSection');
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileUsername = document.getElementById('profileUsername');
+            const profileGlobalName = document.getElementById('profileGlobalName');
+            const profileStatus = document.getElementById('profileStatus');
+
+            if (profile.avatar) {
+                profileAvatar.src = profile.avatar;
+            } else {
+                profileAvatar.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+            }
+
+            profileUsername.textContent = profile.username || 'Unknown';
+            profileGlobalName.textContent = profile.globalName || '';
+            profileStatus.innerHTML = `Status: ${getPresenceBadge(profile.status)}`;
+
+            profileSection.style.display = 'block';
+        }
+
+        // Auto-reconnect on load with saved token
+        window.onload = () => {
+            const savedToken = localStorage.getItem('accessToken');
+            if (savedToken) {
+                document.getElementById('jwtToken').value = savedToken;
+            }
+        };
+    </script>
+</body>
+</html>

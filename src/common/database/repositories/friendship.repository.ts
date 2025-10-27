@@ -16,6 +16,10 @@ export class FriendshipRepository {
           { user1Id: user2Id, user2Id: user1Id },
         ],
       },
+      include: {
+        user1: true,
+        user2: true,
+      },
     });
   }
 

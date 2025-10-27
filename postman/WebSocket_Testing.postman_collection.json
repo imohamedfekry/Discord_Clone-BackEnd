@@ -1,0 +1,90 @@
+{
+  "info": {
+    "name": "Discord WebSocket API",
+    "description": "WebSocket testing for Discord Clone API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Connect to WebSocket",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Generate WebSocket URL with JWT token",
+              "const baseUrl = 'ws://localhost:3000';",
+              "const token = pm.collectionVariables.get('accessToken');",
+              "",
+              "pm.request.url = baseUrl;",
+              "pm.request.auth = {",
+              "    type: 'jwt',",
+              "    jwt: {",
+              "        token: token",
+              "    }",
+              "};",
+              "",
+              "console.log('Connecting with token:', token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "ws://localhost:3000",
+          "protocol": "ws",
+          "host": ["localhost"],
+          "port": "3000"
+        },
+        "description": "Connect to WebSocket server with JWT authentication"
+      },
+      "response": []
+    },
+    {
+      "name": "Test Connection with Events",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Connection opened', function() {",
+              "    pm.expect(pm.response.code).to.eql(101);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "ws://localhost:3000",
+          "protocol": "ws",
+          "host": ["localhost"],
+          "port": "3000"
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
+

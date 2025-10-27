@@ -29,11 +29,11 @@ export class AuthService {
       username: registerDto.username,
       email: registerDto.email,
       password: registerDto.password,
-      phone: registerDto.phone,
+      // phone: registerDto.phone,
     } as Prisma.UserCreateInput);
 
     // Generate JWT tokens
-    const accessToken = this.jwtHelper.generateToken({ sub: user.id.toString() });
+    const accessToken = this.jwtHelper.generateToken({ sub: user.id.toString(), type: 'access' });
     const refreshToken = this.jwtHelper.generateToken({ sub: user.id.toString(), type: 'refresh' });
 
     return {

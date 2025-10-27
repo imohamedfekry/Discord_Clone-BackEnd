@@ -133,6 +133,44 @@
 							"path": ["users", "profile", "custom-status"]
 						}
 					}
+				},
+				{
+					"name": "Update Charlie Username",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"charlie_updated\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/username",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "username"]
+						}
+					}
+				},
+				{
+					"name": "Update Charlie Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"charlie123456\",\n  \"newPassword\": \"charlie_new_password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/password",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "password"]
+						}
+					}
 				}
 			]
 		},
@@ -215,6 +253,104 @@
 							"raw": "{{baseUrl}}/users/friends",
 							"host": ["{{baseUrl}}"],
 							"path": ["users", "friends"]
+						}
+					}
+				},
+				{
+					"name": "Get Charlie Outgoing Requests",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/outgoing",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "requests", "outgoing"]
+						}
+					}
+				},
+				{
+					"name": "Get Mutual Friends with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/mutual/{{aliceUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "mutual", "{{aliceUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Mutual Friends with Bob",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/mutual/{{bobUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "mutual", "{{bobUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Check Friendship with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/check/{{aliceUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "check", "{{aliceUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Check Friendship with Bob",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/check/{{bobUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "check", "{{bobUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Remove Friend Alice",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{aliceUserId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/remove",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "remove"]
+						}
+					}
+				},
+				{
+					"name": "Remove Friend Bob",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{bobUserId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/remove",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "remove"]
 						}
 					}
 				}

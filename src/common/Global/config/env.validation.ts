@@ -5,8 +5,6 @@ const zodSchema = z.object({
 
   PORT: z.coerce.number().default(3000),
 
-  CORS_ORIGIN: z.string().default('http://localhost:3000'),
-
   JWT_SECRET_ACCESS: z.string().default('your-super-secret-jwt-key-here'),
   JWT_EXPIRES_IN: z.string().default('7d'),
   JWT_SECRET_REFRESH: z.string().default('your-super-secret-refresh-key-here'),

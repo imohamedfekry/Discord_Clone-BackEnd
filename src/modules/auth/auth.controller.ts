@@ -7,6 +7,7 @@ import { RegisterApiDocs, LoginApiDocs } from './decorators/auth-api.decorators'
 @ApiTags('Authentication')
 @Controller({
   path: 'auth',
+  version: '1',
 })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

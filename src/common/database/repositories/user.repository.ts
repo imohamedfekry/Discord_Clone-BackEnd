@@ -39,4 +39,12 @@ export class UserRepository {
     return { ...user, id: user.id.toString() };
   }
 
+  async updateStatus(id: string, status: 'ONLINE' | 'OFFLINE' | 'IDLE' | 'DND') {
+    const user = await this.prisma.user.update({ 
+      where: { id: BigInt(id) }, 
+      data: { status } 
+    });
+    return { ...user, id: user.id.toString() };
+  }
+
 }

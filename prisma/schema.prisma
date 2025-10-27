@@ -17,17 +17,19 @@ enum UserStatus {
 model User {
   id           BigInt     @id
   username     String     @unique
-  globalName   String?     
+  globalName   String?
   email        String?    @unique
   phone        String?    @unique
   password     String
   avatar       String?
+  birthdate    DateTime?
+
   status       UserStatus @default(OFFLINE)
   customStatus String?
   isBot        Boolean    @default(false)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
-
+  
   // relations
   sentMessages     Message[]          @relation("SentMessages")
   receivedMessages Message[]          @relation("ReceivedMessages")

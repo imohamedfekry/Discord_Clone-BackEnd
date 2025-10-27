@@ -14,12 +14,14 @@ import {
   RemoveFriendDto,
   GetFriendsQueryDto,
   GetMutualFriendsDto,
+  CancelFriendRequestDto,
 } from './dto/friendship.dto';
 import {
   UpdatePasswordDto,
   UpdateGlobalNameDto,
   UpdateCustomStatusDto,
   UpdateUsernameDto,
+  UpdatePresenceStatusDto,
 } from './dto/profile.dto';
 import {
   CreateUserRelationDto,
@@ -31,6 +33,11 @@ import {
 } from './dto/user-relation.dto';
 import { FriendshipStatus } from '@prisma/client';
 import { UserRepository } from 'src/common/database/repositories';
+import { verifyHash } from 'src/common/Global/security/hash.helper';
+import { WebSocketGatewayService } from '../../websocket/User/websocket.gateway';
+import { FriendshipNotifierService } from '../../websocket/User/friends/friendship-notifier.service';
+import { PresenceStatusService } from '../../websocket/User/services/presence-status.service';
+import { FriendsCacheService } from '../../../common/Global/cache/User/friends-cache.service';
 
 @Injectable()
 export class UsersService {
@@ -38,6 +45,10 @@ export class UsersService {
     private readonly userRepository: UserRepository,
     private readonly friendshipRepository: FriendshipRepository,
     private readonly userRelationRepository: UserRelationRepository,
+    private readonly websocketGatewayService: WebSocketGatewayService,
+    private readonly friendshipNotifier: FriendshipNotifierService,
+    private readonly presenceStatusService: PresenceStatusService,
+    private readonly friendsCache: FriendsCacheService,
   ) {}
 
   // ==================== PROFILE MANAGEMENT ====================
@@ -71,17 +82,13 @@ export class UsersService {
 
     // Verify current password (you'll need to implement password verification)
     // For now, we'll assume there's a password verification method
-    // const isCurrentPasswordValid = await this.verifyPassword(dto.currentPassword, currentUser.password);
-    // if (!isCurrentPasswordValid) {
-    //   throw new BadRequestException('Current password is incorrect');
-    // }
-
-    // Hash new password (you'll need to implement password hashing)
-    // const hashedNewPassword = await this.hashPassword(dto.newPassword);
-
+    const isCurrentPasswordValid : boolean = await verifyHash(dto.currentPassword, currentUser.password);
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
     // Update password
     const updatedUser = await this.userRepository.update(user.id.toString(), {
-      password: dto.newPassword, // In real implementation, use hashedNewPassword
+      password: dto.newPassword, 
     });
 
     return {
@@ -141,6 +148,46 @@ export class UsersService {
     };
   }
 
+  /**
+   * Update presence status
+   * Updates the database and broadcasts to WebSocket listeners
+   */
+  async updatePresenceStatus(user: User, dto: UpdatePresenceStatusDto) {
+    // Update status in database
+    const updatedUser = await this.userRepository.update(user.id.toString(), {
+      status: dto.status,
+    });
+
+    // Update display status in Redis
+    await this.presenceStatusService.setDisplayStatus(user.id.toString(), dto.status);
+
+    // Broadcast to user's room via WebSocket (all their devices)
+    this.websocketGatewayService.sendToUser(user.id.toString(), 'status:updated', {
+      userId: user.id.toString(),
+      status: dto.status,
+      timestamp: new Date(),
+    });
+
+    // Get friends list from cache (much faster than DB query)
+    const friendsIds = await this.friendsCache.getFriends(user.id.toString());
+    
+    // Broadcast to only the user's friends (not all connected users)
+    // This is more efficient and privacy-conscious
+    friendsIds.forEach(friendId => {
+      this.websocketGatewayService.sendToUser(friendId, 'presence:user:updated', {
+        userId: user.id.toString(),
+        username: user.username,
+        status: dto.status,
+        timestamp: new Date(),
+      });
+    });
+
+    return {
+      status: updatedUser.status,
+      message: 'Presence status updated successfully',
+      updatedAt: updatedUser.updatedAt,
+    };
+  }
 
   // ==================== FRIENDSHIP MANAGEMENT ====================
   /**
@@ -229,6 +276,17 @@ export class UsersService {
       status: FriendshipStatus.PENDING,
     });
 
+    // Notify target user via WebSocket
+    this.friendshipNotifier.notifyFriendRequestReceived(targetUser.id, {
+      friendshipId: friendship.id,
+      fromUser: {
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
+      },
+      status: friendship.status,
+    });
+
     return {
       id: friendship.id,
       status: friendship.status,
@@ -250,8 +308,18 @@ export class UsersService {
     if (!friendship) {
       throw new NotFoundException('Friend request not found');
     }
-    if (friendship.user1Id !== user.id && friendship.status !== FriendshipStatus.PENDING) {
+    
+    // Validate that current user is the recipient and status is PENDING
+    if (friendship.user2Id !== user.id || friendship.status !== FriendshipStatus.PENDING) {
       throw new NotFoundException('Friend request not found');
+    }
+
+    // Get sender info for notifications
+    const senderId = friendship.user1Id;
+    const senderInfo = await this.userRepository.findById(senderId.toString());
+    
+    if (!senderInfo) {
+      throw new NotFoundException('Sender not found');
     }
 
     // If REJECTED, delete the friendship
@@ -260,6 +328,20 @@ export class UsersService {
         friendship.user1Id,
         friendship.user2Id,
       );
+      
+      // Notify the sender that request was rejected
+      this.friendshipNotifier.notifyFriendRequestRejected(
+        friendship.user1Id.toString(),
+        {
+          friendshipId: dto.friendshipId,
+          byUser: {
+            id: user.id,
+            username: user.username,
+            avatar: user.avatar,
+          },
+        }
+      );
+      
       return { message: 'Friend request rejected successfully' };
     }
 
@@ -268,11 +350,90 @@ export class UsersService {
       friendship.id,
       FriendshipStatus.ACCEPTED,
     );
+    
+    // Update Redis cache - add each other as friends
+    await this.friendsCache.addFriend(user.id.toString(), senderInfo.id.toString());
+    
+    // Notify both users that friendship was accepted
+    this.friendshipNotifier.notifyFriendRequestAccepted(
+      friendship.user1Id.toString(),
+      {
+        friendshipId: acceptedFriendship.id,
+        newFriend: {
+          id: user.id,
+          username: user.username,
+          avatar: user.avatar,
+        },
+        status: acceptedFriendship.status,
+      }
+    );
+    
+    this.friendshipNotifier.notifyFriendRequestAccepted(
+      user.id.toString(),
+      {
+        friendshipId: acceptedFriendship.id,
+        newFriend: {
+          id: senderInfo.id,
+          username: senderInfo.username,
+          avatar: senderInfo.avatar,
+        },
+        status: acceptedFriendship.status,
+      }
+    );
+    
     return {
       id: acceptedFriendship.id,
       status: acceptedFriendship.status,
       createdAt: acceptedFriendship.createdAt,
       message: 'Friend request accepted successfully',
+    };
+  }
+
+  /**
+   * Cancel friend request (before it's responded to)
+   * Only the sender can cancel their outgoing friend request
+   */
+  async cancelFriendRequest(user: User, dto: CancelFriendRequestDto) {
+    // Find the friendship
+    const friendship = await this.friendshipRepository.findById(dto.friendshipId);
+    if (!friendship) {
+      throw new NotFoundException('Friend request not found');
+    }
+
+    // Validate that current user is the sender and status is PENDING
+    if (friendship.user1Id !== user.id || friendship.status !== FriendshipStatus.PENDING) {
+      throw new NotFoundException('Friend request not found or cannot be cancelled');
+    }
+
+    // Get recipient info for notification
+    const recipientInfo = await this.userRepository.findById(friendship.user2Id.toString());
+    
+    if (!recipientInfo) {
+      throw new NotFoundException('Recipient not found');
+    }
+
+    // Delete the friend request
+    await this.friendshipRepository.deleteByUserIds(
+      friendship.user1Id,
+      friendship.user2Id,
+    );
+
+    // Notify the recipient that request was cancelled
+    this.friendshipNotifier.notifyFriendRequestCancelled(
+      recipientInfo.id,
+      {
+        friendshipId: dto.friendshipId,
+        byUser: {
+          id: user.id,
+          username: user.username,
+          avatar: user.avatar,
+        },
+      }
+    );
+
+    return { 
+      message: 'Friend request cancelled successfully',
+      friendshipId: dto.friendshipId,
     };
   }
 
@@ -301,11 +462,15 @@ export class UsersService {
       BigInt(dto.userId),
     );
 
+    // Update Redis cache - remove from each other's friends list
+    await this.friendsCache.removeFriend(user.id.toString(), dto.userId);
+
     return { message: 'Friend removed successfully' };
   }
 
   /**
    * Get friends list
+   * Uses cache-first strategy: check Redis cache first, then database
    */
   async getFriends(user: User, query: GetFriendsQueryDto) {
     const status = query.status || FriendshipStatus.ACCEPTED;
@@ -329,7 +494,7 @@ export class UsersService {
         username: friend.username,
         avatar: friend.avatar,
         friendshipId: friendship.id,
-        status: friendship.status,
+        status: friend.status, // User's presence status
         createdAt: friendship.createdAt,
         // SECURITY: Removed email - too sensitive for friends list
       };

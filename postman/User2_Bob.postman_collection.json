@@ -133,6 +133,44 @@
 							"path": ["users", "profile", "custom-status"]
 						}
 					}
+				},
+				{
+					"name": "Update Bob Username",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"bob_updated\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/username",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "username"]
+						}
+					}
+				},
+				{
+					"name": "Update Bob Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"bob123456\",\n  \"newPassword\": \"bob_new_password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile/password",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "profile", "password"]
+						}
+					}
 				}
 			]
 		},
@@ -215,6 +253,61 @@
 							"raw": "{{baseUrl}}/users/friends",
 							"host": ["{{baseUrl}}"],
 							"path": ["users", "friends"]
+						}
+					}
+				},
+				{
+					"name": "Get Bob Outgoing Requests",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/requests/outgoing",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "requests", "outgoing"]
+						}
+					}
+				},
+				{
+					"name": "Get Mutual Friends with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/mutual/{{aliceUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "mutual", "{{aliceUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Check Friendship with Alice",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "{{accessToken}}"}],
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/check/{{aliceUserId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "check", "{{aliceUserId}}"]
+						}
+					}
+				},
+				{
+					"name": "Remove Friend Alice",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "{{accessToken}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{aliceUserId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/friends/remove",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "friends", "remove"]
 						}
 					}
 				}
