@@ -2,7 +2,7 @@
 
 export interface ApiResponse<T = any> {
   status: 'success' | 'fail' | 'error';
-  code: number;
+  code: string; // e.g., 'USER_CREATED', 'LOGIN_SUCCESS'
   message: string;
   data?: T;
   timestamp?: string;
@@ -36,7 +36,7 @@ export interface ValidationError {
 
 export interface ErrorResponse {
   status: 'fail' | 'error';
-  code: number;
+  code: string;
   message: string;
   errors?: ValidationError[];
   timestamp: string;

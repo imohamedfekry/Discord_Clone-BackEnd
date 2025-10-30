@@ -37,7 +37,7 @@ export class AuthGuard implements CanActivate {
         }
         
         // Extract, verify token and get user in one step
-        const user = await this.jwtHelper.extractAndVerifyUser(token);
+        const user = await this.jwtHelper.VerifyAndGetUser(token);
         
         if (!user) {
             throw new UnauthorizedException('Forbidden resource. Invalid or missing token');

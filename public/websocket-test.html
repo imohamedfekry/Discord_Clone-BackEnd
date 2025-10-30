@@ -7,223 +7,901 @@
     <title>Discord Clone - WebSocket Test</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 1400px;
-            margin: 50px auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #36393f;
+            color: #dcddde;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 240px;
+            background: #2f3136;
+            border-right: 1px solid #202225;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #202225;
+            background: #2f3136;
+        }
+        
+        .sidebar-header h1 {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 10px 0;
+            overflow-y: auto;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 20px;
+            color: #b9bbbe;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 0 20px 20px 0;
+            margin-right: 10px;
+        }
+        
+        .nav-item:hover {
+            background: #3c3f44;
+            color: #ffffff;
+        }
+        
+        .nav-item.active {
+            background: #5865f2;
+            color: #ffffff;
+        }
+        
+        .nav-item .icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #36393f;
+        }
+        
+        .main-header {
+            background: #2f3136;
+            padding: 20px;
+            border-bottom: 1px solid #202225;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .main-header h2 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f04747;
+        }
+        
+        .status-indicator.connected {
+            background: #43b581;
+        }
+        
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #36393f;
+        }
+        
+        .section {
+            background: #2f3136;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #202225;
+        }
+        
+        .section-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #202225;
+            background: #2f3136;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .section-header h3 {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .section-content {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .form-row input,
+        .form-row select {
+            flex: 1;
+            padding: 10px 12px;
+            background: #40444b;
+            border: 1px solid #202225;
+            border-radius: 4px;
+            color: #dcddde;
+            font-size: 14px;
+        }
+        
+        .form-row input:focus,
+        .form-row select:focus {
+            outline: none;
+            border-color: #5865f2;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background: #5865f2;
+            color: #ffffff;
+        }
+        
+        .btn-primary:hover {
+            background: #4752c4;
+        }
+        
+        .btn-success {
+            background: #43b581;
+            color: #ffffff;
+        }
+        
+        .btn-success:hover {
+            background: #3ca374;
+        }
+        
+        .btn-danger {
+            background: #f04747;
+            color: #ffffff;
+        }
+        
+        .btn-danger:hover {
+            background: #d84040;
+        }
+        
+        .btn-secondary {
+            background: #4f545c;
+            color: #ffffff;
+        }
+        
+        .btn-secondary:hover {
+            background: #5d6269;
+        }
+        
+        .btn:disabled {
+            background: #404040;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-online {
+            background: rgba(67, 181, 129, 0.2);
+            color: #43b581;
+        }
+        
+        .status-offline {
+            background: rgba(116, 127, 141, 0.2);
+            color: #747f8d;
+        }
+        
+        .status-idle {
+            background: rgba(250, 166, 26, 0.2);
+            color: #faa61a;
+        }
+        
+        .status-dnd {
+            background: rgba(240, 71, 71, 0.2);
+            color: #f04747;
+        }
+        
+        .user-card {
+            background: #40444b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #202225;
+            transition: all 0.2s ease;
+        }
+        
+        .user-card:hover {
+            background: #4f545c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 18px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .user-details {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .user-details h4 {
+            color: #ffffff;
+            font-size: 16px;
+            margin-bottom: 4px;
+            word-wrap: break-word;
+        }
+        
+        .user-stats {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #202225;
+        }
+        
+        .user-stats p {
+            color: #b9bbbe;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .user-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .user-card h4 {
+            color: #ffffff;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .user-card p {
+            color: #b9bbbe;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .user-card .actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
             padding: 20px;
             background: #2f3136;
-            color: #dcddde;
-        }
-        .container {
-            background: #36393f;
-            padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
-        input, button, select {
-            padding: 10px;
-            margin: 5px;
-            border: none;
-            border-radius: 4px;
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #5865f2;
         }
-        input, select {
+        
+        .profile-info h3 {
+            color: #ffffff;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .profile-info p {
+            color: #b9bbbe;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .profile-info .custom-status {
+            color: #7289da;
+            font-style: italic;
+            font-size: 14px;
+        }
+        
+        .log-container {
             background: #2f3136;
-            color: #dcddde;
-            flex: 1;
-        }
-        button {
-            background: #5865f2;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #4752c4;
-        }
-        button:disabled {
-            background: #404040;
-            cursor: not-allowed;
-        }
-        button.success {
-            background: #43b581;
-        }
-        button.success:hover {
-            background: #3ca374;
-        }
-        button.danger {
-            background: #f04747;
-        }
-        button.danger:hover {
-            background: #d84040;
-        }
-        .status {
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .online { background: #43b581; }
-        .offline { background: #747f8d; }
-        .idle { background: #faa61a; }
-        .dnd { background: #f04747; }
-        .log {
-            background: #2f3136;
-            padding: 10px;
-            border-radius: 4px;
+            border-radius: 8px;
+            border: 1px solid #202225;
             height: 300px;
             overflow-y: auto;
-            font-family: monospace;
+            font-family: 'Consolas', 'Monaco', monospace;
             font-size: 12px;
+            padding: 16px;
         }
-        .connected { color: #43b581; }
-        .disconnected { color: #f04747; }
-        .info { color: #7289da; }
-        .success-msg { color: #43b581; }
-        .error-msg { color: #f04747; }
-        .friend-request {
-            background: #2f3136;
-            padding: 15px;
-            margin: 10px 0;
+        
+        .log-entry {
+            margin-bottom: 4px;
+            padding: 2px 0;
+        }
+        
+        .log-connected { color: #43b581; }
+        .log-disconnected { color: #f04747; }
+        .log-info { color: #7289da; }
+        .log-success { color: #43b581; }
+        .log-error { color: #f04747; }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 16px;
             border-radius: 8px;
-            border-left: 3px solid #5865f2;
+            color: #ffffff;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 300px;
         }
-        .friend-request h4 {
-            margin: 0 0 10px 0;
-            color: #dcddde;
+        
+        .notification.success {
+            background: #43b581;
         }
-        .friend-request p {
-            margin: 5px 0;
-            color: #b9bbbe;
+        
+        .notification.error {
+            background: #f04747;
         }
-        .grid {
+        
+        .notification.warning {
+            background: #faa61a;
+        }
+        
+        .notification.info {
+            background: #5865f2;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .grid-3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 20px;
         }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .stat-card {
+            background: #40444b;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #202225;
+        }
+        
+        .stat-card h4 {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .stat-card p {
+            color: #b9bbbe;
+            font-size: 14px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
         @media (max-width: 1200px) {
-            .grid {
+            .grid-3 {
                 grid-template-columns: 1fr 1fr;
             }
         }
+        
         @media (max-width: 768px) {
-            .grid {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .grid-2,
+            .grid-3 {
                 grid-template-columns: 1fr;
             }
-        }
-        .notification {
-            background: #5865f2;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .notification.success {
-            background: #43b581;
-        }
-        .notification.error {
-            background: #f04747;
-        }
-        .notification.warning {
-            background: #faa61a;
         }
     </style>
 </head>
 <body>
-    <h1>Discord Clone - WebSocket Test</h1>
-
     <!-- Notifications Container -->
     <div id="notifications"></div>
 
-    <!-- Connection Section -->
-    <div class="container">
-        <h2>Connection</h2>
-        <div>
-            <input type="text" id="jwtToken" placeholder="Enter JWT Token" style="width: 70%;">
-            <button onclick="connect()">Connect</button>
-            <button onclick="disconnect()">Disconnect</button>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>Discord Clone Test</h1>
+            </div>
+            <div class="sidebar-nav">
+                <div class="nav-item active" onclick="showSection('connection')">
+                    <span class="icon">🔌</span>
+                    <span>Connection</span>
+                </div>
+                <div class="nav-item" onclick="showSection('profile')">
+                    <span class="icon">👤</span>
+                    <span>Profile</span>
+                </div>
+                <div class="nav-item" onclick="showSection('presence')">
+                    <span class="icon">🔴</span>
+                    <span>Presence</span>
+                </div>
+                <div class="nav-item" onclick="showSection('friends')">
+                    <span class="icon">👥</span>
+                    <span>Friends</span>
+                </div>
+                <div class="nav-item" onclick="showSection('relations')">
+                    <span class="icon">🚫</span>
+                    <span>Relations</span>
+                </div>
+                <div class="nav-item" onclick="showSection('search')">
+                    <span class="icon">🔍</span>
+                    <span>Search</span>
+                </div>
+                <div class="nav-item" onclick="showSection('stats')">
+                    <span class="icon">📊</span>
+                    <span>Statistics</span>
+                </div>
+                <div class="nav-item" onclick="showSection('logs')">
+                    <span class="icon">📝</span>
+                    <span>Logs</span>
+                </div>
+            </div>
         </div>
-        <div>
-            <p id="connectionStatus" class="status disconnected">Disconnected</p>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="main-header">
+                <h2 id="mainTitle">Connection</h2>
+                <div class="connection-status">
+                    <div class="status-indicator" id="connectionIndicator"></div>
+                    <span id="connectionStatus">Disconnected</span>
+                </div>
+            </div>
+            
+            <div class="content-area">
+    <!-- Connection Section -->
+                <div id="connection-section" class="section">
+                    <div class="section-header">
+                        <h3>🔌 WebSocket Connection</h3>
+        </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <input type="text" id="jwtToken" placeholder="Enter JWT Token" style="flex: 2;">
+                                <button class="btn btn-primary" onclick="connect()">🔌 Connect</button>
+                                <button class="btn btn-danger" onclick="disconnect()">🚫 Disconnect</button>
+                            </div>
+                            <div class="form-row" style="margin-top: 8px; justify-content: flex-start;">
+                                <button class="btn btn-secondary" onclick="saveToken()" style="font-size: 12px; padding: 6px 12px;">💾 Save Token</button>
+                                <button class="btn btn-secondary" onclick="clearSavedToken()" style="font-size: 12px; padding: 6px 12px;">🗑️ Clear Saved</button>
+                                <small style="color: #747f8d; margin-left: 12px; align-self: center;">Token is auto-saved on successful connection</small>
+                            </div>
+                        </div>
         </div>
     </div>
 
     <!-- Profile Section -->
-    <div class="container" id="profileSection" style="display: none;">
-        <h2>👤 My Profile</h2>
-        <div id="profileInfo" style="display: flex; align-items: center; gap: 20px;">
-            <img id="profileAvatar" src="" alt="Avatar" style="width: 64px; height: 64px; border-radius: 50%; border: 3px solid #5865f2;">
-            <div>
-                <h3 id="profileUsername" style="margin: 0; color: #dcddde;"></h3>
-                <p id="profileGlobalName" style="margin: 5px 0; color: #b9bbbe;"></p>
-                <p id="profileStatus" style="margin: 0; color: #b9bbbe;"></p>
+                <div id="profile-section" class="section hidden">
+                    <div class="section-header">
+                        <h3>👤 My Profile</h3>
             </div>
+                    <div class="section-content">
+                        <div id="profileSection" class="profile-section hidden">
+                            <img id="profileAvatar" src="" alt="Avatar" class="profile-avatar">
+                            <div class="profile-info">
+                                <h3 id="profileUsername"></h3>
+                                <p id="profileglobalname" style="color: #b9bbbe; margin: 4px 0;"></p>
+                                <div id="profileStatus" style="margin: 8px 0;"></div>
+                                <div id="profileCustomStatusContainer" style="margin: 8px 0;">
+                                    <p style="color: #7289da; font-style: italic; font-size: 14px;" id="profileCustomStatus"></p>
+                                </div>
+                                <div style="margin-top: 12px; display: flex; gap: 8px;">
+                                    <button class="btn btn-secondary" onclick="updateCustomStatus()">✏️ Update Custom Status</button>
+                                    <button class="btn btn-primary" onclick="getUserProfile()">🔄 Refresh Profile</button>
+                                </div>
         </div>
     </div>
 
-    <div class="grid">
-        <!-- Status Section -->
-        <div class="container">
-            <h2>🔴 Presence Status</h2>
-            <p>Current Status: <span id="currentStatus" class="status offline">OFFLINE</span></p>
-            <p>Actual Status: <span id="actualStatus" class="status offline">OFFLINE</span></p>
-            <div>
-                <button onclick="updateStatus('ONLINE')">🟢 ONLINE</button>
-                <button onclick="updateStatus('IDLE')">🟡 IDLE</button>
-                <button onclick="updateStatus('DND')">🔴 DND</button>
-                <button onclick="updateStatus('OFFLINE')">⚪ OFFLINE</button>
-                <button onclick="getStatus()">📊 Get Status</button>
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">Profile Management</h4>
+                            <div class="form-row">
+                                <input type="text" id="newglobalname" placeholder="New Global Name">
+                                <button class="btn btn-primary" onclick="updateglobalname()">✏️ Update Global Name</button>
+                            </div>
+                            <div class="form-row">
+                                <input type="text" id="newUsername" placeholder="New Username">
+                                <button class="btn btn-primary" onclick="updateUsername()">👤 Update Username</button>
+                            </div>
+                            <div class="form-row">
+                                <input type="password" id="currentPassword" placeholder="Current Password">
+                                <input type="password" id="newPassword" placeholder="New Password">
+                                <input type="password" id="confirmPassword" placeholder="Confirm Password">
+                                <button class="btn btn-danger" onclick="updatePassword()">🔒 Update Password</button>
+                            </div>
+                        </div>
             </div>
         </div>
 
-        <!-- Friend Requests Section -->
-        <div class="container">
-            <h2>📥 Incoming Friend Requests</h2>
-            <button onclick="getIncomingRequests()">🔄 Load Incoming Requests</button>
-            <div id="friendRequests" style="max-height: 400px; overflow-y: auto; margin-top: 10px;"></div>
+                <!-- Presence Section -->
+                <div id="presence-section" class="section hidden">
+                    <div class="section-header">
+                        <h3>🔴 Presence Status</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <span class="status-badge status-offline" id="currentStatus">OFFLINE</span>
+                                <span class="status-badge status-offline" id="actualStatus">OFFLINE</span>
+                            </div>
+                            <div class="form-row">
+                                <button class="btn btn-success" onclick="updateStatus('ONLINE')">🟢 ONLINE</button>
+                                <button class="btn btn-secondary" onclick="updateStatus('IDLE')">🟡 IDLE</button>
+                                <button class="btn btn-danger" onclick="updateStatus('DND')">🔴 DND</button>
+                                <button class="btn btn-secondary" onclick="updateStatus('OFFLINE')">⚪ OFFLINE</button>
+                                <button class="btn btn-primary" onclick="getStatus()">📊 Get Status</button>
+                            </div>
+                            <div style="margin-top: 16px; padding: 12px; background: #40444b; border-radius: 4px; border-left: 3px solid #5865f2;">
+                                <h5 style="color: #ffffff; margin-bottom: 8px; font-size: 14px;">📊 Status Information</h5>
+                                <div style="color: #b9bbbe; font-size: 12px; line-height: 1.6;">
+                                    <p><strong>🔴 Display Status (Current):</strong> User's chosen presence status shown to others (ONLINE/IDLE/DND/OFFLINE)</p>
+                                    <p><strong>🔌 Connection Status:</strong> Actual WebSocket connection state (ONLINE/OFFLINE)</p>
+                                    <p style="margin-top: 8px; color: #7289da; font-style: italic;">
+                                        💡 Tip: Display status is separate from connection status. You can set your status to IDLE or DND even when online.
+                                    </p>
+                                </div>
+                            </div>
+                            <div id="statusInfo" style="margin-top: 12px; padding: 10px; background: #2f3136; border-radius: 4px; display: none;">
+                                <p style="color: #b9bbbe; font-size: 12px;" id="statusInfoText"></p>
+                            </div>
+                        </div>
+                    </div>
         </div>
 
-        <!-- Send Friend Request Section -->
-        <div class="container">
-            <h2>➕ Send Friend Request</h2>
-            <div>
-                <input type="text" id="friendUsername" placeholder="Send request to username..." style="width: 60%;">
-                <button onclick="sendFriendRequest()">Send Request</button>
+                <!-- Friends Section -->
+                <div id="friends-section" class="section hidden">
+                    <div class="section-header">
+                        <h3>👥 Friends Management</h3>
             </div>
+                    <div class="section-content">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <h4 style="color: #ffffff; margin-bottom: 16px;">📥 Incoming Requests</h4>
+                                <button class="btn btn-primary" onclick="getIncomingRequests()">🔄 Load Requests</button>
+                                <div id="friendRequests" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
         </div>
 
-        <!-- Sent Friend Requests Section -->
-        <div class="container">
-            <h2>📤 My Sent Requests</h2>
-            <button onclick="getSentRequests()">🔄 Refresh Sent Requests</button>
-            <div id="sentRequests" style="max-height: 400px; overflow-y: auto; margin-top: 10px;"></div>
+                            <div class="form-group">
+                                <h4 style="color: #ffffff; margin-bottom: 16px;">📤 Sent Requests</h4>
+                                <button class="btn btn-primary" onclick="getSentRequests()">🔄 Refresh Sent</button>
+                                <div id="sentRequests" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
+                            </div>
         </div>
 
-        <!-- Friends List Section -->
-        <div class="container">
-            <h2>👥 My Friends</h2>
-            <button onclick="getFriends()">🔄 Refresh Friends</button>
-            <div id="friendsList" style="max-height: 400px; overflow-y: auto; margin-top: 10px;"></div>
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">➕ Send Friend Request</h4>
+                            <div class="form-row">
+                                <input type="text" id="friendUsername" placeholder="Send request to username">
+                                <button class="btn btn-success" onclick="sendFriendRequest()">Send Request</button>
         </div>
     </div>
 
-    <!-- Log Section -->
-    <div class="container">
-        <h2>Logs</h2>
-        <div id="logs" class="log"></div>
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">👥 My Friends</h4>
+                            <button class="btn btn-primary" onclick="getFriends()">🔄 Refresh Friends</button>
+                            <div id="friendsList" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">🤝 Mutual Friends</h4>
+                            <div class="form-row">
+                                <input type="text" id="mutualFriendUsername" placeholder="Check mutual friends with">
+                                <button class="btn btn-primary" onclick="getMutualFriends()">🤝 Get Mutual</button>
+                            </div>
+                            <div id="mutualFriendsList" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">🔍 Friendship Check</h4>
+                            <div class="form-row">
+                                <input type="text" id="checkFriendshipUsername" placeholder="Check friendship with">
+                                <button class="btn btn-primary" onclick="checkFriendship()">🔍 Check</button>
+                            </div>
+                            <div id="friendshipCheckResult" style="margin-top: 10px; padding: 10px; background: #40444b; border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Relations Section -->
+                <div id="relations-section" class="section hidden">
+                    <div class="section-header">
+                        <h3>🚫 User Relations</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">➕ Create Relations</h4>
+                            <div class="form-row">
+                                <input type="text" id="relationUsername" placeholder="Username to manage">
+                                <button class="btn btn-danger" onclick="blockUser()">🚫 Block</button>
+                                <button class="btn btn-secondary" onclick="ignoreUser()">👁️ Ignore</button>
+                                <button class="btn btn-secondary" onclick="muteUser()">🔇 Mute</button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <h4 style="color: #ffffff; margin-bottom: 16px;">🚫 Blocked Users</h4>
+                                <button class="btn btn-primary" onclick="getBlockedUsers()">🔄 Load Blocked</button>
+                                <div id="relationsList" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <h4 style="color: #ffffff; margin-bottom: 16px;">👁️ Ignored Users</h4>
+                                <button class="btn btn-primary" onclick="getIgnoredUsers()">🔄 Load Ignored</button>
+                            </div>
+                            
+                            <div class="form-group">
+                                <h4 style="color: #ffffff; margin-bottom: 16px;">🔇 Muted Users</h4>
+                                <button class="btn btn-primary" onclick="getMutedUsers()">🔄 Load Muted</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">🔄 Update Relations</h4>
+                            <div class="form-row">
+                                <input type="text" id="updateRelationUsername" placeholder="Username">
+                                <select id="updateRelationType">
+                                    <option value="BLOCKED">🚫 Blocked</option>
+                                    <option value="IGNORED">👁️ Ignored</option>
+                                    <option value="MUTED">🔇 Muted</option>
+                                </select>
+                                <input type="text" id="updateRelationNote" placeholder="Note">
+                                <button class="btn btn-primary" onclick="updateRelation()">🔄 Update</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">🗑️ Remove Relations</h4>
+                            <div class="form-row">
+                                <input type="text" id="removeRelationUsername" placeholder="Username">
+                                <select id="removeRelationType">
+                                    <option value="BLOCKED">🚫 Blocked</option>
+                                    <option value="IGNORED">👁️ Ignored</option>
+                                    <option value="MUTED">🔇 Muted</option>
+                                </select>
+                                <button class="btn btn-danger" onclick="removeRelation()">🗑️ Remove</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">📝 Update Notes</h4>
+                            <div class="form-row">
+                                <input type="text" id="noteUpdateUsername" placeholder="Username">
+                                <select id="noteRelationType">
+                                    <option value="BLOCKED">🚫 Blocked</option>
+                                    <option value="IGNORED">👁️ Ignored</option>
+                                    <option value="MUTED">🔇 Muted</option>
+                                </select>
+                                <input type="text" id="newNote" placeholder="New note">
+                                <button class="btn btn-primary" onclick="updateRelationNote()">📝 Update Note</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">🔍 Check Relations</h4>
+                            <div class="form-row">
+                                <input type="text" id="checkRelationUsername" placeholder="Check relation with">
+                                <select id="relationType">
+                                    <option value="BLOCKED">🚫 Blocked</option>
+                                    <option value="IGNORED">👁️ Ignored</option>
+                                    <option value="MUTED">🔇 Muted</option>
+                                </select>
+                                <button class="btn btn-primary" onclick="checkRelation()">🔍 Check</button>
+                            </div>
+                            <div id="relationCheckResult" style="margin-top: 10px; padding: 10px; background: #40444b; border-radius: 4px;"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <h4 style="color: #ffffff; margin-bottom: 16px;">📋 All Relations</h4>
+                            <div class="form-row">
+                                <button class="btn btn-primary" onclick="getAllRelations()">📋 Get All</button>
+                                <button class="btn btn-secondary" onclick="getAllRelations('BLOCKED')">🚫 Blocked Only</button>
+                                <button class="btn btn-secondary" onclick="getAllRelations('IGNORED')">👁️ Ignored Only</button>
+                                <button class="btn btn-secondary" onclick="getAllRelations('MUTED')">🔇 Muted Only</button>
+                            </div>
+                            <div id="allRelationsList" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Section -->
+                <div id="search-section" class="section hidden">
+                    <div class="section-header">
+                        <h3>🔍 User Search</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <input type="text" id="searchUsername" placeholder="Search by username">
+                                <button class="btn btn-primary" onclick="searchUsers()">🔍 Search</button>
+                            </div>
+                            <div id="searchResults" style="max-height: 400px; overflow-y: auto; margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Section -->
+                <div id="stats-section" class="section hidden">
+                    <div class="section-header">
+                        <h3>📊 Statistics</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <button class="btn btn-primary" onclick="getRelationStats()">📈 Get Relation Stats</button>
+                                <button class="btn btn-primary" onclick="getFriendshipStats()">👥 Get Friendship Stats</button>
+                            </div>
+                            <div id="statsDisplay" style="margin-top: 20px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Section -->
+                <div id="logs-section" class="section hidden">
+                    <div class="section-header">
+                        <h3>📝 Activity Logs</h3>
+                    </div>
+                    <div class="section-content">
+                        <div class="log-container" id="logs"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         let socket = null;
+
+        // ==================== NAVIGATION FUNCTIONS ====================
+
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            // Show selected section
+            const targetSection = document.getElementById(`${sectionName}-section`);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+            
+            // Update navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            const activeNavItem = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
+            if (activeNavItem) {
+                activeNavItem.classList.add('active');
+            }
+            
+            // Update main title
+            const titles = {
+                'connection': 'Connection',
+                'profile': 'Profile',
+                'presence': 'Presence',
+                'friends': 'Friends',
+                'relations': 'Relations',
+                'search': 'Search',
+                'stats': 'Statistics',
+                'logs': 'Logs'
+            };
+            
+            document.getElementById('mainTitle').textContent = titles[sectionName] || 'Discord Clone Test';
+        }
 
         function showNotification(message, type = 'info') {
             const notifications = document.getElementById('notifications');
@@ -251,19 +929,41 @@
 
         function updateConnectionStatus(isConnected) {
             const status = document.getElementById('connectionStatus');
+            const indicator = document.getElementById('connectionIndicator');
+            
             if (isConnected) {
                 status.textContent = 'Connected';
-                status.className = 'status connected online';
+                indicator.classList.add('connected');
+                indicator.classList.remove('disconnected');
             } else {
                 status.textContent = 'Disconnected';
-                status.className = 'status disconnected offline';
+                indicator.classList.remove('connected');
+                indicator.classList.add('disconnected');
             }
         }
 
         function updateStatusColor(elementId, status) {
             const element = document.getElementById(elementId);
             element.textContent = status;
-            element.className = `status ${status.toLowerCase()}`;
+            
+            // Remove all status classes
+            element.classList.remove('status-online', 'status-offline', 'status-idle', 'status-dnd');
+            
+            // Add appropriate class
+            switch(status.toLowerCase()) {
+                case 'online':
+                    element.classList.add('status-online');
+                    break;
+                case 'offline':
+                    element.classList.add('status-offline');
+                    break;
+                case 'idle':
+                    element.classList.add('status-idle');
+                    break;
+                case 'dnd':
+                    element.classList.add('status-dnd');
+                    break;
+            }
         }
 
         function connect() {
@@ -281,8 +981,11 @@
 
             socket.on('connect', () => {
                 log('Connected to server', 'connected');
-                showNotification('Connected to server!', 'success');
+                showNotification('✅ Connected to server!', 'success');
                 updateConnectionStatus(true);
+                
+                // Auto-save token on successful connection
+                saveToken();
             });
 
             socket.on('disconnect', (reason) => {
@@ -347,9 +1050,41 @@
             });
 
             socket.on('status:current', (data) => {
-                log(`Current status: ${JSON.stringify(data)}`, 'info');
-                updateStatusColor('currentStatus', data.displayStatus);
-                updateStatusColor('actualStatus', data.actualStatus);
+                log(`Current status received: ${JSON.stringify(data)}`, 'info');
+                
+                const displayStatus = data.displayStatus || data.actualPresence || 'OFFLINE';
+                const connectionStatus = data.connectionStatus || 'OFFLINE';
+                
+                // Update status badges
+                updateStatusColor('currentStatus', displayStatus);
+                updateStatusColor('actualStatus', connectionStatus);
+                
+                // Show detailed status info in statusInfo box
+                const statusInfo = document.getElementById('statusInfo');
+                const statusInfoText = document.getElementById('statusInfoText');
+                if (statusInfo && statusInfoText) {
+                    statusInfo.style.display = 'block';
+                    statusInfoText.innerHTML = `
+                        <strong>📊 Current Status Details:</strong><br>
+                        🔴 Display Status: <span class="status-badge ${getStatusClass(displayStatus)}">${displayStatus}</span><br>
+                        🔌 Connection Status: <span class="status-badge ${getStatusClass(connectionStatus)}">${connectionStatus}</span><br>
+                        ${data.actualPresence ? `📡 Actual Presence: <span class="status-badge ${getStatusClass(data.actualPresence)}">${data.actualPresence}</span>` : ''}
+                        ${data.timestamp ? `<br><small style="color: #747f8d;">Updated: ${new Date(data.timestamp).toLocaleTimeString()}</small>` : ''}
+                    `;
+                    statusInfoText.style.color = '#b9bbbe';
+                }
+                
+                // Show notification
+                const statusSummary = `Display: ${displayStatus} | Connection: ${connectionStatus}`;
+                showNotification(`📊 ${statusSummary}`, 'info');
+                
+                // Update profile status if available
+                if (displayStatus) {
+                    const profileStatus = document.getElementById('profileStatus');
+                    if (profileStatus) {
+                        profileStatus.innerHTML = `<strong>Status:</strong> ${getPresenceBadge(displayStatus)}`;
+                    }
+                }
             });
 
             // Friend Request Events
@@ -395,39 +1130,69 @@
 
         function updateStatus(status) {
             if (!socket || !socket.connected) {
-                showNotification('Not connected', 'error');
+                showNotification('Not connected to WebSocket', 'error');
                 return;
             }
             
-            // Update via REST API instead of WebSocket
+            // Validate status
+            const validStatuses = ['ONLINE', 'OFFLINE', 'IDLE', 'DND'];
+            if (!validStatuses.includes(status)) {
+                showNotification(`Invalid status: ${status}. Must be one of: ${validStatuses.join(', ')}`, 'error');
+                return;
+            }
+            
+            // Update via REST API
             fetch('http://localhost:3000/api/v1/users/profile/presence-status', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                    'Authorization': `${document.getElementById('jwtToken').value}`
                 },
                 body: JSON.stringify({ status })
             })
-            .then(res => res.json())
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || `HTTP ${res.status}: ${res.statusText}`);
+                }
+                return data;
+            })
             .then(data => {
                 log(`Status updated via REST: ${status}`, 'success');
-                showNotification(`Status updated to: ${status}`, 'success');
-                // The WebSocket event 'status:updated' will automatically update the UI
+                showNotification(`✅ Status updated to: ${status}`, 'success');
+                
+                // Update UI immediately
+                updateStatusColor('currentStatus', status);
+                
+                // Refresh profile to show updated status
+                setTimeout(() => {
+                    getUserProfile();
+                    getStatus(); // Request updated status from WebSocket
+                }, 500);
             })
             .catch(err => {
-                log(`Error: ${err.message}`, 'error');
-                showNotification(`Error: ${err.message}`, 'error');
+                log(`Error updating status: ${err.message}`, 'error');
+                showNotification(`❌ Error: ${err.message}`, 'error');
             });
         }
 
         function getStatus() {
             if (!socket || !socket.connected) {
-                showNotification('Not connected', 'error');
+                showNotification('Not connected to WebSocket', 'error');
                 return;
             }
             
             socket.emit('status:get');
-            log('Requested current status', 'info');
+            log('📊 Requested current status from server', 'info');
+            
+            // Show loading state
+            const statusInfo = document.getElementById('statusInfo');
+            const statusInfoText = document.getElementById('statusInfoText');
+            if (statusInfo && statusInfoText) {
+                statusInfo.style.display = 'block';
+                statusInfoText.textContent = 'Loading status information...';
+                statusInfoText.style.color = '#7289da';
+            }
         }
 
         function sendFriendRequest() {
@@ -441,7 +1206,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                    'Authorization': `${document.getElementById('jwtToken').value}`
                 },
                 body: JSON.stringify({ username })
             })
@@ -464,7 +1229,7 @@
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                    'Authorization': `${document.getElementById('jwtToken').value}`
                 },
                 body: JSON.stringify({ friendshipId, status })
             })
@@ -486,7 +1251,7 @@
             fetch('http://localhost:3000/api/v1/users/friends', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                    'Authorization': `${document.getElementById('jwtToken').value}`
                 }
             })
             .then(res => res.json())
@@ -516,7 +1281,7 @@
             fetch('http://localhost:3000/api/v1/users/friends/requests/incoming', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                    'Authorization': `${document.getElementById('jwtToken').value}`
                 }
             })
             .then(res => res.json())
@@ -544,7 +1309,7 @@
             fetch('http://localhost:3000/api/v1/users/friends/requests/outgoing', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                    'Authorization': `${document.getElementById('jwtToken').value}`
                 }
             })
             .then(res => res.json())
@@ -577,7 +1342,7 @@
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                    'Authorization': `${document.getElementById('jwtToken').value}`
                 },
                 body: JSON.stringify({ friendshipId })
             })
@@ -610,13 +1375,33 @@
                 return;
             }
 
-            container.innerHTML = friends.map(friend => `
-                <div class="friend-request" style="margin-bottom: 10px;">
-                    <h4>👤 ${friend.username}</h4>
-                    <p>Status: ${getPresenceBadge(friend.status)}</p>
-                    <button class="danger" onclick="removeFriend('${friend.id.toString()}')">🗑️ Remove Friend</button>
+            container.innerHTML = friends.map(friend => {
+                const friendId = friend.id?.toString() || friend.friendshipId?.toString() || 'unknown';
+                const statusClass = getStatusClass(friend.status || 'OFFLINE');
+                const customStatusDisplay = friend.customStatus ? `<p style="color: #7289da; font-style: italic; margin-top: 4px;">"${friend.customStatus}"</p>` : '<p style="color: #747f8d; font-size: 12px;">No custom status</p>';
+                
+                return `
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-avatar" style="background: ${friend.avatar ? 'transparent' : '#5865f2'};">
+                            ${friend.avatar ? `<img src="${friend.avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : friend.username.charAt(0).toUpperCase()}
                 </div>
-            `).join('');
+                        <div class="user-details">
+                            <h4>👤 ${friend.username || 'Unknown'}</h4>
+                            <p class="status-badge ${statusClass}" style="margin-top: 4px;">${friend.status || 'OFFLINE'}</p>
+                            ${customStatusDisplay}
+                        </div>
+                    </div>
+                    <div class="user-stats">
+                        <p><strong>Friend ID:</strong> ${friend.friendshipId || 'N/A'}</p>
+                        ${friend.createdAt ? `<p><strong>Friends since:</strong> ${new Date(friend.createdAt).toLocaleDateString()}</p>` : ''}
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-danger" onclick="removeFriend('${friendId}')">🗑️ Remove Friend</button>
+                    </div>
+                </div>
+            `;
+            }).join('');
         }
 
         function displayIncomingRequests(requests) {
@@ -635,11 +1420,21 @@
             }
 
             container.innerHTML = requests.map(req => `
-                <div class="friend-request" id="incoming-request-${req.id.toString()}" style="margin-bottom: 10px;">
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-avatar">${req.user?.username?.charAt(0).toUpperCase() || '?'}</div>
+                        <div class="user-details">
                     <h4>👤 From: ${req.user?.username || 'Unknown'}</h4>
-                    <p>📅 ${req.createdAt ? new Date(req.createdAt).toLocaleString() : 'N/A'}</p>
-                    <button class="success" onclick="acceptRequest('${req.id.toString()}')">✅ Accept</button>
-                    <button class="danger" onclick="rejectRequest('${req.id.toString()}')">❌ Reject</button>
+                            <p class="status-badge status-idle">Pending</p>
+                        </div>
+                    </div>
+                    <div class="user-stats">
+                        <p><strong>📅 Sent:</strong> ${req.createdAt ? new Date(req.createdAt).toLocaleString() : 'N/A'}</p>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-success" onclick="acceptRequest('${req.id.toString()}')">✅ Accept</button>
+                        <button class="btn btn-danger" onclick="rejectRequest('${req.id.toString()}')">❌ Reject</button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -660,20 +1455,30 @@
             }
 
             container.innerHTML = requests.map(req => `
-                <div class="friend-request" id="sent-request-${req.id.toString()}" style="margin-bottom: 10px;">
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-avatar">${req.user?.username?.charAt(0).toUpperCase() || '?'}</div>
+                        <div class="user-details">
                     <h4>→ ${req.user?.username || 'Unknown'}</h4>
-                    <p>📅 Sent: ${req.createdAt ? new Date(req.createdAt).toLocaleString() : 'N/A'}</p>
-                    <button class="danger" onclick="cancelFriendRequest('${req.id.toString()}')">🚫 Cancel Request</button>
+                            <p class="status-badge status-idle">Pending</p>
+                        </div>
+                    </div>
+                    <div class="user-stats">
+                        <p><strong>📅 Sent:</strong> ${req.createdAt ? new Date(req.createdAt).toLocaleString() : 'N/A'}</p>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-danger" onclick="cancelFriendRequest('${req.id.toString()}')">🚫 Cancel Request</button>
+                    </div>
                 </div>
             `).join('');
         }
 
         function getPresenceBadge(status) {
             const badges = {
-                'ONLINE': '<span style="color: #43b581;">🟢 ONLINE</span>',
-                'IDLE': '<span style="color: #faa61a;">🟡 IDLE</span>',
-                'DND': '<span style="color: #f04747;">🔴 DND</span>',
-                'OFFLINE': '<span style="color: #747f8d;">⚪ OFFLINE</span>'
+                'ONLINE': '<span class="status-badge status-online">🟢 ONLINE</span>',
+                'IDLE': '<span class="status-badge status-idle">🟡 IDLE</span>',
+                'DND': '<span class="status-badge status-dnd">🔴 DND</span>',
+                'OFFLINE': '<span class="status-badge status-offline">⚪ OFFLINE</span>'
             };
             return badges[status] || status;
         }
@@ -683,7 +1488,7 @@
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                    'Authorization': `${document.getElementById('jwtToken').value}`
                 },
                 body: JSON.stringify({ userId })
             })
@@ -709,21 +1514,35 @@
         }
 
         function getUserProfile() {
+            const token = document.getElementById('jwtToken').value;
+            if (!token) {
+                showNotification('Please enter JWT token first', 'error');
+                return;
+            }
+
             fetch('http://localhost:3000/api/v1/users/profile', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${document.getElementById('jwtToken').value}`
+                    'Authorization': token
                 }
             })
-            .then(res => res.json())
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || `HTTP ${res.status}: ${res.statusText}`);
+                }
+                return data;
+            })
             .then(data => {
                 const profile = data.data || data;
                 displayUserProfile(profile);
-                log(`Profile loaded: ${profile.username}`, 'success');
+                log(`✅ Profile loaded: ${profile.username}`, 'success');
+                showNotification(`Profile loaded for ${profile.username}`, 'success');
             })
             .catch(err => {
                 console.error('Error loading profile:', err);
-                log(`Error loading profile: ${err.message}`, 'error');
+                log(`❌ Error loading profile: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
             });
         }
 
@@ -731,29 +1550,1383 @@
             const profileSection = document.getElementById('profileSection');
             const profileAvatar = document.getElementById('profileAvatar');
             const profileUsername = document.getElementById('profileUsername');
-            const profileGlobalName = document.getElementById('profileGlobalName');
+            const profileglobalname = document.getElementById('profileglobalname');
             const profileStatus = document.getElementById('profileStatus');
+            const profileCustomStatus = document.getElementById('profileCustomStatus');
 
+            // Set avatar
             if (profile.avatar) {
                 profileAvatar.src = profile.avatar;
+                profileAvatar.style.display = 'block';
             } else {
                 profileAvatar.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                profileAvatar.style.display = 'block';
             }
 
+            // Set username and global name
             profileUsername.textContent = profile.username || 'Unknown';
-            profileGlobalName.textContent = profile.globalName || '';
-            profileStatus.innerHTML = `Status: ${getPresenceBadge(profile.status)}`;
+            if (profile.globalname) {
+                profileglobalname.textContent = `(${profile.globalname})`;
+                profileglobalname.style.display = 'block';
+            } else {
+                profileglobalname.textContent = '';
+                profileglobalname.style.display = 'none';
+            }
 
-            profileSection.style.display = 'block';
+            // Set status with badge
+            const status = profile.status || 'OFFLINE';
+            profileStatus.innerHTML = `<strong>Status:</strong> ${getPresenceBadge(status)}`;
+            
+            // Set custom status
+            if (profile.customStatus) {
+                profileCustomStatus.textContent = profile.customStatus;
+                profileCustomStatus.style.display = 'block';
+            } else {
+                profileCustomStatus.textContent = '';
+                profileCustomStatus.style.display = 'none';
+            }
+
+            // Show profile section
+            profileSection.classList.remove('hidden');
+            profileSection.style.display = 'flex';
+        }
+
+        // ==================== USER RELATIONS FUNCTIONS ====================
+
+        function blockUser() {
+            const username = document.getElementById('relationUsername').value;
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            // First get user ID by username
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.data || data.data.length === 0) {
+                    throw new Error('User not found');
+                }
+                const userId = data.data[0].id;
+                
+                // Block the user
+                return fetch('http://localhost:3000/api/v1/users/relations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `${document.getElementById('jwtToken').value}`
+                    },
+                    body: JSON.stringify({ 
+                        targetUserId: userId,
+                        type: 'BLOCKED',
+                        note: 'Blocked via test interface'
+                    })
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`User blocked: ${JSON.stringify(data)}`, 'success');
+                showNotification(`User ${username} blocked successfully`, 'success');
+                document.getElementById('relationUsername').value = '';
+                getBlockedUsers();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function ignoreUser() {
+            const username = document.getElementById('relationUsername').value;
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            // First get user ID by username
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.data || data.data.length === 0) {
+                    throw new Error('User not found');
+                }
+                const userId = data.data[0].id;
+                
+                // Ignore the user
+                return fetch('http://localhost:3000/api/v1/users/relations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `${document.getElementById('jwtToken').value}`
+                    },
+                    body: JSON.stringify({ 
+                        targetUserId: userId,
+                        type: 'IGNORED',
+                        note: 'Ignored via test interface'
+                    })
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`User ignored: ${JSON.stringify(data)}`, 'success');
+                showNotification(`User ${username} ignored successfully`, 'success');
+                document.getElementById('relationUsername').value = '';
+                getIgnoredUsers();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function muteUser() {
+            const username = document.getElementById('relationUsername').value;
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            // First get user ID by username
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.data || data.data.length === 0) {
+                    throw new Error('User not found');
+                }
+                const userId = data.data[0].id;
+                
+                // Mute the user
+                return fetch('http://localhost:3000/api/v1/users/relations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `${document.getElementById('jwtToken').value}`
+                    },
+                    body: JSON.stringify({ 
+                        targetUserId: userId,
+                        type: 'MUTED',
+                        note: 'Muted via test interface'
+                    })
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`User muted: ${JSON.stringify(data)}`, 'success');
+                showNotification(`User ${username} muted successfully`, 'success');
+                document.getElementById('relationUsername').value = '';
+                getMutedUsers();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function getBlockedUsers() {
+            fetch('http://localhost:3000/api/v1/users/relations/blocked', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const relations = data.data || data;
+                log(`Blocked users loaded: ${relations.length || 0}`, 'info');
+                displayRelationsList(relations, 'BLOCKED');
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                console.error('getBlockedUsers error:', err);
+            });
+        }
+
+        function getIgnoredUsers() {
+            fetch('http://localhost:3000/api/v1/users/relations/ignored', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const relations = data.data || data;
+                log(`Ignored users loaded: ${relations.length || 0}`, 'info');
+                displayRelationsList(relations, 'IGNORED');
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                console.error('getIgnoredUsers error:', err);
+            });
+        }
+
+        function getMutedUsers() {
+            fetch('http://localhost:3000/api/v1/users/relations/muted', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const relations = data.data || data;
+                log(`Muted users loaded: ${relations.length || 0}`, 'info');
+                displayRelationsList(relations, 'MUTED');
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                console.error('getMutedUsers error:', err);
+            });
+        }
+
+        function displayRelationsList(relations, type) {
+            const container = document.getElementById('relationsList');
+            
+            if (!Array.isArray(relations)) {
+                console.error('displayRelationsList: relations is not an array', relations);
+                container.innerHTML = '<p style="color: #b9bbbe;">Error loading relations</p>';
+                return;
+            }
+            
+            if (relations.length === 0) {
+                container.innerHTML = `<p style="color: #b9bbbe;">No ${type.toLowerCase()} users</p>`;
+                return;
+            }
+
+            const typeEmoji = {
+                'BLOCKED': '🚫',
+                'IGNORED': '👁️',
+                'MUTED': '🔇'
+            };
+
+            container.innerHTML = relations.map(relation => {
+                const targetUser = relation.targetUser || {};
+                const customStatusDisplay = targetUser.customStatus ? `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${targetUser.customStatus}"</p>` : '';
+                
+                return `
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-avatar" style="background: ${targetUser.avatar ? 'transparent' : '#5865f2'};">
+                            ${targetUser.avatar ? `<img src="${targetUser.avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : targetUser.username?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                        <div class="user-details">
+                            <h4>${typeEmoji[type]} ${targetUser.username || 'Unknown'}</h4>
+                            ${targetUser.globalname ? `<p style="color: #b9bbbe; font-size: 12px;">${targetUser.globalname}</p>` : ''}
+                            <p class="status-badge ${getStatusClass(targetUser.status || 'OFFLINE')}" style="margin-top: 4px;">${targetUser.status || 'OFFLINE'}</p>
+                            ${customStatusDisplay}
+                        </div>
+                    </div>
+                    <div class="user-stats">
+                        <p><strong>Note:</strong> ${relation.note || 'No note'}</p>
+                        <p><strong>📅 Created:</strong> ${relation.createdAt ? new Date(relation.createdAt).toLocaleString() : 'N/A'}</p>
+                        ${relation.updatedAt ? `<p><strong>🔄 Updated:</strong> ${new Date(relation.updatedAt).toLocaleString()}</p>` : ''}
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-danger" onclick="removeRelation('${targetUser.id}', '${type}')">🗑️ Remove</button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function removeRelation(userId, type) {
+            fetch('http://localhost:3000/api/v1/users/relations', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ 
+                    targetUserId: userId,
+                    type: type
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Relation removed: ${JSON.stringify(data)}`, 'success');
+                showNotification(`${type.toLowerCase()} relation removed`, 'success');
+                // Refresh the appropriate list
+                if (type === 'BLOCKED') getBlockedUsers();
+                else if (type === 'IGNORED') getIgnoredUsers();
+                else if (type === 'MUTED') getMutedUsers();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        // ==================== USER SEARCH FUNCTIONS ====================
+
+        function searchUsers() {
+            const username = document.getElementById('searchUsername').value;
+            if (!username) {
+                showNotification('Please enter a username to search', 'error');
+                return;
+            }
+
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const users = data.data || data;
+                log(`Search results for "${username}": ${users.length || 0} users found`, 'info');
+                displaySearchResults(users);
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function displaySearchResults(users) {
+            const container = document.getElementById('searchResults');
+            
+            if (!Array.isArray(users)) {
+                console.error('displaySearchResults: users is not an array', users);
+                container.innerHTML = '<p style="color: #b9bbbe;">Error loading search results</p>';
+                return;
+            }
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p style="color: #b9bbbe;">No users found</p>';
+                return;
+            }
+
+            container.innerHTML = users.map(user => {
+                const userId = user.id?.toString() || 'unknown';
+                const customStatusDisplay = user.customStatus ? `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${user.customStatus}"</p>` : '<p style="color: #747f8d; font-size: 12px; margin-top: 4px;">No custom status</p>';
+                
+                return `
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-avatar" style="background: ${user.avatar ? 'transparent' : '#5865f2'};">
+                            ${user.avatar ? `<img src="${user.avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : user.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="user-details">
+                            <h4>👤 ${user.username || 'Unknown'}</h4>
+                            ${user.globalname ? `<p style="color: #b9bbbe; font-size: 12px;">${user.globalname}</p>` : ''}
+                            <p class="status-badge ${getStatusClass(user.status || 'OFFLINE')}" style="margin-top: 4px;">${user.status || 'OFFLINE'}</p>
+                            ${customStatusDisplay}
+                        </div>
+                    </div>
+                    <div class="user-stats">
+                        <p><strong>User ID:</strong> ${userId}</p>
+                        ${user.email ? `<p><strong>Email:</strong> ${user.email}</p>` : '<p style="color: #747f8d;">No email</p>'}
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-success" onclick="sendFriendRequestToUser('${userId}')">➕ Add Friend</button>
+                        <button class="btn btn-danger" onclick="blockUserById('${userId}')">🚫 Block</button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function sendFriendRequestToUser(userId) {
+            fetch('http://localhost:3000/api/v1/users/friends/request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ userId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Friend request sent to user ID: ${userId}`, 'success');
+                showNotification(`Friend request sent!`, 'success');
+                getSentRequests(); // Refresh sent requests
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function blockUserById(userId) {
+            fetch('http://localhost:3000/api/v1/users/relations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ 
+                    targetUserId: userId,
+                    type: 'BLOCKED',
+                    note: 'Blocked via search interface'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`User blocked by ID: ${userId}`, 'success');
+                showNotification(`User blocked successfully`, 'success');
+                getBlockedUsers(); // Refresh blocked users
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        // ==================== PROFILE MANAGEMENT FUNCTIONS ====================
+
+        function updateglobalname() {
+            const globalname = document.getElementById('newglobalname').value;
+            if (!globalname) {
+                showNotification('Please enter a global name', 'error');
+                return;
+            }
+
+            fetch('http://localhost:3000/api/v1/users/profile/global-name', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ globalname })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Global name updated: ${globalname}`, 'success');
+                showNotification(`Global name updated to: ${globalname}`, 'success');
+                document.getElementById('newglobalname').value = '';
+                getUserProfile(); // Refresh profile
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function updateUsername() {
+            const username = document.getElementById('newUsername').value;
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            fetch('http://localhost:3000/api/v1/users/profile/username', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ username })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Username updated: ${username}`, 'success');
+                showNotification(`Username updated to: ${username}`, 'success');
+                document.getElementById('newUsername').value = '';
+                getUserProfile(); // Refresh profile
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function updateCustomStatus() {
+            const customStatus = prompt('Enter custom status (leave empty to clear):\n\nTip: You can use emojis like 😎, 🎮, 💻, etc.');
+            if (customStatus === null) return; // User cancelled
+
+            // Validate length (Discord limit is usually 128 characters)
+            if (customStatus && customStatus.length > 128) {
+                showNotification('Custom status is too long (max 128 characters)', 'error');
+                return;
+            }
+
+            fetch('http://localhost:3000/api/v1/users/profile/custom-status', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ customStatus: customStatus || null })
+            })
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || `HTTP ${res.status}: ${res.statusText}`);
+                }
+                return data;
+            })
+            .then(data => {
+                const statusText = customStatus || '(cleared)';
+                log(`Custom status updated: ${statusText}`, 'success');
+                showNotification(`✅ Custom status: ${statusText}`, 'success');
+                
+                // Update UI immediately
+                const profileCustomStatus = document.getElementById('profileCustomStatus');
+                if (profileCustomStatus) {
+                    if (customStatus) {
+                        profileCustomStatus.textContent = customStatus;
+                        profileCustomStatus.style.display = 'block';
+                    } else {
+                        profileCustomStatus.textContent = '';
+                        profileCustomStatus.style.display = 'none';
+                    }
+                }
+                
+                // Refresh profile after a short delay
+                setTimeout(() => {
+                    getUserProfile();
+                }, 300);
+            })
+            .catch(err => {
+                log(`Error updating custom status: ${err.message}`, 'error');
+                showNotification(`❌ Error: ${err.message}`, 'error');
+            });
+        }
+
+        // ==================== MUTUAL FRIENDS FUNCTIONS ====================
+
+        function getMutualFriends() {
+            const username = document.getElementById('mutualFriendUsername').value;
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            // First get user ID by username
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.data || data.data.length === 0) {
+                    throw new Error('User not found');
+                }
+                const userId = data.data[0].id;
+                
+                // Get mutual friends
+                return fetch(`http://localhost:3000/api/v1/users/friends/mutual/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `${document.getElementById('jwtToken').value}`
+                    }
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                const mutualFriends = data.data || data;
+                log(`Mutual friends with ${username}: ${mutualFriends.length || 0}`, 'info');
+                displayMutualFriends(mutualFriends, username);
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function displayMutualFriends(friends, username) {
+            const container = document.getElementById('mutualFriendsList');
+            
+            if (!Array.isArray(friends)) {
+                console.error('displayMutualFriends: friends is not an array', friends);
+                container.innerHTML = '<p style="color: #b9bbbe;">Error loading mutual friends</p>';
+                return;
+            }
+            
+            if (friends.length === 0) {
+                container.innerHTML = `<p style="color: #b9bbbe;">No mutual friends with ${username}</p>`;
+                return;
+            }
+
+            container.innerHTML = friends.map(friend => {
+                const customStatusDisplay = friend.customStatus ? `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${friend.customStatus}"</p>` : '<p style="color: #747f8d; font-size: 12px; margin-top: 4px;">No custom status</p>';
+                
+                return `
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-avatar" style="background: ${friend.avatar ? 'transparent' : '#5865f2'};">
+                            ${friend.avatar ? `<img src="${friend.avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : friend.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="user-details">
+                            <h4>👤 ${friend.username || 'Unknown'}</h4>
+                            ${friend.globalname ? `<p style="color: #b9bbbe; font-size: 12px;">${friend.globalname}</p>` : ''}
+                            <p class="status-badge ${getStatusClass(friend.status || 'OFFLINE')}" style="margin-top: 4px;">${friend.status || 'OFFLINE'}</p>
+                            ${customStatusDisplay}
+                        </div>
+                    </div>
+                    <div class="user-stats">
+                        <p><strong>Friend ID:</strong> ${friend.id || 'N/A'}</p>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // ==================== STATISTICS FUNCTIONS ====================
+
+        function getRelationStats() {
+            fetch('http://localhost:3000/api/v1/users/relations/stats', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const stats = data.data || data;
+                log(`Relation stats loaded`, 'info');
+                displayStats(stats, 'Relations');
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function getFriendshipStats() {
+            // Get friends count
+            fetch('http://localhost:3000/api/v1/users/friends', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const friends = data.friends || data.data || data;
+                const stats = {
+                    totalFriends: Array.isArray(friends) ? friends.length : 0,
+                    onlineFriends: Array.isArray(friends) ? friends.filter(f => f.status === 'ONLINE').length : 0,
+                    idleFriends: Array.isArray(friends) ? friends.filter(f => f.status === 'IDLE').length : 0,
+                    dndFriends: Array.isArray(friends) ? friends.filter(f => f.status === 'DND').length : 0,
+                    offlineFriends: Array.isArray(friends) ? friends.filter(f => f.status === 'OFFLINE').length : 0
+                };
+                log(`Friendship stats loaded`, 'info');
+                displayStats(stats, 'Friendships');
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function displayStats(stats, type) {
+            const container = document.getElementById('statsDisplay');
+            
+            let html = `<h4 style="color: #ffffff; margin-bottom: 16px;">📊 ${type} Statistics</h4>`;
+            
+            if (type === 'Relations') {
+                html += `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>${stats.blocked || 0}</h4>
+                            <p>🚫 Blocked Users</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>${stats.ignored || 0}</h4>
+                            <p>👁️ Ignored Users</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>${stats.muted || 0}</h4>
+                            <p>🔇 Muted Users</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>${stats.total || 0}</h4>
+                            <p>📊 Total Relations</p>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'Friendships') {
+                html += `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>${stats.totalFriends || 0}</h4>
+                            <p>👥 Total Friends</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>${stats.onlineFriends || 0}</h4>
+                            <p>🟢 Online Friends</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>${stats.idleFriends || 0}</h4>
+                            <p>🟡 Idle Friends</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>${stats.dndFriends || 0}</h4>
+                            <p>🔴 DND Friends</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>${stats.offlineFriends || 0}</h4>
+                            <p>⚪ Offline Friends</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // ==================== FRIENDSHIP CHECK FUNCTIONS ====================
+
+        function checkFriendship() {
+            const username = document.getElementById('checkFriendshipUsername').value;
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            // First get user ID by username
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.data || data.data.length === 0) {
+                    throw new Error('User not found');
+                }
+                const userId = data.data[0].id;
+                
+                // Check friendship
+                return fetch(`http://localhost:3000/api/v1/users/friends/check/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `${document.getElementById('jwtToken').value}`
+                    }
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                const result = data.data || data;
+                log(`Friendship check with ${username}: ${JSON.stringify(result)}`, 'info');
+                displayFriendshipCheckResult(result, username);
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function displayFriendshipCheckResult(result, username) {
+            const container = document.getElementById('friendshipCheckResult');
+            
+            let html = `<h4 style="color: #ffffff; margin-bottom: 16px;">🔍 Friendship Status with ${username}</h4>`;
+            
+            if (result.areFriends) {
+                html += `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div class="user-avatar">${username.charAt(0).toUpperCase()}</div>
+                            <div class="user-details">
+                                <h4 style="color: #43b581;">✅ ${username}</h4>
+                                <p class="status-badge status-online">Friends</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div class="user-avatar">${username.charAt(0).toUpperCase()}</div>
+                            <div class="user-details">
+                                <h4 style="color: #f04747;">❌ ${username}</h4>
+                                <p class="status-badge status-offline">Not Friends</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (result.hasPendingRequest) {
+                html += `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div class="user-details">
+                                <h4 style="color: #faa61a;">⏳ Pending Friend Request</h4>
+                                <p class="status-badge status-idle">Request Sent</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div class="user-details">
+                                <h4 style="color: #747f8d;">📭 No Pending Requests</h4>
+                                <p class="status-badge status-offline">No Requests</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // ==================== RELATION CHECK FUNCTIONS ====================
+
+        function checkRelation() {
+            const username = document.getElementById('checkRelationUsername').value;
+            const relationType = document.getElementById('relationType').value;
+            
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            // First get user ID by username
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.data || data.data.length === 0) {
+                    throw new Error('User not found');
+                }
+                const userId = data.data[0].id;
+                
+                // Check relation
+                return fetch(`http://localhost:3000/api/v1/users/relations/check?targetUserId=${userId}&type=${relationType}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `${document.getElementById('jwtToken').value}`
+                    }
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                const result = data.data || data;
+                log(`Relation check with ${username} (${relationType}): ${JSON.stringify(result)}`, 'info');
+                displayRelationCheckResult(result, username, relationType);
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function displayRelationCheckResult(result, username, relationType) {
+            const container = document.getElementById('relationCheckResult');
+            
+            const typeEmoji = {
+                'BLOCKED': '🚫',
+                'IGNORED': '👁️',
+                'MUTED': '🔇'
+            };
+            
+            let html = `<h4 style="color: #ffffff; margin-bottom: 16px;">🔍 ${typeEmoji[relationType]} ${relationType} Status with ${username}</h4>`;
+            
+            if (result.hasRelation) {
+                html += `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div class="user-avatar">${username.charAt(0).toUpperCase()}</div>
+                            <div class="user-details">
+                                <h4 style="color: #f04747;">✅ ${username}</h4>
+                                <p class="status-badge status-dnd">${relationType}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div class="user-avatar">${username.charAt(0).toUpperCase()}</div>
+                            <div class="user-details">
+                                <h4 style="color: #43b581;">❌ ${username}</h4>
+                                <p class="status-badge status-online">Not ${relationType}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // ==================== RELATION NOTE UPDATE FUNCTIONS ====================
+
+        function updateRelationNote() {
+            const username = document.getElementById('noteUpdateUsername').value;
+            const relationType = document.getElementById('noteRelationType').value;
+            const newNote = document.getElementById('newNote').value;
+            
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            if (!newNote) {
+                showNotification('Please enter a note', 'error');
+                return;
+            }
+
+            // First get user ID by username
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.data || data.data.length === 0) {
+                    throw new Error('User not found');
+                }
+                const userId = data.data[0].id;
+                
+                // Update relation note
+                return fetch('http://localhost:3000/api/v1/users/relations/note', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `${document.getElementById('jwtToken').value}`
+                    },
+                    body: JSON.stringify({ 
+                        targetUserId: userId,
+                        type: relationType,
+                        note: newNote
+                    })
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Relation note updated: ${JSON.stringify(data)}`, 'success');
+                showNotification(`Note updated for ${username}`, 'success');
+                document.getElementById('noteUpdateUsername').value = '';
+                document.getElementById('newNote').value = '';
+                // Refresh the appropriate list
+                if (relationType === 'BLOCKED') getBlockedUsers();
+                else if (relationType === 'IGNORED') getIgnoredUsers();
+                else if (relationType === 'MUTED') getMutedUsers();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        // ==================== PASSWORD UPDATE FUNCTIONS ====================
+
+        function updatePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!currentPassword) {
+                showNotification('Please enter current password', 'error');
+                return;
+            }
+
+            if (!newPassword) {
+                showNotification('Please enter new password', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showNotification('New passwords do not match', 'error');
+                return;
+            }
+
+            fetch('http://localhost:3000/api/v1/users/profile/password', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ 
+                    currentPassword,
+                    newPassword
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Password updated successfully`, 'success');
+                showNotification(`Password updated successfully`, 'success');
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        // ==================== RELATION UPDATE FUNCTIONS ====================
+
+        function updateRelation() {
+            const username = document.getElementById('updateRelationUsername').value;
+            const relationType = document.getElementById('updateRelationType').value;
+            const note = document.getElementById('updateRelationNote').value;
+            
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            // First get user ID by username
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.data || data.data.length === 0) {
+                    throw new Error('User not found');
+                }
+                const userId = data.data[0].id;
+                
+                // Update relation
+                return fetch('http://localhost:3000/api/v1/users/relations', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `${document.getElementById('jwtToken').value}`
+                    },
+                    body: JSON.stringify({ 
+                        targetUserId: userId,
+                        type: relationType,
+                        note: note || null
+                    })
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Relation updated: ${JSON.stringify(data)}`, 'success');
+                showNotification(`Relation updated for ${username}`, 'success');
+                document.getElementById('updateRelationUsername').value = '';
+                document.getElementById('updateRelationNote').value = '';
+                // Refresh the appropriate list
+                if (relationType === 'BLOCKED') getBlockedUsers();
+                else if (relationType === 'IGNORED') getIgnoredUsers();
+                else if (relationType === 'MUTED') getMutedUsers();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        // ==================== RELATION REMOVE FUNCTIONS ====================
+
+        function removeRelation() {
+            const username = document.getElementById('removeRelationUsername').value;
+            const relationType = document.getElementById('removeRelationType').value;
+            
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+
+            // First get user ID by username
+            fetch(`http://localhost:3000/api/v1/users/search?username=${username}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.data || data.data.length === 0) {
+                    throw new Error('User not found');
+                }
+                const userId = data.data[0].id;
+                
+                // Remove relation
+                return fetch('http://localhost:3000/api/v1/users/relations', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `${document.getElementById('jwtToken').value}`
+                    },
+                    body: JSON.stringify({ 
+                        targetUserId: userId,
+                        type: relationType
+                    })
+                });
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Relation removed: ${JSON.stringify(data)}`, 'success');
+                showNotification(`Relation removed for ${username}`, 'success');
+                document.getElementById('removeRelationUsername').value = '';
+                // Refresh the appropriate list
+                if (relationType === 'BLOCKED') getBlockedUsers();
+                else if (relationType === 'IGNORED') getIgnoredUsers();
+                else if (relationType === 'MUTED') getMutedUsers();
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        // ==================== GET ALL RELATIONS FUNCTIONS ====================
+
+        function getAllRelations(type = null) {
+            let url = 'http://localhost:3000/api/v1/users/relations';
+            if (type) {
+                url += `?type=${type}`;
+            }
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const relations = data.data || data;
+                log(`All relations loaded: ${relations.length || 0}`, 'info');
+                displayAllRelations(relations, type);
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function displayAllRelations(relations, type) {
+            const container = document.getElementById('allRelationsList');
+            
+            if (!Array.isArray(relations)) {
+                console.error('displayAllRelations: relations is not an array', relations);
+                container.innerHTML = '<p style="color: #b9bbbe;">Error loading relations</p>';
+                return;
+            }
+            
+            if (relations.length === 0) {
+                const typeText = type ? ` ${type.toLowerCase()}` : '';
+                container.innerHTML = `<p style="color: #b9bbbe;">No${typeText} relations found</p>`;
+                return;
+            }
+
+            const typeEmoji = {
+                'BLOCKED': '🚫',
+                'IGNORED': '👁️',
+                'MUTED': '🔇'
+            };
+
+            container.innerHTML = relations.map(relation => {
+                const targetUser = relation.targetUser || {};
+                const customStatusDisplay = targetUser.customStatus ? `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${targetUser.customStatus}"</p>` : '';
+                
+                return `
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-avatar" style="background: ${targetUser.avatar ? 'transparent' : '#5865f2'};">
+                            ${targetUser.avatar ? `<img src="${targetUser.avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : targetUser.username?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                        <div class="user-details">
+                            <h4>${typeEmoji[relation.type]} ${targetUser.username || 'Unknown'}</h4>
+                            ${targetUser.globalname ? `<p style="color: #b9bbbe; font-size: 12px;">${targetUser.globalname}</p>` : ''}
+                            <p class="status-badge ${getStatusClass(targetUser.status || 'OFFLINE')}" style="margin-top: 4px;">${targetUser.status || 'OFFLINE'}</p>
+                            ${customStatusDisplay}
+                        </div>
+                    </div>
+                    <div class="user-stats">
+                        <p><strong>Type:</strong> ${relation.type}</p>
+                        <p><strong>Note:</strong> ${relation.note || 'No note'}</p>
+                        <p><strong>📅 Created:</strong> ${relation.createdAt ? new Date(relation.createdAt).toLocaleString() : 'N/A'}</p>
+                        ${relation.updatedAt ? `<p><strong>🔄 Updated:</strong> ${new Date(relation.updatedAt).toLocaleString()}</p>` : ''}
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-danger" onclick="removeRelationById('${targetUser.id}', '${relation.type}')">🗑️ Remove</button>
+                        <button class="btn btn-secondary" onclick="updateRelationNoteById('${targetUser.id}', '${relation.type}')">📝 Update Note</button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function removeRelationById(userId, type) {
+            fetch('http://localhost:3000/api/v1/users/relations', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ 
+                    targetUserId: userId,
+                    type: type
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Relation removed by ID: ${JSON.stringify(data)}`, 'success');
+                showNotification(`Relation removed successfully`, 'success');
+                getAllRelations(); // Refresh the list
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        function updateRelationNoteById(userId, type) {
+            const newNote = prompt('Enter new note (leave empty to clear):');
+            if (newNote === null) return; // User cancelled
+
+            fetch('http://localhost:3000/api/v1/users/relations/note', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${document.getElementById('jwtToken').value}`
+                },
+                body: JSON.stringify({ 
+                    targetUserId: userId,
+                    type: type,
+                    note: newNote || null
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                log(`Relation note updated by ID: ${JSON.stringify(data)}`, 'success');
+                showNotification(`Note updated successfully`, 'success');
+                getAllRelations(); // Refresh the list
+            })
+            .catch(err => {
+                log(`Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
+            });
+        }
+
+        // ==================== QUICK ACTIONS FUNCTIONS ====================
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data? This will clear all lists and logs.')) {
+                // Clear all lists
+                document.getElementById('friendsList').innerHTML = '';
+                document.getElementById('friendRequests').innerHTML = '';
+                document.getElementById('sentRequests').innerHTML = '';
+                document.getElementById('relationsList').innerHTML = '';
+                document.getElementById('searchResults').innerHTML = '';
+                document.getElementById('mutualFriendsList').innerHTML = '';
+                document.getElementById('allRelationsList').innerHTML = '';
+                document.getElementById('statsDisplay').innerHTML = '';
+                document.getElementById('friendshipCheckResult').innerHTML = '';
+                document.getElementById('relationCheckResult').innerHTML = '';
+                
+                // Clear logs
+                document.getElementById('logs').innerHTML = '';
+                
+                log('All data cleared', 'info');
+                showNotification('All data cleared', 'success');
+            }
+        }
+
+        function refreshAllData() {
+            log('Refreshing all data...', 'info');
+            showNotification('Refreshing all data...', 'info');
+            
+            // Refresh all data
+            getUserProfile();
+            getFriends();
+            getIncomingRequests();
+            getSentRequests();
+            getBlockedUsers();
+            getIgnoredUsers();
+            getMutedUsers();
+            getAllRelations();
+            getRelationStats();
+            getFriendshipStats();
+            
+            log('All data refreshed', 'success');
+            showNotification('All data refreshed', 'success');
+        }
+
+        function exportData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                profile: document.getElementById('profileSection').style.display !== 'none' ? 'Profile loaded' : 'No profile',
+                friends: document.getElementById('friendsList').innerHTML ? 'Friends loaded' : 'No friends',
+                incomingRequests: document.getElementById('friendRequests').innerHTML ? 'Incoming requests loaded' : 'No incoming requests',
+                sentRequests: document.getElementById('sentRequests').innerHTML ? 'Sent requests loaded' : 'No sent requests',
+                relations: document.getElementById('relationsList').innerHTML ? 'Relations loaded' : 'No relations',
+                logs: document.getElementById('logs').innerHTML
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `discord-clone-test-data-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            log('Data exported successfully', 'success');
+            showNotification('Data exported successfully', 'success');
+        }
+
+        function getStatusClass(status) {
+            switch(status?.toLowerCase()) {
+                case 'online':
+                    return 'status-online';
+                case 'idle':
+                    return 'status-idle';
+                case 'dnd':
+                    return 'status-dnd';
+                case 'offline':
+                default:
+                    return 'status-offline';
+            }
         }
 
         // Auto-reconnect on load with saved token
         window.onload = () => {
-            const savedToken = localStorage.getItem('accessToken');
+            const savedToken = localStorage.getItem('discordClone_accessToken');
             if (savedToken) {
                 document.getElementById('jwtToken').value = savedToken;
+                log('🔄 Loaded saved token from storage', 'info');
             }
         };
+
+        // Auto-save token on connect
+        function saveToken() {
+            const token = document.getElementById('jwtToken').value;
+            if (token) {
+                localStorage.setItem('discordClone_accessToken', token);
+                log('💾 Token saved to localStorage', 'info');
+            }
+        }
+
+        // Clear saved token
+        function clearSavedToken() {
+            localStorage.removeItem('discordClone_accessToken');
+            log('🗑️ Saved token cleared', 'info');
+        }
     </script>
 </body>
 </html>
+

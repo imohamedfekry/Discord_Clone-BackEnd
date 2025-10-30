@@ -5,13 +5,12 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { DatabaseModule } from '../database/database.module';
 import { RedisService } from './cache/redis.service';
 import { JwtHelper } from './security';
-import { PresenceService } from '../presence/presence.service';
 import CatchAllFilter from '../filters/catchAll.filter';
 import CustomHttpException from '../filters/customHttpException.filter';
 import { TransformInterceptor } from '../interceptors/transform.interceptor';
 import { snowflake } from '../utils/snowflake';
 import { ValidationUtil } from '../utils/validation.util';
-import { UserRepository } from '../database/repositories/user.repository';
+import { UserRepository } from 'src/common/database/repositories';
 import { ConfigModule } from '@nestjs/config';
 
 @Global()
@@ -22,7 +21,6 @@ import { ConfigModule } from '@nestjs/config';
   providers: [
     RedisService,
     JwtService,
-    PresenceService,
     {
       provide: JwtHelper,
       useFactory: (jwtService: JwtService, userRepository: UserRepository, configService: ConfigService) => {
@@ -51,6 +49,6 @@ import { ConfigModule } from '@nestjs/config';
       useClass: TransformInterceptor,
     },
   ],
-  exports: [RedisService, JwtService, JwtHelper, PresenceService, 'SNOWFLAKE', 'VALIDATION_UTIL'],
+  exports: [RedisService, JwtService, JwtHelper, 'SNOWFLAKE', 'VALIDATION_UTIL'],
 })
 export class GlobalModule {}

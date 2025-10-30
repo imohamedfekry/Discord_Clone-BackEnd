@@ -1,13 +1,19 @@
 import { Module } from '@nestjs/common';
 import { WebSocketGatewayService } from './User/websocket.gateway';
 import { ConnectionHandlerService } from './User/auth/connection.handler';
-import { PresenceService } from './User/presence/presence.service';
 import { AuthService } from './User/auth/auth.service';
-import { BroadcasterService } from './User/shared/broadcaster.service';
-import { PresenceStatusService } from './User/services/presence-status.service';
+import { BroadcasterService } from './User/presence/broadcaster.service';
+import { UnifiedPresenceService } from './User/services/unified-presence.service';
 import { FriendsCacheService } from '../../common/Global/cache/User/friends-cache.service';
 import { FriendshipNotifierService } from './User/friends/friendship-notifier.service';
 import { FriendsService } from './User/friends/friends.service';
+import { 
+  UserRepository, 
+  PresenceRepository, 
+  UserStatusRecordRepository,
+  FriendshipRepository,
+  UserRelationRepository 
+} from '../../common/database/repositories';
 
 /**
  * WebSocket Module
@@ -17,18 +23,23 @@ import { FriendsService } from './User/friends/friends.service';
   providers: [
     WebSocketGatewayService,
     ConnectionHandlerService,
-    PresenceService,
     AuthService,
     BroadcasterService,
-    PresenceStatusService,
+    UnifiedPresenceService,
     FriendsCacheService,
     FriendshipNotifierService,
     FriendsService,
+    // Database Repositories
+    UserRepository,
+    PresenceRepository,
+    UserStatusRecordRepository,
+    FriendshipRepository,
+    UserRelationRepository,
   ],
   exports: [
     WebSocketGatewayService,
     FriendshipNotifierService,
-    PresenceStatusService,
+    UnifiedPresenceService,
     FriendsCacheService,
   ],
 })

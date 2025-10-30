@@ -38,5 +38,26 @@ export class BroadcasterService {
     }
     this.server.to(`user:${userId}`).emit(event, data);
   }
+
+  /**
+   * Standardized send: wraps payload with code/message/data/timestamp
+   */
+  sendToUserStd(userId: string, code: string, message: string, data?: any): void {
+    this.sendToUser(userId, code, {
+      code,
+      message,
+      data,
+      timestamp: new Date(),
+    });
+  }
+
+  broadcastToRoomStd(room: string, code: string, message: string, data?: any): void {
+    this.broadcastToRoom(room, code, {
+      code,
+      message,
+      data,
+      timestamp: new Date(),
+    });
+  }
 }
 

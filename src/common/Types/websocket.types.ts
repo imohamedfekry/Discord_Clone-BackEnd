@@ -2,6 +2,17 @@ import { Socket } from 'socket.io';
 import { User } from '@prisma/client';
 
 /**
+ * Socket metadata for tracking connections
+ */
+export interface SocketMetadata {
+  device?: string;
+  connectedAt: Date;
+  ip?: string;
+  userAgent?: string;
+  lastPing?: Date;
+}
+
+/**
  * Authenticated Socket interface
  * Extends base Socket with authentication properties
  */

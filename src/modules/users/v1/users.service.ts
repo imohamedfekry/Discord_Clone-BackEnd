@@ -4,10 +4,8 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { FriendshipRepository } from '../../../common/database/repositories/friendship.repository';
-import { UserRelationRepository } from '../../../common/database/repositories/user-relation.repository';
-import { UserProfileResponseDto } from '../../../common/dto/shared-response.dto';
-import { User, RelationType } from '@prisma/client';
+import { UserDto } from '../../../common/dto/shared-response.dto';
+import { User, UserStatusRecord } from '@prisma/client';
 import {
   SendFriendRequestDto,
   RespondToFriendRequestDto,
@@ -18,7 +16,7 @@ import {
 } from './dto/friendship.dto';
 import {
   UpdatePasswordDto,
-  UpdateGlobalNameDto,
+  UpdateglobalnameDto,
   UpdateCustomStatusDto,
   UpdateUsernameDto,
   UpdatePresenceStatusDto,
@@ -32,12 +30,23 @@ import {
   UpdateRelationNoteDto,
 } from './dto/user-relation.dto';
 import { FriendshipStatus } from '@prisma/client';
-import { UserRepository } from 'src/common/database/repositories';
+import {
+  FriendshipRepository,
+  UserRelationRepository,
+  UserRepository,
+  PresenceRepository,
+  UserStatusRecordRepository,
+} from 'src/common/database/repositories/User';
 import { verifyHash } from 'src/common/Global/security/hash.helper';
 import { WebSocketGatewayService } from '../../websocket/User/websocket.gateway';
 import { FriendshipNotifierService } from '../../websocket/User/friends/friendship-notifier.service';
-import { PresenceStatusService } from '../../websocket/User/services/presence-status.service';
+import { UnifiedPresenceService } from '../../websocket/User/services/unified-presence.service';
 import { FriendsCacheService } from '../../../common/Global/cache/User/friends-cache.service';
+import { plainToInstance } from 'class-transformer';
+import { ApiResponse } from 'src/common/shared/types';
+import { RESPONSE_MESSAGES } from 'src/common/shared/response-messages';
+import { success, fail } from 'src/common/utils/response.util';
+import ms from 'ms';
 
 @Injectable()
 export class UsersService {
@@ -45,9 +54,11 @@ export class UsersService {
     private readonly userRepository: UserRepository,
     private readonly friendshipRepository: FriendshipRepository,
     private readonly userRelationRepository: UserRelationRepository,
+    private readonly presenceRepository: PresenceRepository,
+    private readonly statusRecordRepository: UserStatusRecordRepository,
     private readonly websocketGatewayService: WebSocketGatewayService,
     private readonly friendshipNotifier: FriendshipNotifierService,
-    private readonly presenceStatusService: PresenceStatusService,
+    private readonly presenceService: UnifiedPresenceService,
     private readonly friendsCache: FriendsCacheService,
   ) {}
 
@@ -55,21 +66,12 @@ export class UsersService {
   /**
    * Get current user profile
    */
-  async getProfile(user: User): Promise<UserProfileResponseDto> {
-    return {
-      id: user.id.toString(),
-      username: user.username,
-      globalName: user.globalName || undefined,
-      email: user.email || '',
-      phone: user.phone || '',
-      avatar: user.avatar || undefined,
-      status: user.status,
-      customStatus: user.customStatus || undefined,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+  async getProfile(user: User): Promise<ApiResponse<UserDto>> {
+    return success(
+      RESPONSE_MESSAGES.USER.PROFILE_FETCHED,
+      plainToInstance(UserDto, user, { excludeExtraneousValues: true }),
+    );
   }
-
   /**
    * Update user password
    */
@@ -82,49 +84,69 @@ export class UsersService {
 
     // Verify current password (you'll need to implement password verification)
     // For now, we'll assume there's a password verification method
-    const isCurrentPasswordValid : boolean = await verifyHash(dto.currentPassword, currentUser.password);
+    const isCurrentPasswordValid: boolean = await verifyHash(
+      dto.currentPassword,
+      currentUser.password,
+    );
     if (!isCurrentPasswordValid) {
       throw new BadRequestException('Current password is incorrect');
     }
     // Update password
     const updatedUser = await this.userRepository.update(user.id.toString(), {
-      password: dto.newPassword, 
+      password: dto.newPassword,
     });
 
-    return {
-      message: 'Password updated successfully',
+    return success(RESPONSE_MESSAGES.USER.PASSWORD_UPDATED, {
       updatedAt: updatedUser.updatedAt,
-    };
+    } as any);
   }
 
   /**
    * Update global name
    */
-  async updateGlobalName(user: User, dto: UpdateGlobalNameDto) {
-    const updatedUser = await this.userRepository.update(user.id.toString(), {
-      globalName: dto.globalName || null,
+  async updateglobalname(user: User, dto: UpdateglobalnameDto) {
+    await this.userRepository.update(user.id.toString(), {
+      globalname: dto.globalname || null,
     });
 
-    return {
-      globalName: updatedUser.globalName,
-      message: 'Global name updated successfully',
-      updatedAt: updatedUser.updatedAt,
-    };
+    // broadcast to all friends
+    const friends = await this.friendsCache.getFriends(user.id.toString());
+    friends.forEach(friend => {
+      this.websocketGatewayService.sendToUser(friend, 'user:globalname:updated', {
+        userId: user.id.toString(),
+        globalname: dto.globalname ,
+        timestamp: new Date(),
+      });
+    });
+    return success(RESPONSE_MESSAGES.USER.GLOBALNAME_UPDATED);
   }
-
+  
   /**
    * Update custom status
    */
   async updateCustomStatus(user: User, dto: UpdateCustomStatusDto) {
-    const updatedUser = await this.userRepository.update(user.id.toString(), {
-      customStatus: dto.customStatus || null,
+    await this.statusRecordRepository.updateStatusRecord(user.id, {
+      text: dto.text,
+      emoji: dto.emoji,
+      expiresAt: dto.expiresAt
+      ? new Date(new Date().getTime() + ms(dto.expiresAt))
+      : undefined,
     });
 
-    return {
-      customStatus: updatedUser.customStatus,
-      message: 'Custom status updated successfully',
-      updatedAt: updatedUser.updatedAt,
-    };
+    // broadcast to all friends
+    const friends = await this.friendsCache.getFriends(user.id.toString());
+    friends.forEach(friend => {
+      this.websocketGatewayService.sendToUser(friend, 'user:customstatus:updated', {
+        userId: user.id.toString(),
+        customstatus: {
+          text: dto.text,
+          emoji: dto.emoji,
+          expiresAt: dto.expiresAt,
+        },
+        timestamp: new Date(),
+      });
+    });
+    return success(RESPONSE_MESSAGES.USER.CUSTOM_STATUS_UPDATED);
   }
 
   /**
@@ -133,19 +155,24 @@ export class UsersService {
   async updateUsername(user: User, dto: UpdateUsernameDto) {
     // Check if username is already taken
     const existingUser = await this.userRepository.findByUsername(dto.username);
-    if (existingUser && existingUser.id !== user.id.toString()) {
+    if (existingUser && existingUser.id !== user.id) {
       throw new ConflictException('Username is already taken');
     }
 
-    const updatedUser = await this.userRepository.update(user.id.toString(), {
+    await this.userRepository.update(user.id.toString(), {
       username: dto.username,
     });
 
-    return {
-      username: updatedUser.username,
-      message: 'Username updated successfully',
-      updatedAt: updatedUser.updatedAt,
-    };
+    // broadcast to all friends
+    const friends = await this.friendsCache.getFriends(user.id.toString());
+    friends.forEach(friend => {
+      this.websocketGatewayService.sendToUser(friend, 'user:username:updated', {
+        userId: user.id.toString(),
+        username: dto.username,
+        timestamp: new Date(),
+      });
+    });
+    return success(RESPONSE_MESSAGES.USER.USERNAME_UPDATED);
   }
 
   /**
@@ -153,41 +180,31 @@ export class UsersService {
    * Updates the database and broadcasts to WebSocket listeners
    */
   async updatePresenceStatus(user: User, dto: UpdatePresenceStatusDto) {
-    // Update status in database
-    const updatedUser = await this.userRepository.update(user.id.toString(), {
-      status: dto.status,
-    });
-
-    // Update display status in Redis
-    await this.presenceStatusService.setDisplayStatus(user.id.toString(), dto.status);
-
-    // Broadcast to user's room via WebSocket (all their devices)
-    this.websocketGatewayService.sendToUser(user.id.toString(), 'status:updated', {
-      userId: user.id.toString(),
-      status: dto.status,
-      timestamp: new Date(),
-    });
-
-    // Get friends list from cache (much faster than DB query)
-    const friendsIds = await this.friendsCache.getFriends(user.id.toString());
-    
-    // Broadcast to only the user's friends (not all connected users)
-    // This is more efficient and privacy-conscious
-    friendsIds.forEach(friendId => {
-      this.websocketGatewayService.sendToUser(friendId, 'presence:user:updated', {
+    const expiresAt = dto.expiresAt
+      ? new Date(new Date().getTime() + ms(dto.expiresAt))
+      : undefined;
+    await this.presenceRepository.updateStatus(user.id, dto.status, expiresAt);
+    // broadcast to all friends
+    const friends = await this.friendsCache.getFriends(user.id.toString());
+    friends.forEach(friend => {
+      this.websocketGatewayService.sendToUser(friend, 'user:presence:updated', {
         userId: user.id.toString(),
-        username: user.username,
         status: dto.status,
         timestamp: new Date(),
       });
     });
-
-    return {
-      status: updatedUser.status,
-      message: 'Presence status updated successfully',
-      updatedAt: updatedUser.updatedAt,
-    };
+    return success(RESPONSE_MESSAGES.PRESENCE.STATUS_UPDATED);
   }
+
+
+
+
+
+
+
+
+
+
 
   // ==================== FRIENDSHIP MANAGEMENT ====================
   /**
@@ -199,10 +216,14 @@ export class UsersService {
   async sendFriendRequest(user: User, dto: SendFriendRequestDto) {
     // Validate that either username or userId is provided
     if (!dto.username && !dto.userId) {
-      throw new BadRequestException('Either username or userId must be provided');
+      throw new BadRequestException(
+        'Either username or userId must be provided',
+      );
     }
     if (dto.username && dto.userId) {
-      throw new BadRequestException('Provide either username or userId, not both');
+      throw new BadRequestException(
+        'Provide either username or userId, not both',
+      );
     }
 
     let targetUser;
@@ -249,12 +270,11 @@ export class UsersService {
               existingFriendship.id,
               FriendshipStatus.ACCEPTED,
             );
-          return {
+          return success(RESPONSE_MESSAGES.FRIEND.REQUEST_ACCEPTED, {
             id: acceptedFriendship.id,
             status: acceptedFriendship.status,
             createdAt: acceptedFriendship.createdAt,
-            message: 'Friend request accepted automatically',
-          };
+          });
           // else if (existingFriendship.status === FriendshipStatus.PENDING) {
           //   throw new ConflictException('Friend request already pending');
           // }
@@ -287,37 +307,37 @@ export class UsersService {
       status: friendship.status,
     });
 
-    return {
+    return success(RESPONSE_MESSAGES.FRIEND.REQUEST_SENT, {
       id: friendship.id,
       status: friendship.status,
       createdAt: friendship.createdAt,
-    };
+    });
   }
-
 
   /**
    * Respond to friend request
    */
-  async respondToFriendRequest(
-    user: User,
-    dto: RespondToFriendRequestDto,
-  ) {
-
+  async respondToFriendRequest(user: User, dto: RespondToFriendRequestDto) {
     // Find the friendship
-    const friendship = await this.friendshipRepository.findById(dto.friendshipId);
+    const friendship = await this.friendshipRepository.findById(
+      dto.friendshipId,
+    );
     if (!friendship) {
       throw new NotFoundException('Friend request not found');
     }
-    
+
     // Validate that current user is the recipient and status is PENDING
-    if (friendship.user2Id !== user.id || friendship.status !== FriendshipStatus.PENDING) {
+    if (
+      friendship.user2Id !== user.id ||
+      friendship.status !== FriendshipStatus.PENDING
+    ) {
       throw new NotFoundException('Friend request not found');
     }
 
     // Get sender info for notifications
     const senderId = friendship.user1Id;
     const senderInfo = await this.userRepository.findById(senderId.toString());
-    
+
     if (!senderInfo) {
       throw new NotFoundException('Sender not found');
     }
@@ -328,7 +348,7 @@ export class UsersService {
         friendship.user1Id,
         friendship.user2Id,
       );
-      
+
       // Notify the sender that request was rejected
       this.friendshipNotifier.notifyFriendRequestRejected(
         friendship.user1Id.toString(),
@@ -339,10 +359,10 @@ export class UsersService {
             username: user.username,
             avatar: user.avatar,
           },
-        }
+        },
       );
-      
-      return { message: 'Friend request rejected successfully' };
+
+      return success(RESPONSE_MESSAGES.FRIEND.REQUEST_REJECTED);
     }
 
     // If ACCEPTED, update status
@@ -350,10 +370,13 @@ export class UsersService {
       friendship.id,
       FriendshipStatus.ACCEPTED,
     );
-    
+
     // Update Redis cache - add each other as friends
-    await this.friendsCache.addFriend(user.id.toString(), senderInfo.id.toString());
-    
+    await this.friendsCache.addFriend(
+      user.id.toString(),
+      senderInfo.id.toString(),
+    );
+
     // Notify both users that friendship was accepted
     this.friendshipNotifier.notifyFriendRequestAccepted(
       friendship.user1Id.toString(),
@@ -365,28 +388,24 @@ export class UsersService {
           avatar: user.avatar,
         },
         status: acceptedFriendship.status,
-      }
+      },
     );
-    
-    this.friendshipNotifier.notifyFriendRequestAccepted(
-      user.id.toString(),
-      {
-        friendshipId: acceptedFriendship.id,
-        newFriend: {
-          id: senderInfo.id,
-          username: senderInfo.username,
-          avatar: senderInfo.avatar,
-        },
-        status: acceptedFriendship.status,
-      }
-    );
-    
-    return {
+
+    this.friendshipNotifier.notifyFriendRequestAccepted(user.id.toString(), {
+      friendshipId: acceptedFriendship.id,
+      newFriend: {
+        id: senderInfo.id,
+        username: senderInfo.username,
+        avatar: senderInfo.avatar,
+      },
+      status: acceptedFriendship.status,
+    });
+
+    return success(RESPONSE_MESSAGES.FRIEND.REQUEST_ACCEPTED, {
       id: acceptedFriendship.id,
       status: acceptedFriendship.status,
       createdAt: acceptedFriendship.createdAt,
-      message: 'Friend request accepted successfully',
-    };
+    });
   }
 
   /**
@@ -395,19 +414,28 @@ export class UsersService {
    */
   async cancelFriendRequest(user: User, dto: CancelFriendRequestDto) {
     // Find the friendship
-    const friendship = await this.friendshipRepository.findById(dto.friendshipId);
+    const friendship = await this.friendshipRepository.findById(
+      dto.friendshipId,
+    );
     if (!friendship) {
       throw new NotFoundException('Friend request not found');
     }
 
     // Validate that current user is the sender and status is PENDING
-    if (friendship.user1Id !== user.id || friendship.status !== FriendshipStatus.PENDING) {
-      throw new NotFoundException('Friend request not found or cannot be cancelled');
+    if (
+      friendship.user1Id !== user.id ||
+      friendship.status !== FriendshipStatus.PENDING
+    ) {
+      throw new NotFoundException(
+        'Friend request not found or cannot be cancelled',
+      );
     }
 
     // Get recipient info for notification
-    const recipientInfo = await this.userRepository.findById(friendship.user2Id.toString());
-    
+    const recipientInfo = await this.userRepository.findById(
+      friendship.user2Id.toString(),
+    );
+
     if (!recipientInfo) {
       throw new NotFoundException('Recipient not found');
     }
@@ -420,7 +448,7 @@ export class UsersService {
 
     // Notify the recipient that request was cancelled
     this.friendshipNotifier.notifyFriendRequestCancelled(
-      recipientInfo.id,
+      recipientInfo.id.toString(),
       {
         friendshipId: dto.friendshipId,
         byUser: {
@@ -428,13 +456,12 @@ export class UsersService {
           username: user.username,
           avatar: user.avatar,
         },
-      }
+      },
     );
 
-    return { 
-      message: 'Friend request cancelled successfully',
+    return success(RESPONSE_MESSAGES.FRIEND.REQUEST_CANCELLED, {
       friendshipId: dto.friendshipId,
-    };
+    });
   }
 
   /**
@@ -451,7 +478,8 @@ export class UsersService {
     }
 
     // Privacy check: Only participants can remove friendship
-    const isParticipant = friendship.user1Id === user.id || friendship.user2Id === user.id;
+    const isParticipant =
+      friendship.user1Id === user.id || friendship.user2Id === user.id;
     if (!isParticipant) {
       throw new NotFoundException('Friendship not found');
     }
@@ -465,7 +493,7 @@ export class UsersService {
     // Update Redis cache - remove from each other's friends list
     await this.friendsCache.removeFriend(user.id.toString(), dto.userId);
 
-    return { message: 'Friend removed successfully' };
+    return success(RESPONSE_MESSAGES.FRIEND.REMOVED);
   }
 
   /**
@@ -484,23 +512,31 @@ export class UsersService {
     ]);
 
     // Format friends data - SECURITY: Don't expose sensitive info
-    const formattedFriends = friends.map((friendship) => {
-      const friend =
-        friendship.user1Id === user.id
-          ? friendship.user2
-          : friendship.user1;
-      return {
-        id: friend.id,
-        username: friend.username,
-        avatar: friend.avatar,
-        friendshipId: friendship.id,
-        status: friend.status, // User's presence status
-        createdAt: friendship.createdAt,
-        // SECURITY: Removed email - too sensitive for friends list
-      };
-    });
+    const formattedFriends = await Promise.all(
+      friends.map(async (friendship: any) => {
+        const friend =
+          friendship.user1Id === user.id ? friendship.user2 : friendship.user1;
 
-    return {
+        // Get friend's current presence status and custom status
+        const friendPresence =
+          await this.presenceRepository.getPresenceWithCurrentStatus(friend.id);
+        const friendStatusRecord =
+          await this.statusRecordRepository.getStatusRecordByUserId(friend.id);
+
+        return {
+          id: friend.id,
+          username: friend.username,
+          avatar: friend.avatar,
+          friendshipId: friendship.id,
+          status: friendPresence?.status,
+          customStatus: friendStatusRecord?.text || undefined,
+          createdAt: friendship.createdAt,
+          // SECURITY: Removed email - too sensitive for friends list
+        };
+      }),
+    );
+
+    return success(RESPONSE_MESSAGES.FRIEND.LIST_FETCHED, {
       friends: formattedFriends.slice(skip, skip + limit),
       pagination: {
         page,
@@ -508,7 +544,7 @@ export class UsersService {
         total,
         totalPages: Math.ceil(total / limit),
       },
-    };
+    });
   }
 
   /**
@@ -519,17 +555,18 @@ export class UsersService {
       user.id,
     );
 
-    return requests.map((request) => ({
-      id: request.id,
-      user: {
-        id: request.user1.id,
-        username: request.user1.username,
-        avatar: request.user1.avatar,
-        // SECURITY: Removed email - too sensitive
-      },
-      status: request.status,
-      createdAt: request.createdAt,
-    }));
+    return success(RESPONSE_MESSAGES.FRIEND.INCOMING_FETCHED, 
+      requests.map((request: any) => ({
+        id: request.id,
+        user: {
+          id: request.user1.id,
+          username: request.user1.username,
+          avatar: request.user1.avatar,
+          // SECURITY: Removed email - too sensitive
+        },
+        status: request.status,
+        createdAt: request.createdAt,
+      })));
   }
 
   /**
@@ -540,17 +577,18 @@ export class UsersService {
       user.id,
     );
 
-    return requests.map((request) => ({
-      id: request.id,
-      user: {
-        id: request.user2.id,
-        username: request.user2.username,
-        avatar: request.user2.avatar,
-        // SECURITY: Removed email - too sensitive
-      },
-      status: request.status,
-      createdAt: request.createdAt,
-    }));
+    return success(RESPONSE_MESSAGES.FRIEND.OUTGOING_FETCHED,
+      requests.map((request: any) => ({
+        id: request.id,
+        user: {
+          id: request.user2.id,
+          username: request.user2.username,
+          avatar: request.user2.avatar,
+          // SECURITY: Removed email - too sensitive
+        },
+        status: request.status,
+        createdAt: request.createdAt,
+      })));
   }
 
   /**
@@ -562,7 +600,7 @@ export class UsersService {
       user.id,
       BigInt(dto.userId),
     );
-    
+
     // SECURITY: Don't reveal if user exists or not
     if (!friendship || friendship.status !== FriendshipStatus.ACCEPTED) {
       throw new NotFoundException('User not found');
@@ -574,12 +612,25 @@ export class UsersService {
     );
 
     // SECURITY: Don't expose sensitive information
-    return mutualFriends.map((friend) => ({
-      id: friend.id,
-      username: friend.username,
-      avatar: friend.avatar,
-      // SECURITY: Removed email - too sensitive
-    }));
+    const mutualFriendsList = await Promise.all(
+      mutualFriends.map(async (friend) => {
+        const friendPresence =
+          await this.presenceRepository.getPresenceWithCurrentStatus(friend.id);
+        const friendStatusRecord =
+          await this.statusRecordRepository.getStatusRecordByUserId(friend.id);
+
+        return {
+          id: friend.id,
+          username: friend.username,
+          avatar: friend.avatar,
+          status: friendPresence?.status,
+          customStatus: friendStatusRecord?.text || undefined,
+          // SECURITY: Removed email - too sensitive
+        };
+      }),
+    );
+
+    return success(RESPONSE_MESSAGES.FRIEND.MUTUAL_FETCHED, mutualFriendsList);
   }
 
   /**
@@ -588,7 +639,7 @@ export class UsersService {
   async checkFriendship(user: User, targetUserId: string) {
     // SECURITY: Don't check if user exists to prevent enumeration
     // Only check friendship status between current user and target ID
-    
+
     const areFriends = await this.friendshipRepository.areFriends(
       user.id,
       BigInt(targetUserId),
@@ -623,12 +674,12 @@ export class UsersService {
     }
 
     // Create or update the relation
-    const relation = await this.userRelationRepository.createOrUpdateRelation({
+    const relation = (await this.userRelationRepository.createOrUpdateRelation({
       sourceId: user.id,
       targetId: BigInt(dto.targetUserId),
       type: dto.type,
       note: dto.note,
-    }) as any;
+    })) as any;
 
     return {
       id: relation.id,
@@ -636,7 +687,7 @@ export class UsersService {
       targetUser: {
         id: relation.target.id,
         username: relation.target.username,
-        globalName: relation.target.globalName,
+        globalname: relation.target.globalname,
         avatar: relation.target.avatar,
       },
       note: relation.note,
@@ -661,12 +712,12 @@ export class UsersService {
     }
 
     // Update the relation
-    const relation = await this.userRelationRepository.createOrUpdateRelation({
+    const relation = (await this.userRelationRepository.createOrUpdateRelation({
       sourceId: user.id,
       targetId: BigInt(dto.targetUserId),
       type: dto.type,
       note: dto.note,
-    }) as any;
+    })) as any;
 
     return {
       id: relation.id,
@@ -674,7 +725,7 @@ export class UsersService {
       targetUser: {
         id: relation.target.id,
         username: relation.target.username,
-        globalName: relation.target.globalName,
+        globalname: relation.target.globalname,
         avatar: relation.target.avatar,
       },
       note: relation.note,
@@ -723,62 +774,117 @@ export class UsersService {
       relations = await this.userRelationRepository.getSourceRelations(user.id);
     }
 
-    return relations.map((relation) => ({
-      id: relation.id,
-      type: relation.type,
-      targetUser: {
-        id: relation.target.id,
-        username: relation.target.username,
-        globalName: relation.target.globalName,
-        avatar: relation.target.avatar,
-        status: relation.target.status,
-      },
-      note: relation.note,
-      createdAt: relation.createdAt,
-      updatedAt: relation.updatedAt,
-    }));
+    const formattedRelations = await Promise.all(
+      relations.map(async (relation) => {
+        // Get target user's current presence status and custom status
+        const targetPresence =
+          await this.presenceRepository.getPresenceWithCurrentStatus(
+            relation.target.id,
+          );
+        const targetStatusRecord =
+          await this.statusRecordRepository.getStatusRecordByUserId(
+            relation.target.id,
+          );
+
+        return {
+          id: relation.id,
+          type: relation.type,
+          targetUser: {
+            id: relation.target.id,
+            username: relation.target.username,
+            globalname: relation.target.globalname,
+            avatar: relation.target.avatar,
+            status: targetPresence?.status,
+            customStatus: targetStatusRecord?.text || undefined,
+          },
+          note: relation.note,
+          createdAt: relation.createdAt,
+          updatedAt: relation.updatedAt,
+        };
+      }),
+    );
+
+    return formattedRelations;
   }
 
   /**
    * Get blocked users
    */
   async getBlockedUsers(user: User) {
-    const blockedUsers = await this.userRelationRepository.getBlockedUsers(user.id);
+    const blockedUsers = await this.userRelationRepository.getBlockedUsers(
+      user.id,
+    );
 
-    return blockedUsers.map((relation) => ({
-      id: relation.id,
-      targetUser: {
-        id: relation.target.id,
-        username: relation.target.username,
-        globalName: relation.target.globalName,
-        avatar: relation.target.avatar,
-        status: relation.target.status,
-      },
-      note: relation.note,
-      createdAt: relation.createdAt,
-      updatedAt: relation.updatedAt,
-    }));
+    const formattedBlockedUsers = await Promise.all(
+      blockedUsers.map(async (relation: any) => {
+        // Get target user's current presence status and custom status
+        const targetPresence =
+          await this.presenceRepository.getPresenceWithCurrentStatus(
+            relation.target.id,
+          );
+        const targetStatusRecord =
+          await this.statusRecordRepository.getStatusRecordByUserId(
+            relation.target.id,
+          );
+
+        return {
+          id: relation.id,
+          targetUser: {
+            id: relation.target.id,
+            username: relation.target.username,
+            globalname: relation.target.globalname,
+            avatar: relation.target.avatar,
+            status: targetPresence?.status,
+            customStatus: targetStatusRecord?.text || undefined,
+          },
+          note: relation.note,
+          createdAt: relation.createdAt,
+          updatedAt: relation.updatedAt,
+        };
+      }),
+    );
+
+    return formattedBlockedUsers;
   }
 
   /**
    * Get ignored users
    */
   async getIgnoredUsers(user: User) {
-    const ignoredUsers = await this.userRelationRepository.getIgnoredUsers(user.id);
+    const ignoredUsers = await this.userRelationRepository.getIgnoredUsers(
+      user.id,
+    );
 
-    return ignoredUsers.map((relation) => ({
-      id: relation.id,
-      targetUser: {
-        id: relation.target.id,
-        username: relation.target.username,
-        globalName: relation.target.globalName,
-        avatar: relation.target.avatar,
-        status: relation.target.status,
-      },
-      note: relation.note,
-      createdAt: relation.createdAt,
-      updatedAt: relation.updatedAt,
-    }));
+    const formattedIgnoredUsers = await Promise.all(
+      ignoredUsers.map(async (relation: any) => {
+        // Get target user's current presence status and custom status
+        const targetPresence =
+          await this.presenceRepository.getPresenceWithCurrentStatus(
+            relation.target.id,
+          );
+        const targetStatusRecord =
+          await this.statusRecordRepository.getStatusRecordByUserId(
+            relation.target.id,
+          );
+
+        return {
+          id: relation.id,
+          targetUser: {
+            id: relation.target.id,
+            username: relation.target.username,
+            globalname: relation.target.globalname,
+            avatar: relation.target.avatar,
+            status: targetPresence?.status,
+            customStatus: targetStatusRecord?.text || undefined,
+          },
+          note: relation.note,
+          createdAt: relation.createdAt,
+          updatedAt: relation.updatedAt,
+        };
+      }),
+    );
+
+    return formattedIgnoredUsers;
   }
 
   /**
@@ -787,19 +893,36 @@ export class UsersService {
   async getMutedUsers(user: User) {
     const mutedUsers = await this.userRelationRepository.getMutedUsers(user.id);
 
-    return mutedUsers.map((relation) => ({
-      id: relation.id,
-      targetUser: {
-        id: relation.target.id,
-        username: relation.target.username,
-        globalName: relation.target.globalName,
-        avatar: relation.target.avatar,
-        status: relation.target.status,
-      },
-      note: relation.note,
-      createdAt: relation.createdAt,
-      updatedAt: relation.updatedAt,
-    }));
+    const formattedMutedUsers = await Promise.all(
+      mutedUsers.map(async (relation: any) => {
+        // Get target user's current presence status and custom status
+        const targetPresence =
+          await this.presenceRepository.getPresenceWithCurrentStatus(
+            relation.target.id,
+          );
+        const targetStatusRecord =
+          await this.statusRecordRepository.getStatusRecordByUserId(
+            relation.target.id,
+          );
+
+        return {
+          id: relation.id,
+          targetUser: {
+            id: relation.target.id,
+            username: relation.target.username,
+            globalname: relation.target.globalname,
+            avatar: relation.target.avatar,
+            status: targetPresence?.status,
+            customStatus: targetStatusRecord?.text || undefined,
+          },
+          note: relation.note,
+          createdAt: relation.createdAt,
+          updatedAt: relation.updatedAt,
+        };
+      }),
+    );
+
+    return formattedMutedUsers;
   }
 
   /**

@@ -247,7 +247,7 @@ FILE: postman/User1_Alice.postman_collection.json
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"globalName\": \"Alice Johnson\"\n}"
+							"raw": "{\n  \"globalname\": \"Alice Johnson\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/users/profile/global-name",
@@ -771,7 +771,7 @@ FILE: postman/User2_Bob.postman_collection.json
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"globalName\": \"Bob Smith\"\n}"
+							"raw": "{\n  \"globalname\": \"Bob Smith\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/users/profile/global-name",
@@ -1295,7 +1295,7 @@ FILE: postman/User3_Charlie.postman_collection.json
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"globalName\": \"Charlie Brown\"\n}"
+							"raw": "{\n  \"globalname\": \"Charlie Brown\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/users/profile/global-name",
@@ -1781,7 +1781,7 @@ enum UserStatus {
 model User {
   id           BigInt     @id
   username     String     @unique
-  globalName   String?
+  globalname   String?
   email        String?    @unique
   phone        String?    @unique
   password     String

@@ -1,7 +1,8 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiConflictResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 import { HttpCode, HttpStatus } from '@nestjs/common';
-import { ErrorResponseDto, UserProfileResponseDto } from 'src/common/dto';
+import { ErrorResponseDto, UserDto } from 'src/common/dto';
+import { boolean } from 'zod';
 
 /**
  * Get Profile API Documentation
@@ -16,22 +17,23 @@ export function GetProfileApiDocs() {
     ApiResponse({ 
       status: 200, 
       description: 'User profile retrieved successfully',
-      type: UserProfileResponseDto,
+      type: UserDto,
       schema: {
         example: {
           status: 'success',
           code: 200,
-          message: '',
+          message: 'User profile fetched successfully',
           data: {
-            id: '1234567890',
-            username: 'johndoe',
-            email: 'john@example.com',
-            phone: '+1234567890',
-            avatar: 'https://example.com/avatar.jpg',
-            bio: 'Software developer and tech enthusiast',
-            status: 'online',
-            createdAt: '2025-10-17T12:00:00.000Z',
-            updatedAt: '2025-10-17T12:00:00.000Z'
+            id: '4866181555032064',
+            username: 'alice_dev',
+            birthdate: '2000-06-09T21:00:00.000Z',
+            globalname: 'Alice Developer',
+            email: 'alice@discordclone.com',
+            phone: "+201478963214",
+            avatar: "https://example.com/avatar.jpg",
+            isOnline: boolean,
+            isBot: boolean,
+            createdAt: '2025-10-29T10:16:28.207Z'
           }
         }
       }

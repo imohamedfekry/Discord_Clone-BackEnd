@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { UserRepository } from '../../database/repositories/user.repository';
+import { UserRepository } from 'src/common/database/repositories';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -31,32 +31,29 @@ export class JwtHelper {
    * Handles token extraction, verification, and user lookup in one place
    * Returns user or null
    */
-  async extractAndVerifyUser(token: any): Promise<any | null> {
+  async VerifyAndGetUser(token: any): Promise<any | null> {
     try {
       if (!token) {
         Logger.warn('No token provided');
         return null;
       }
-      
-      // Handle Bearer token format
-      let cleanToken = token;
-      if (typeof token === 'string' && token.startsWith('Bearer ')) {
-        cleanToken = token.substring(7);
-      }
+    
       
       Logger.log(`Attempting to verify token...`);
       
-      const decoded = this.verifyToken(cleanToken);
+      const decoded = this.verifyToken(token);
       if (!decoded || !decoded.sub) {
         Logger.warn('Token decoded but missing sub or decoded is null');
         return null;
       }
       
       Logger.log(`Token decoded successfully for user: ${decoded.sub}`);
-      
-      // Get user from database
-      const user = await this.userRepository.findById(decoded.sub);
-      
+        const user = await this.userRepository.findById(decoded.sub, {
+          include: {
+            presence: true,
+            statusRecord: true,
+          },
+        });      
       if (!user) {
         Logger.warn(`User not found in database: ${decoded.sub}`);
         return null;

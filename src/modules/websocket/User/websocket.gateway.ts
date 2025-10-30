@@ -12,8 +12,8 @@ import { Server } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { WSAuth } from '../../../common/decorators/websocket-auth.decorator';
 import { ConnectionHandlerService } from './auth/connection.handler';
-import { PresenceService } from './presence/presence.service';
-import { BroadcasterService } from './shared/broadcaster.service';
+import { UnifiedPresenceService } from './services/unified-presence.service';
+import { BroadcasterService } from './presence/broadcaster.service';
 import { FriendsService } from './friends/friends.service';
 import {
   AuthenticatedSocket,
@@ -43,7 +43,7 @@ export class WebSocketGatewayService
 
   constructor(
     private readonly connectionHandler: ConnectionHandlerService,
-    private readonly presenceService: PresenceService,
+    private readonly presenceService: UnifiedPresenceService,
     private readonly broadcaster: BroadcasterService,
     private readonly friendsService: FriendsService,
   ) {}

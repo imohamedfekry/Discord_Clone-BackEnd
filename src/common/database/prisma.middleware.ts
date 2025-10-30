@@ -45,16 +45,22 @@ async function handelPhoneEncryption(model: string, args: any) {
   }
   
 }
-// convert bigints to strings
+// convert bigints to strings, preserve Date objects
 function convert(obj: any): any {
   if (obj === null || obj === undefined) return obj;
+  // Preserve Date objects (they come from Prisma DateTime fields)
+  if (obj instanceof Date) return obj;
   if (typeof obj === 'bigint') return obj.toString();
   if (Array.isArray(obj)) return obj.map(convert);
   if (typeof obj === 'object') {
+    // Check if it's an empty object (might be a serialized Date issue)
+    if (Object.keys(obj).length === 0 && obj.constructor === Object) {
+      // This might be a serialization artifact, skip it or return null
+      return null;
+    }
     const out: Record<string, any> = {};
     for (const key in obj) out[key] = convert(obj[key]);
     return out;
-    
   }
   return obj;
 }

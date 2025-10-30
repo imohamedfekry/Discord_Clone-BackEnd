@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Put, Delete, Body, Request, Query, Param, ValidationPipe, UsePipes } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { 
   GetProfileApiDocs,
@@ -16,7 +16,7 @@ import {
 } from './dto/friendship.dto';
 import {
   UpdatePasswordDto,
-  UpdateGlobalNameDto,
+  UpdateglobalnameDto,
   UpdateCustomStatusDto,
   UpdateUsernameDto,
   UpdatePresenceStatusDto,
@@ -38,42 +38,46 @@ import {
 @Auth()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-  @Get('profile')
+  // Start Profile Cruds Endpoints
+  @Get('@me')
   @GetProfileApiDocs()
   async getProfile(@Request() request: any) {
     return this.usersService.getProfile(request.user);
   }
 
-  @Put('profile/password')
+  @Put('@me/update/password')
   @UsePipes(new ValidationPipe({ transform: true }))
   async updatePassword(@Request() request: any, @Body() dto: UpdatePasswordDto) {
     return this.usersService.updatePassword(request.user, dto);
   }
 
-  @Put('profile/global-name')
+  @Put('@me/update/globalname')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async updateGlobalName(@Request() request: any, @Body() dto: UpdateGlobalNameDto) {
-    return this.usersService.updateGlobalName(request.user, dto);
+  async updateglobalname(@Request() request: any, @Body() dto: UpdateglobalnameDto) {
+    return this.usersService.updateglobalname(request.user, dto);
   }
 
-  @Put('profile/custom-status')
-  @UsePipes(new ValidationPipe({ transform: true }))
-  async updateCustomStatus(@Request() request: any, @Body() dto: UpdateCustomStatusDto) {
-    return this.usersService.updateCustomStatus(request.user, dto);
-  }
-
-  @Put('profile/username')
+  @Put('@me/update/username')
   @UsePipes(new ValidationPipe({ transform: true }))
   async updateUsername(@Request() request: any, @Body() dto: UpdateUsernameDto) {
+
     return this.usersService.updateUsername(request.user, dto);
   }
 
-  @Put('profile/presence-status')
+  @Put('@me/update/customstatus')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async updateCustomStatus(@Request() request: any, @Body() dto: UpdateCustomStatusDto) {
+    // custom status like emoji and text
+    return this.usersService.updateCustomStatus(request.user, dto);
+  }
+  @Put('@me/update/presenceStatus')
   @UsePipes(new ValidationPipe({ transform: true }))
   async updatePresenceStatus(@Request() request: any, @Body() dto: UpdatePresenceStatusDto) {
+    // status like online, idle, dnd, invisible
     return this.usersService.updatePresenceStatus(request.user, dto);
   }
-
+  // End Profile Cruds Endpoints
+  
   // Friendship endpoints
   @Post('friends/request')
   @UsePipes(new ValidationPipe({ transform: true }))

@@ -106,7 +106,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"globalName\": \"Charlie Brown\"\n}"
+							"raw": "{\n  \"globalname\": \"Charlie Brown\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/users/profile/global-name",

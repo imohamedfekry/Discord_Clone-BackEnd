@@ -195,7 +195,7 @@ enum RelationType {
       "id": "123456789012345678",
       "username": "john_doe",
       "email": "john@example.com",
-      "globalName": null,
+      "globalname": null,
       "phone": null,
       "avatar": null,
       "status": "OFFLINE",
@@ -277,7 +277,7 @@ Authorization: Bearer <access_token>
   "data": {
     "id": "123456789012345678",
     "username": "john_doe",
-    "globalName": "John Doe",
+    "globalname": "John Doe",
     "email": "john@example.com",
     "phone": "+1234567890",
     "avatar": "https://example.com/avatar.jpg",
@@ -346,12 +346,12 @@ Content-Type: application/json
 **Request Body:**
 ```json
 {
-  "globalName": "John Doe"
+  "globalname": "John Doe"
 }
 ```
 
 **Validation Rules:**
-- `globalName`: Optional, max 32 characters
+- `globalname`: Optional, max 32 characters
 
 **Success Response (200):**
 ```json
@@ -362,7 +362,7 @@ Content-Type: application/json
   "data": {
     "id": "123456789012345678",
     "username": "john_doe",
-    "globalName": "John Doe",
+    "globalname": "John Doe",
     "updatedAt": "2024-01-15T10:30:00.000Z"
   },
   "timestamp": "2024-01-15T10:30:00.000Z"
@@ -576,7 +576,7 @@ GET /users/friends?status=ACCEPTED&page=1&limit=20
       "friend": {
         "id": "987654321098765432",
         "username": "jane_doe",
-        "globalName": "Jane Doe",
+        "globalname": "Jane Doe",
         "avatar": "https://example.com/avatar.jpg",
         "status": "ONLINE"
       }
@@ -614,7 +614,7 @@ Authorization: Bearer <access_token>
       "requester": {
         "id": "987654321098765432",
         "username": "jane_doe",
-        "globalName": "Jane Doe",
+        "globalname": "Jane Doe",
         "avatar": "https://example.com/avatar.jpg",
         "status": "ONLINE"
       }
@@ -652,7 +652,7 @@ Authorization: Bearer <access_token>
       "target": {
         "id": "987654321098765432",
         "username": "jane_doe",
-        "globalName": "Jane Doe",
+        "globalname": "Jane Doe",
         "avatar": "https://example.com/avatar.jpg",
         "status": "ONLINE"
       }
@@ -686,7 +686,7 @@ Authorization: Bearer <access_token>
     {
       "id": "111111111111111111",
       "username": "mutual_friend",
-      "globalName": "Mutual Friend",
+      "globalname": "Mutual Friend",
       "avatar": "https://example.com/avatar.jpg",
       "status": "ONLINE"
     }
@@ -847,7 +847,7 @@ GET /users/relations?type=BLOCKED
       "target": {
         "id": "987654321098765432",
         "username": "jane_doe",
-        "globalName": "Jane Doe",
+        "globalname": "Jane Doe",
         "avatar": "https://example.com/avatar.jpg",
         "status": "ONLINE"
       }
@@ -886,7 +886,7 @@ Authorization: Bearer <access_token>
       "target": {
         "id": "987654321098765432",
         "username": "jane_doe",
-        "globalName": "Jane Doe",
+        "globalname": "Jane Doe",
         "avatar": "https://example.com/avatar.jpg",
         "status": "ONLINE"
       }
@@ -925,7 +925,7 @@ Authorization: Bearer <access_token>
       "target": {
         "id": "987654321098765432",
         "username": "jane_doe",
-        "globalName": "Jane Doe",
+        "globalname": "Jane Doe",
         "avatar": "https://example.com/avatar.jpg",
         "status": "ONLINE"
       }
@@ -964,7 +964,7 @@ Authorization: Bearer <access_token>
       "target": {
         "id": "987654321098765432",
         "username": "jane_doe",
-        "globalName": "Jane Doe",
+        "globalname": "Jane Doe",
         "avatar": "https://example.com/avatar.jpg",
         "status": "ONLINE"
       }
@@ -1286,10 +1286,10 @@ class DiscordAPI {
     });
   }
 
-  async updateGlobalName(globalName) {
+  async updateglobalname(globalname) {
     return this.makeRequest('/users/profile/global-name', {
       method: 'PUT',
-      body: JSON.stringify({ globalName }),
+      body: JSON.stringify({ globalname }),
     });
   }
 

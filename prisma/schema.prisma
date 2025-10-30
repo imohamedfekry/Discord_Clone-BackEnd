@@ -9,28 +9,29 @@ generator client {
 
 enum UserStatus {
   ONLINE
-  OFFLINE
+  Invisible
   IDLE
   DND
 }
 
 model User {
-  id           BigInt     @id
-  username     String     @unique
-  globalName   String?
-  email        String?    @unique
-  phone        String?    @unique
-  password     String
-  avatar       String?
-  birthdate    DateTime?
+  id             BigInt             @id
+  username       String             @unique
+  globalname     String?
+  email          String?            @unique
+  phone          String?            @unique
+  password       String
+  avatar         String?
+  birthdate      DateTime?
+  isOnline       Boolean?           @default(false)
+  isBot          Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
-  status       UserStatus @default(OFFLINE)
-  customStatus String?
-  isBot        Boolean    @default(false)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  
   // relations
+  presence       Presence?
+  statusRecord   UserStatusRecord?
+
   sentMessages     Message[]          @relation("SentMessages")
   receivedMessages Message[]          @relation("ReceivedMessages")
   friendships1     Friendship[]       @relation("UserFriend1")
@@ -42,6 +43,28 @@ model User {
 
   @@index([username])
 }
+
+model Presence {
+  id          BigInt      @id
+  userId      BigInt      @unique
+  user        User        @relation(fields: [userId], references: [id])
+  status      UserStatus?
+  expiresAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model UserStatusRecord {
+  id           BigInt      @id
+  userId       BigInt      @unique
+  user         User        @relation(fields: [userId], references: [id])
+  text   String?
+  emoji  String?
+  expiresAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
 
 model Friendship {
   id        BigInt           @id

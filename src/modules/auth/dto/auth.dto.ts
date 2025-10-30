@@ -1,4 +1,14 @@
-import { IsEmail, IsString, MinLength, MaxLength, IsNotEmpty, IsStrongPassword, IsDateString, IsDate, Validate } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  MaxLength,
+  IsNotEmpty,
+  IsStrongPassword,
+  IsDateString,
+  IsDate,
+  Validate,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUsername } from '../../../common/Global/validators/username.validator';
 import { Type } from 'class-transformer';
@@ -27,12 +37,24 @@ export class RegisterDto {
   // @MinLength(10)
   // @MaxLength(15)
   // phone: string;
-  @ApiProperty({ description: 'The birthdate of the user', example: '2002-10-26' })
+  @ApiProperty({
+    description: 'The birthdate of the user',
+    example: '2002-10-26',
+  })
   @Type(() => Date)
   @IsDate()
   @IsNotEmpty()
   @IsValidBirthdate()
   birthdate: Date;
+
+  @ApiProperty({
+    description: 'The global name of the user',
+    example: 'John Doe',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(32, { message: 'Global name must not exceed 32 characters' })
+  globalname: string;
 }
 
 export class LoginDto {

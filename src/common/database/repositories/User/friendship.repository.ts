@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { FriendshipStatus, Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../../prisma.service';
 import { snowflake } from 'src/common/utils/snowflake';
 
 @Injectable()
@@ -8,7 +8,20 @@ export class FriendshipRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   // Find friendship between two users
-  async findBetweenUsers(user1Id: bigint, user2Id: bigint) {
+  async findBetweenUsers(
+    user1Id: bigint,
+    user2Id: bigint,
+    select?: Prisma.FriendshipSelect,
+  ) {
+    const options: any = select
+      ? { select }
+      : {
+          include: {
+            user1: true,
+            user2: true,
+          },
+        };
+    
     return this.prisma.friendship.findFirst({
       where: {
         OR: [
@@ -16,26 +29,45 @@ export class FriendshipRepository {
           { user1Id: user2Id, user2Id: user1Id },
         ],
       },
-      include: {
-        user1: true,
-        user2: true,
-      },
+      ...options,
     });
   }
 
   // Find friendship by ID
-  async findById(id: string) {
+  async findById(
+    id: string,
+    select?: Prisma.FriendshipSelect,
+  ) {
+    const options: any = select
+      ? { select }
+      : {
+          include: {
+            user1: true,
+            user2: true,
+          },
+        };
+    
     return this.prisma.friendship.findUnique({
       where: { id: BigInt(id) },
-      include: {
-        user1: true,
-        user2: true,
-      },
+      ...options,
     });
   }
 
   // Find friendships by status for a user
-  async findByUserIdAndStatus(userId: bigint, status: FriendshipStatus) {
+  async findByUserIdAndStatus(
+    userId: bigint,
+    status: FriendshipStatus,
+    select?: Prisma.FriendshipSelect,
+  ) {
+    const options: any = select
+      ? { select }
+      : {
+          include: {
+            user1: true,
+            user2: true,
+          },
+        };
+    
     return this.prisma.friendship.findMany({
       where: {
         OR: [
@@ -43,10 +75,7 @@ export class FriendshipRepository {
           { user2Id: userId, status },
         ],
       },
-      include: {
-        user1: true,
-        user2: true,
-      },
+      ...options,
       orderBy: {
         createdAt: 'desc',
       },
@@ -66,15 +95,24 @@ export class FriendshipRepository {
   }
 
   // Find incoming friend requests for a user
-  async findIncomingRequests(userId: bigint) {
+  async findIncomingRequests(
+    userId: bigint,
+    select?: Prisma.FriendshipSelect,
+  ) {
+    const options: any = select
+      ? { select }
+      : {
+          include: {
+            user1: true,
+          },
+        };
+    
     return this.prisma.friendship.findMany({
       where: {
         user2Id: userId,
         status: FriendshipStatus.PENDING,
       },
-      include: {
-        user1: true,
-      },
+      ...options,
       orderBy: {
         createdAt: 'desc',
       },
@@ -82,15 +120,24 @@ export class FriendshipRepository {
   }
 
   // Find outgoing friend requests for a user
-  async findOutgoingRequests(userId: bigint) {
+  async findOutgoingRequests(
+    userId: bigint,
+    select?: Prisma.FriendshipSelect,
+  ) {
+    const options: any = select
+      ? { select }
+      : {
+          include: {
+            user2: true,
+          },
+        };
+    
     return this.prisma.friendship.findMany({
       where: {
         user1Id: userId,
         status: FriendshipStatus.PENDING,
       },
-      include: {
-        user2: true,
-      },
+      ...options,
       orderBy: {
         createdAt: 'desc',
       },
@@ -110,7 +157,11 @@ export class FriendshipRepository {
   }
 
   // Get mutual friends between two users
-  async getMutualFriends(user1Id: bigint, user2Id: bigint) {
+  async getMutualFriends(
+    user1Id: bigint,
+    user2Id: bigint,
+    userSelect?: Prisma.UserSelect,
+  ) {
     // Get all friends of user1
     const user1Friends = await this.prisma.friendship.findMany({
       where: {
@@ -149,33 +200,48 @@ export class FriendshipRepository {
       where: {
         id: { in: mutualFriendIds },
       },
+      ...(userSelect && { select: userSelect }),
     });
   }
 
   // Create friendship with proper ID generation
-  async createFriendship(data: Omit<Prisma.FriendshipCreateInput, 'id'>) {
+  async createFriendship(
+    data: Omit<Prisma.FriendshipCreateInput, 'id'>,
+    select?: Prisma.FriendshipSelect,
+  ) {
     return this.prisma.friendship.create({
       data: {
         ...data,
         id: snowflake.generate(),
       },
+      ...(select && { select }),
     });
   }
 
   // Update friendship status
-  async updateStatus(id: bigint, status: FriendshipStatus) {
+  async updateStatus(
+    id: bigint,
+    status: FriendshipStatus,
+    select?: Prisma.FriendshipSelect,
+  ) {
     return this.prisma.friendship.update({
       where: { id },
       data: { status },
+      ...(select && { select }),
     });
   }
 
   // Delete friendship by user IDs
-  async deleteByUserIds(user1Id: bigint, user2Id: bigint) {
+  async deleteByUserIds(
+    user1Id: bigint,
+    user2Id: bigint,
+    select?: Prisma.FriendshipSelect,
+  ) {
     const friendship = await this.findBetweenUsers(user1Id, user2Id);
     if (friendship) {
       return this.prisma.friendship.delete({
         where: { id: friendship.id },
+        ...(select && { select }),
       });
     }
     return null;

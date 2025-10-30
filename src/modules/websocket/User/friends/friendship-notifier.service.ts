@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BroadcasterService } from '../shared/broadcaster.service';
+import { BroadcasterService } from '../presence/broadcaster.service';
 import { WebSocketEvents } from '../../../../common/Types/websocket.types';
 
 /**
@@ -20,10 +20,12 @@ export class FriendshipNotifierService {
   notifyFriendRequestReceived(recipientId: string, data: any): void {
     this.logger.log(`Notifying ${recipientId} about friend request from ${data.fromUser.username}`);
     
-    this.broadcaster.sendToUser(recipientId, WebSocketEvents.FRIEND_REQUEST_RECEIVED, {
-      ...data,
-      timestamp: new Date(),
-    });
+    this.broadcaster.sendToUserStd(
+      recipientId,
+      WebSocketEvents.FRIEND_REQUEST_RECEIVED,
+      'Friend request received',
+      data,
+    );
   }
 
   /**
@@ -34,10 +36,12 @@ export class FriendshipNotifierService {
   notifyFriendRequestAccepted(userId: string, data: any): void {
     this.logger.log(`Notifying ${userId} that friend request was accepted by ${data.newFriend.username}`);
     
-    this.broadcaster.sendToUser(userId, WebSocketEvents.FRIEND_REQUEST_ACCEPTED, {
-      ...data,
-      timestamp: new Date(),
-    });
+    this.broadcaster.sendToUserStd(
+      userId,
+      WebSocketEvents.FRIEND_REQUEST_ACCEPTED,
+      'Friend request accepted',
+      data,
+    );
   }
 
   /**
@@ -48,10 +52,12 @@ export class FriendshipNotifierService {
   notifyFriendRequestRejected(userId: string, data: any): void {
     this.logger.log(`Notifying ${userId} that friend request was rejected by ${data.byUser.username}`);
     
-    this.broadcaster.sendToUser(userId, WebSocketEvents.FRIEND_REQUEST_REJECTED, {
-      ...data,
-      timestamp: new Date(),
-    });
+    this.broadcaster.sendToUserStd(
+      userId,
+      WebSocketEvents.FRIEND_REQUEST_REJECTED,
+      'Friend request rejected',
+      data,
+    );
   }
 
   /**
@@ -62,10 +68,12 @@ export class FriendshipNotifierService {
   notifyFriendRequestCancelled(recipientId: string, data: any): void {
     this.logger.log(`Notifying ${recipientId} that friend request was cancelled by ${data.byUser.username}`);
     
-    this.broadcaster.sendToUser(recipientId, WebSocketEvents.FRIEND_REQUEST_CANCELLED, {
-      ...data,
-      timestamp: new Date(),
-    });
+    this.broadcaster.sendToUserStd(
+      recipientId,
+      WebSocketEvents.FRIEND_REQUEST_CANCELLED,
+      'Friend request cancelled',
+      data,
+    );
   }
 }
 

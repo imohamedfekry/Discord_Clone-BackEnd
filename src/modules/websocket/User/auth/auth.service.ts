@@ -26,7 +26,7 @@ export class AuthService {
       return null;
     }
 
-    const user = await this.jwtHelper.extractAndVerifyUser(token);
+    const user = await this.jwtHelper.VerifyAndGetUser(token);
 
     if (!user) {
       this.logger.warn(`Invalid token for client ${client.id}`);
@@ -71,7 +71,7 @@ export class AuthService {
    * @param client - Socket client
    * @returns Connection metadata
    */
-  extractConnectionMetadata(client: AuthenticatedSocket) {
+  createConnectionMetadata(client: AuthenticatedSocket) {
     return {
       device: client.handshake.headers['user-agent'] || 'unknown',
       ip: client.handshake.address,

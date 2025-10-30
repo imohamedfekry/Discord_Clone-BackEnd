@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PresenceService } from '../../../../common/presence/presence.service';
-import { UserRepository } from '../../../../common/database/repositories/user.repository';
+import { UserRepository } from 'src/common/database/repositories';
 import { AuthService } from './auth.service';
 import { AuthenticatedSocket } from '../../../../common/Types/websocket.types';
 import { WebSocketEvents } from '../../../../common/Types/websocket.types';
+import { UnifiedPresenceService } from '../services/unified-presence.service';
 
 /**
  * Connection Handler Service
@@ -15,8 +15,8 @@ export class ConnectionHandlerService {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly presenceService: PresenceService,
     private readonly userRepository: UserRepository,
+    private readonly presenceService: UnifiedPresenceService,
   ) {}
 
   /**
@@ -40,11 +40,8 @@ export class ConnectionHandlerService {
       await client.join('presence:updates');
 
       // Mark user as online in Redis
-      const metadata = this.authService.extractConnectionMetadata(client);
+      const metadata = this.authService.createConnectionMetadata(client);
       await this.presenceService.markOnline(user.id, client.id, metadata);
-
-      // Update database status
-      await this.userRepository.updateStatus(user.id, 'ONLINE');
 
       // Send connection confirmation
       client.emit(WebSocketEvents.CONNECTED, {
@@ -52,6 +49,9 @@ export class ConnectionHandlerService {
         userId: user.id,
         socketId: client.id,
       });
+
+      // Handle user online status and notify friends
+      await this.presenceService.handleUserOnline(user.id, user.username);
 
       this.logger.log(`User ${user.id} connected via socket ${client.id}`);
       
@@ -70,6 +70,7 @@ export class ConnectionHandlerService {
     }
 
     const userId = client.userId!;
+    const user = this.authService.getUserFromClient(client);
 
     // Mark socket as offline in Redis
     await this.presenceService.markOffline(userId, client.id);
@@ -78,8 +79,8 @@ export class ConnectionHandlerService {
     const socketCount = await this.presenceService.getSocketCount(userId);
 
     if (socketCount === 0) {
-      // Update database status to offline
-      await this.userRepository.updateStatus(userId, 'OFFLINE');
+      // Handle user offline status and notify friends
+      await this.presenceService.handleUserOffline(userId, user?.username || 'Unknown');
     }
 
     this.logger.log(`User ${userId} disconnected from socket ${client.id}`);

@@ -4,7 +4,9 @@ import {
   UserRepository,
   FriendshipRepository,
   UserRelationRepository,
-} from './repositories';
+  PresenceRepository,
+  UserStatusRecordRepository,
+} from './repositories/User';
 
 @Global()
 @Module({
@@ -13,12 +15,16 @@ import {
     UserRepository,
     FriendshipRepository,
     UserRelationRepository,
+    PresenceRepository,
+    UserStatusRecordRepository,
   ],
   exports: [
     PrismaService,
     UserRepository,
     FriendshipRepository,
     UserRelationRepository,
+    PresenceRepository,
+    UserStatusRecordRepository,
   ],
 })
 export class DatabaseModule {}

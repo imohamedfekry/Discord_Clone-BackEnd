@@ -21,8 +21,8 @@ export function RegisterApiDocs() {
       schema: {
         example: {
           status: 'success',
-          code: 201,
-          message: '',
+          code: 'USER_CREATED',
+          message: 'User created successfully',
           data: {
             user: {
               id: '1234567890',
@@ -42,7 +42,7 @@ export function RegisterApiDocs() {
       schema: {
         example: {
           status: 'fail',
-          code: 400,
+          code: 'VALIDATION_FAILED',
           message: 'Validation failed',
           timestamp: '2025-10-17T12:00:00.000Z',
           errors: [
@@ -61,7 +61,7 @@ export function RegisterApiDocs() {
       schema: {
         example: {
           status: 'fail',
-          code: 409,
+          code: 'USER_ALREADY_EXISTS',
           message: 'User with this email already exists',
           timestamp: '2025-10-17T12:00:00.000Z'
         }
@@ -87,8 +87,8 @@ export function LoginApiDocs() {
       schema: {
         example: {
           status: 'success',
-          code: 200,
-          message: '',
+          code: 'LOGIN_SUCCESS',
+          message: 'Logged in successfully',
           data: {
             accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
             refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
@@ -121,8 +121,8 @@ export function LoginApiDocs() {
       schema: {
         example: {
           status: 'fail',
-          code: 401,
-          message: 'Invalid credentials',
+          code: 'INVALID_CREDENTIALS',
+          message: 'Invalid email or password',
           timestamp: '2025-10-17T12:00:00.000Z'
         }
       }

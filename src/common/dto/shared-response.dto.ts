@@ -1,50 +1,57 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose, Transform } from 'class-transformer';
+import { DateTransform } from '../decorators/date-transform.decorator';
 
-export class UserResponseDto {
+/**
+ * User DTO containing common user fields from schema
+ * Used for authentication responses and as a base for profile DTOs
+ */
+export class UserDto {
+  @Expose()
+  @Transform(({ obj }) => obj.id?.toString())
   @ApiProperty({ description: 'User ID' })
   id: string;
 
+  @Expose()
   @ApiProperty({ description: 'Username' })
   username: string;
 
-  @ApiProperty({ description: 'User email' })
-  email: string;
+  @Expose()
+  @DateTransform({ nullable: true })
+  @ApiProperty({ description: 'User birthdate', required: false, type: String, nullable: true })
+  birthdate?: string | null;
 
-  @ApiProperty({ description: 'User avatar URL', required: false })
-  avatar?: string;
-}
-
-export class UserProfileResponseDto {
-  @ApiProperty({ description: 'User ID' })
-  id: string;
-
-  @ApiProperty({ description: 'Username' })
-  username: string;
-
+  @Expose()
   @ApiProperty({ description: 'Global name', required: false })
-  globalName?: string;
+  globalname?: string;
 
-  @ApiProperty({ description: 'User email' })
-  email: string;
+  @Expose()
+  @ApiProperty({ description: 'User email', required: false })
+  email?: string;
 
-  @ApiProperty({ description: 'User phone number' })
-  phone: string;
+  @Expose()
+  @ApiProperty({ description: 'User phone number', required: false })
+  phone?: string;
 
+  @Expose()
   @ApiProperty({ description: 'User avatar URL', required: false })
   avatar?: string;
 
-  @ApiProperty({ description: 'User status', required: false })
-  status?: string;
+  @Expose()
+  @ApiProperty({ description: 'User is online', required: false })
+  isOnline?: boolean;
 
-  @ApiProperty({ description: 'Custom status message', required: false })
-  customStatus?: string;
+  @Expose()
+  @ApiProperty({ description: 'User is bot' })
+  isBot: boolean;
 
-  @ApiProperty({ description: 'User creation date' })
-  createdAt: Date;
-
-  @ApiProperty({ description: 'User last update date' })
-  updatedAt: Date;
+  @Expose()
+  @DateTransform({ nullable: true })
+  @ApiProperty({ description: 'User creation date', type: String, nullable: true })
+  createdAt: string | null;
 }
+
+
 
 export class ErrorResponseDto {
   @ApiProperty({ description: 'Response status', enum: ['fail', 'error'] })
@@ -61,7 +68,7 @@ export class ErrorResponseDto {
 }
 
 export class ValidationErrorResponseDto extends ErrorResponseDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Validation errors',
     type: 'array',
     items: {
@@ -69,9 +76,9 @@ export class ValidationErrorResponseDto extends ErrorResponseDto {
       properties: {
         field: { type: 'string' },
         message: { type: 'string' },
-        value: { type: 'string' }
-      }
-    }
+        value: { type: 'string' },
+      },
+    },
   })
   errors?: Array<{
     field: string;
