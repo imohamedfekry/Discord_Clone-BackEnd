@@ -1,8 +1,8 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiConflictResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 import { HttpCode, HttpStatus } from '@nestjs/common';
-import { ErrorResponseDto, UserDto } from 'src/common/dto';
-import { boolean } from 'zod';
+import { ErrorResponseDto } from 'src/common/dto';
+import { UserProfileResponseDto } from '../dto/user-response.dto';
 
 /**
  * Get Profile API Documentation
@@ -17,23 +17,32 @@ export function GetProfileApiDocs() {
     ApiResponse({ 
       status: 200, 
       description: 'User profile retrieved successfully',
-      type: UserDto,
+      type: UserProfileResponseDto,
       schema: {
         example: {
           status: 'success',
           code: 200,
           message: 'User profile fetched successfully',
           data: {
-            id: '4866181555032064',
-            username: 'alice_dev',
-            birthdate: '2000-06-09T21:00:00.000Z',
-            globalname: 'Alice Developer',
-            email: 'alice@discordclone.com',
-            phone: "+201478963214",
-            avatar: "https://example.com/avatar.jpg",
-            isOnline: boolean,
-            isBot: boolean,
-            createdAt: '2025-10-29T10:16:28.207Z'
+            user: {
+              id: '4866181555032064',
+              username: 'alice_dev',
+              birthdate: '2000-06-09T21:00:00.000Z',
+              globalname: 'Alice Developer',
+              email: 'alice@discordclone.com',
+              phone: '+201478963214',
+              avatar: 'https://example.com/avatar.jpg',
+              isBot: false,
+              createdAt: '2025-10-29T10:16:28.207Z'
+            },
+            presence: {
+              status: 'IDLE'
+            },
+            customStatus: {
+              text: 'Playing Minecraft',
+              emoji: '🎮'
+            },
+            isOnline: true
           }
         }
       }

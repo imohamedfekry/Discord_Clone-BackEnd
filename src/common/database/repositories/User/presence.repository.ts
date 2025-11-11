@@ -154,7 +154,6 @@ export class PresenceRepository {
             username: true,
             globalname: true,
             avatar: true,
-            isOnline: true,
           },
         },
       },
@@ -232,54 +231,6 @@ export class PresenceRepository {
       select: { id: true },
     });
     return !!presence;
-  }
-
-  /**
-   * Get presence statistics
-   */
-  async getPresenceStats() {
-    const [totalPresences, activePresences] = await Promise.all([
-      this.prisma.presence.count(),
-      this.prisma.presence.count({
-        where: {
-          user: {
-            isOnline: true,
-          },
-        },
-      }),
-    ]);
-
-    return {
-      total: totalPresences,
-      active: activePresences,
-      offline: totalPresences - activePresences,
-    };
-  }
-
-  /**
-   * Get presences with expired temporary statuses
-   */
-  async getExpiredTemporaryStatuses() {
-    return this.prisma.userStatusRecord.findMany({
-      where: {
-        expiresAt: {
-          lte: new Date(),
-        },
-        user: {
-          isOnline: true,
-        },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            globalname: true,
-            avatar: true,
-          },
-        },
-      },
-    });
   }
 
   /**

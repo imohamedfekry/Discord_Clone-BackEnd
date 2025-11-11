@@ -23,7 +23,6 @@ model User {
   password       String
   avatar         String?
   birthdate      DateTime?
-  isOnline       Boolean?           @default(false)
   isBot          Boolean            @default(false)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt

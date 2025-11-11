@@ -5,30 +5,29 @@ import {
   GetProfileApiDocs,
 } from './decorators/user-api.decorators';
 import { Auth } from '../../../common/decorators/auth-user.decorator';
-import { 
-  SendFriendRequestDto,
-  RespondToFriendRequestDto, 
-  RemoveFriendDto, 
-  GetFriendsQueryDto,
-  GetMutualFriendsDto,
-  CheckFriendshipDto,
-  CancelFriendRequestDto,
-} from './dto/friendship.dto';
 import {
+  // Profile DTOs
   UpdatePasswordDto,
   UpdateglobalnameDto,
   UpdateCustomStatusDto,
   UpdateUsernameDto,
   UpdatePresenceStatusDto,
-} from './dto/profile.dto';
-import {
+  // Friendship DTOs
+  SendFriendRequestDto,
+  RespondToFriendRequestDto,
+  RemoveFriendDto,
+  GetFriendsQueryDto,
+  GetMutualFriendsDto,
+  CheckFriendshipDto,
+  CancelFriendRequestDto,
+  // User Relation DTOs
   CreateUserRelationDto,
   UpdateUserRelationDto,
   RemoveUserRelationDto,
   GetUserRelationsQueryDto,
   CheckUserRelationDto,
   UpdateRelationNoteDto,
-} from './dto/user-relation.dto';
+} from './dto/user.dto';
 
 @ApiTags('User Profile')
 @Controller({

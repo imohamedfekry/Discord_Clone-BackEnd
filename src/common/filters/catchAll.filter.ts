@@ -1,5 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { Response } from 'express';
+import { ApiResponseHelper } from '../helpers/api-response.helper';
+import { RESPONSE_CODES } from '../constants/response-codes';
 
 @Catch()
 export default class CatchAllFilter implements ExceptionFilter {
@@ -14,20 +16,25 @@ export default class CatchAllFilter implements ExceptionFilter {
   }
 
   errorDev(res: Response, exception: Error & { code?: string | undefined }) {
-    res.status(500).json({
-      status: 'error',
-      timestamp: new Date().toISOString(),
-      exception,
-      message: exception.message,
-      code: exception.code ?? '500' as string | undefined,
-    });
+    res
+      .status(500)
+      .json(
+        ApiResponseHelper.error(
+          { code: RESPONSE_CODES.SERVER_ERROR, message: exception.message },
+          {
+            timestamp: new Date().toISOString(),
+            // @ts-expect-error allow meta in dev
+            meta: { exception },
+          },
+        ),
+      );
   }
 
   errorProd(res: Response) {
-    res.status(500).json({
-      status: 'error',
-      message: 'Internal Server Error',
-      code: '500' as string,
-    });
+    res
+      .status(500)
+      .json(
+        ApiResponseHelper.error({ code: RESPONSE_CODES.SERVER_ERROR, message: 'Internal Server Error' }),
+      );
   }
 }

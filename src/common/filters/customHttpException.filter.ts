@@ -1,10 +1,7 @@
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
 import { Response } from 'express';
+import { ApiResponseHelper } from '../helpers/api-response.helper';
+import { RESPONSE_CODES } from '../constants/response-codes';
 
 @Catch(HttpException)
 export default class CustomHttpException implements ExceptionFilter {
@@ -24,20 +21,23 @@ export default class CustomHttpException implements ExceptionFilter {
   }
 
   errorDev(status: number, res: Response, exception: HttpException) {
-    res.status(status).json({
-      status: status >= 400 && status < 500 ? 'fail' : 'error',
-      timestamp: new Date().toISOString(),
-      exception,
-      message: exception.message,
-      code: status,
-    });
+    res.status(status).json(
+      ApiResponseHelper.error(
+        { code: RESPONSE_CODES.SERVER_ERROR, message: exception.message },
+        {
+          timestamp: new Date().toISOString(),
+          data: undefined,
+          // expose exception in dev for debugging
+          // @ts-expect-error meta not part of ApiResponse but allowed via extra
+          meta: { exception },
+        },
+      ),
+    );
   }
 
   errorProd(status: number, res: Response, message: string) {
-    res.status(status).json({
-      status: status >= 400 && status < 500 ? 'fail' : 'error',
-      message,
-      code: status,
-    });
+    res.status(status).json(
+      ApiResponseHelper.error({ code: RESPONSE_CODES.SERVER_ERROR, message }),
+    );
   }
 }

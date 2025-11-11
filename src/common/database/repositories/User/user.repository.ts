@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserStatus } from '@prisma/client';
 
 /**
  * Repository for managing user data
@@ -106,22 +106,6 @@ export class UserRepository {
   }
 
   /**
-   * Update user online status
-   */
-  async updateOnlineStatus(
-    id: string | bigint,
-    isOnline: boolean,
-    select?: Prisma.UserSelect,
-  ) {
-    const user = await this.prisma.user.update({ 
-      where: { id: BigInt(id) }, 
-      data: { isOnline },
-      ...(select && { select }),
-    });
-    return user;
-  }
-
-  /**
    * Check if user exists by ID
    */
   async existsById(id: string | bigint): Promise<boolean> {
@@ -156,20 +140,19 @@ export class UserRepository {
 
   /**
    * Get user statistics
+   * @deprecated online count should use UnifiedPresenceService.getOnlineUsersCount() for real-time data
+   * This method still uses DB which may not reflect actual online users
    */
   async getUserStats() {
-    const [totalUsers, onlineUsers, botUsers] = await Promise.all([
+    const [totalUsers, onlineUsers] = await Promise.all([
       this.prisma.user.count(),
-      this.prisma.user.count({ where: { isOnline: true } }),
-      this.prisma.user.count({ where: { isBot: true } }),
+      this.prisma.user.count({ where: { presence: { status: { not: UserStatus.Invisible } } } }),
     ]);
 
     return {
       total: totalUsers,
-      online: onlineUsers,
+      online: onlineUsers, // This is from DB, may not be accurate - use Redis instead
       offline: totalUsers - onlineUsers,
-      bots: botUsers,
-      humans: totalUsers - botUsers,
     };
   }
 
@@ -206,7 +189,6 @@ export class UserRepository {
               username: true,
               globalname: true,
               avatar: true,
-              isOnline: true,
               isBot: true,
             },
           }),

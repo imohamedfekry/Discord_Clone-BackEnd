@@ -1,11 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Transform } from 'class-transformer';
-import { DateTransform } from '../decorators/date-transform.decorator';
+import { DateTransform } from '../../../../common/decorators/date-transform.decorator';
 
 /**
- * User DTO containing common user fields from schema
- * Used for authentication responses and as a base for profile DTOs
- * This is a shared/common DTO - module-specific DTOs should be in their respective modules
+ * User Types and Enums
+ * Centralized types for user module DTOs
+ */
+
+export enum FriendRequestResponseStatus {
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}
+
+/**
+ * User DTO for user module responses
+ * Used in UserProfileResponseDto
  */
 export class UserDto {
   @Expose()
@@ -45,41 +54,6 @@ export class UserDto {
   @Expose()
   @DateTransform({ nullable: true })
   @ApiProperty({ description: 'User creation date', type: String, nullable: true })
-  createdAt: string | null;
+  createdAt?: string | null;
 }
 
-
-
-export class ErrorResponseDto {
-  @ApiProperty({ description: 'Response status', enum: ['fail', 'error'] })
-  status: 'fail' | 'error';
-
-  @ApiProperty({ description: 'HTTP status code' })
-  code: number;
-
-  @ApiProperty({ description: 'Error message' })
-  message: string;
-
-  @ApiProperty({ description: 'Timestamp of the error' })
-  timestamp: string;
-}
-
-export class ValidationErrorResponseDto extends ErrorResponseDto {
-  @ApiProperty({
-    description: 'Validation errors',
-    type: 'array',
-    items: {
-      type: 'object',
-      properties: {
-        field: { type: 'string' },
-        message: { type: 'string' },
-        value: { type: 'string' },
-      },
-    },
-  })
-  errors?: Array<{
-    field: string;
-    message: string;
-    value?: any;
-  }>;
-}

@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { AuthenticatedSocket } from '../../../../common/Types/websocket.types';
 import { WebSocketEvents } from '../../../../common/Types/websocket.types';
 import { UnifiedPresenceService } from '../services/unified-presence.service';
+import { FriendsCacheService } from '../../../../common/Global/cache/User/friends-cache.service';
+import { Events } from '../../../../common/constants/events.constants';
 
 /**
  * Connection Handler Service
@@ -17,6 +19,7 @@ export class ConnectionHandlerService {
     private readonly authService: AuthService,
     private readonly userRepository: UserRepository,
     private readonly presenceService: UnifiedPresenceService,
+    private readonly friendsCache: FriendsCacheService,
   ) {}
 
   /**
@@ -49,6 +52,13 @@ export class ConnectionHandlerService {
         userId: user.id,
         socketId: client.id,
       });
+
+      // Initial presence sync for friends (single pipeline/batch)
+      const friends = await this.friendsCache.getFriends(user.id);
+      if (friends.length > 0) {
+        const presences = await this.presenceService.getBatchPresence(friends);
+        client.emit(Events.INITIAL_PRESENCE_SYNC, presences);
+      }
 
       // Handle user online status and notify friends
       await this.presenceService.handleUserOnline(user.id, user.username);

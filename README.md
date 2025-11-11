@@ -1,98 +1,273 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Discord Clone Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend API لـ Discord Clone مبني بـ NestJS مع نظام Presence بالكامل باستخدام Redis.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 📚 Documentation
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 🚀 Quick Start
+- **[Quick Start Guide](./docs/QUICK_START_GUIDE.md)** - دليل سريع لاستخدام الـ APIs
 
-## Project setup
+### 📖 API Documentation
+- **[API Documentation](./docs/API_DOCUMENTATION.md)** - تفاصيل كاملة لجميع REST APIs
 
-```bash
-$ npm install
-```
+### 🔴 Presence System
+- **[Redis Presence System](./docs/REDIS_PRESENCE_SYSTEM.md)** - نظام Presence باستخدام Redis (مثل Discord)
+- **[Status System](./docs/STATUS_SYSTEM.md)** - شرح Display Status vs Connection Status
 
-## Compile and run the project
+### 🔌 WebSocket
+- **[Socket.IO Guide](./docs/SOCKET_IO_GUIDE.md)** - دليل WebSocket Events
+- **[WebSocket Testing](./docs/WEBSOCKET_POSTMAN_TESTING.md)** - كيفية Testing WebSocket
 
-```bash
-# development
-$ npm run start
+### 🏗️ Architecture
+- **[Backend Architecture](./docs/BACKEND_ARCHITECTURE.md)** - البنية المعمارية الكاملة
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## ✨ المميزات الرئيسية
 
-## Run tests
+✅ **Redis-Based Presence System** - نظام presence مثل Discord تماماً  
+✅ **Real-time Status Updates** - تحديثات فورية عبر WebSocket  
+✅ **Friends System** - نظام أصدقاء كامل  
+✅ **User Relations** - Block, Ignore, Mute  
+✅ **JWT Authentication** - أمان عالي  
+✅ **Scalable Architecture** - يدعم Multi-instance deployment  
+
+---
+
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
+### Environment Setup
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+إنشاء ملف `.env`:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/discord_clone
+CACHE_HOST=localhost
+CACHE_PORT=6379
+CACHE_PASS=
+JWT_SECRET_ACCESS=your_secret_key
+JWT_EXPIRES_IN=7d
+PORT=3000
+```
+
+### Database Setup
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma migrate dev
+npx prisma generate
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Run Application
 
-## Resources
+```bash
+# Development
+npm run start:dev
 
-Check out a few resources that may come in handy when working with NestJS:
+# Production
+npm run build
+npm run start:prod
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 📋 Tech Stack
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **Framework**: NestJS
+- **Database**: PostgreSQL + Prisma
+- **Cache/Presence**: Redis
+- **WebSocket**: Socket.IO
+- **Authentication**: JWT
+- **Validation**: Class Validator
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🔑 Key Features
 
-## License
+### 1. Redis Presence System
+- ✅ Presence في Redis فقط (volatile)
+- ✅ Auto-cleanup عند restart
+- ✅ Real-time status updates
+- ✅ Multi-instance support
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### 2. REST APIs
+- ✅ Authentication (Register/Login)
+- ✅ Profile Management
+- ✅ Friends System
+- ✅ User Relations (Block/Ignore/Mute)
+
+### 3. WebSocket
+- ✅ Real-time presence updates
+- ✅ Friend request notifications
+- ✅ Status changes broadcasting
+
+---
+
+## 📖 API Examples
+
+### Get Profile
+
+```http
+GET /api/v1/users/@me
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "5280662395293696",
+    "username": "john_doe",
+    "isOnline": true,    // ✅ From Redis (real-time)
+    "status": "ONLINE"   // ✅ Display status
+  }
+}
+```
+
+### Update Status
+
+```http
+PUT /api/v1/users/@me/update/presenceStatus
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "status": "IDLE"
+}
+```
+
+---
+
+## 🔌 WebSocket Connection
+
+```javascript
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000', {
+  auth: { token: 'your_jwt_token' }
+});
+
+socket.on('connected', (data) => {
+  console.log('Connected:', data.userId);
+});
+
+socket.on('presence:updated', (data) => {
+  console.log(`${data.username} is now ${data.status}`);
+});
+```
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+├── modules/
+│   ├── auth/              # Authentication
+│   ├── users/             # User management
+│   └── websocket/         # WebSocket Gateway
+│
+├── common/
+│   ├── database/          # Repositories
+│   ├── Global/cache/      # Redis services
+│   └── guards/            # Auth guards
+│
+└── main.ts
+```
+
+---
+
+## 📚 Documentation Files
+
+| File | Description |
+|------|-------------|
+| [QUICK_START_GUIDE.md](./docs/QUICK_START_GUIDE.md) | دليل سريع للبدء |
+| [API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) | تفاصيل REST APIs |
+| [REDIS_PRESENCE_SYSTEM.md](./docs/REDIS_PRESENCE_SYSTEM.md) | نظام Presence |
+| [BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md) | البنية المعمارية |
+| [SOCKET_IO_GUIDE.md](./docs/SOCKET_IO_GUIDE.md) | WebSocket Guide |
+| [STATUS_SYSTEM.md](./docs/STATUS_SYSTEM.md) | Status System |
+
+---
+
+## 🧪 Testing
+
+### Test WebSocket
+
+افتح `public/websocket-test.html` في المتصفح لـ testing مباشر.
+
+### Postman Collections
+
+جميع الـ collections موجودة في `postman/`:
+- `User1_Alice.postman_collection.json`
+- `User2_Bob.postman_collection.json`
+- `User3_Charlie.postman_collection.json`
+- `WebSocket_Testing.postman_collection.json`
+
+---
+
+## ⚙️ Configuration
+
+### Required Services
+
+1. **PostgreSQL** - Database
+2. **Redis** - Cache & Presence
+3. **Node.js** - Runtime
+
+### Environment Variables
+
+راجع [Quick Start Guide](./docs/QUICK_START_GUIDE.md) للـ environment variables الكاملة.
+
+---
+
+## 🐛 Troubleshooting
+
+### Presence Issues
+
+إذا كان المستخدم يظهر online وهو offline:
+- ✅ استخدم `getPresenceStatus()` من Redis
+- ❌ لا تستخدم `isOnline` من Database
+
+راجع [Redis Presence System](./docs/REDIS_PRESENCE_SYSTEM.md) للتفاصيل.
+
+---
+
+## 📝 Important Notes
+
+### ✅ DO
+
+- ✅ استخدم Redis للـ presence
+- ✅ استخدم REST API لتحديث Status
+- ✅ استمع لـ WebSocket events
+
+### ❌ DON'T
+
+- ❌ لا تستخدم Database `isOnline` field
+- ❌ لا تُحدث `isOnline` في Database
+- ❌ لا تعتمد على Database للـ presence
+
+---
+
+## 🔗 Links
+
+- [API Documentation](./docs/API_DOCUMENTATION.md)
+- [Quick Start](./docs/QUICK_START_GUIDE.md)
+- [Redis Presence](./docs/REDIS_PRESENCE_SYSTEM.md)
+- [Architecture](./docs/BACKEND_ARCHITECTURE.md)
+
+---
+
+## 📄 License
+
+Private project
+
+---
+
+**Last Updated:** 2024-01-15

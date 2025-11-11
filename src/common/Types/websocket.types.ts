@@ -46,7 +46,8 @@ export enum WebSocketEvents {
   // Connection events
   CONNECTED = 'connected',
   DISCONNECT = 'disconnect',
-  
+
+  READY= 'ready',
   // Presence events
   PRESENCE_UPDATED = 'presence:updated',
   

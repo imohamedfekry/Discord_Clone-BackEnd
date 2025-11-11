@@ -3,16 +3,26 @@ This digest is designed to be easily parsed by Large Language Models.
 
 --- SUMMARY ---
 Repository: BackEnd_Discord
-Files Analyzed: 74
-Total Text Size: 60.22 KB
-Estimated Tokens (text only): ~19,119
+Files Analyzed: 103
+Total Text Size: 161.81 KB
+Estimated Tokens (text only): ~46,867
 
 --- DIRECTORY STRUCTURE ---
 BackEnd_Discord/
+├── docs/
+│   ├── API_DOCUMENTATION.md
+│   ├── BACKEND_ARCHITECTURE.md
+│   ├── QUICK_START_GUIDE.md
+│   ├── README.md
+│   ├── REDIS_PRESENCE_SYSTEM.md
+│   ├── SOCKET_IO_GUIDE.md
+│   ├── STATUS_SYSTEM.md
+│   └── WEBSOCKET_POSTMAN_TESTING.md
 ├── postman/
 │   ├── User1_Alice.postman_collection.json
 │   ├── User2_Bob.postman_collection.json
-│   └── User3_Charlie.postman_collection.json
+│   ├── User3_Charlie.postman_collection.json
+│   └── WebSocket_Testing.postman_collection.json
 ├── prisma/
 │   ├── migrations/
 │   │   └── migration_lock.toml
@@ -29,16 +39,22 @@ BackEnd_Discord/
 │   │   │   └── swagger.config.ts [binary]
 │   │   ├── database/
 │   │   │   ├── repositories/
-│   │   │   │   ├── friendship.repository.ts [binary]
-│   │   │   │   ├── index.ts [binary]
-│   │   │   │   ├── user-relation.repository.ts [binary]
-│   │   │   │   └── user.repository.ts [binary]
+│   │   │   │   ├── User/
+│   │   │   │   │   ├── friendship.repository.ts [binary]
+│   │   │   │   │   ├── index.ts [binary]
+│   │   │   │   │   ├── presence.repository.ts [binary]
+│   │   │   │   │   ├── user-relation.repository.ts [binary]
+│   │   │   │   │   ├── user-status-record.repository.ts [binary]
+│   │   │   │   │   └── user.repository.ts [binary]
+│   │   │   │   └── index.ts [binary]
 │   │   │   ├── database.module.ts [binary]
 │   │   │   ├── prisma.middleware.ts [binary]
 │   │   │   └── prisma.service.ts [binary]
 │   │   ├── decorators/
 │   │   │   ├── auth-user.decorator.ts [binary]
-│   │   │   └── public.decorator.ts [binary]
+│   │   │   ├── date-transform.decorator.ts [binary]
+│   │   │   ├── is-emoji.decorator.ts [binary]
+│   │   │   └── websocket-auth.decorator.ts [binary]
 │   │   ├── dto/
 │   │   │   ├── auth-response.dto.ts [binary]
 │   │   │   ├── index.ts [binary]
@@ -48,6 +64,8 @@ BackEnd_Discord/
 │   │   │   └── customHttpException.filter.ts [binary]
 │   │   ├── Global/
 │   │   │   ├── cache/
+│   │   │   │   ├── User/
+│   │   │   │   │   └── friends-cache.service.ts [binary]
 │   │   │   │   └── redis.service.ts [binary]
 │   │   │   ├── config/
 │   │   │   │   ├── cache.config.ts [binary]
@@ -74,11 +92,14 @@ BackEnd_Discord/
 │   │   ├── interceptors/
 │   │   │   └── transform.interceptor.ts [binary]
 │   │   ├── shared/
-│   │   │   ├── constants.ts [binary]
+│   │   │   ├── response-messages.ts [binary]
 │   │   │   └── types.ts [binary]
 │   │   ├── Types/
-│   │   │   └── message.ts [binary]
+│   │   │   ├── message.ts [binary]
+│   │   │   ├── presence.types.ts [binary]
+│   │   │   └── websocket.types.ts [binary]
 │   │   └── utils/
+│   │       ├── response.util.ts [binary]
 │   │       ├── snowflake.ts [binary]
 │   │       └── validation.util.ts [binary]
 │   ├── modules/
@@ -94,17 +115,34 @@ BackEnd_Discord/
 │   │   │   ├── health.controller.ts [binary]
 │   │   │   ├── health.module.ts [binary]
 │   │   │   └── health.service.ts [binary]
-│   │   └── users/
-│   │       └── v1/
-│   │           ├── decorators/
-│   │           │   └── user-api.decorators.ts [binary]
-│   │           ├── dto/
-│   │           │   ├── friendship.dto.ts [binary]
-│   │           │   ├── profile.dto.ts [binary]
-│   │           │   └── user-relation.dto.ts [binary]
-│   │           ├── users.controller.ts [binary]
-│   │           ├── users.module.ts [binary]
-│   │           └── users.service.ts [binary]
+│   │   ├── users/
+│   │   │   └── v1/
+│   │   │       ├── decorators/
+│   │   │       │   └── user-api.decorators.ts [binary]
+│   │   │       ├── dto/
+│   │   │       │   ├── user-response.dto.ts [binary]
+│   │   │       │   ├── user-types.dto.ts [binary]
+│   │   │       │   └── user.dto.ts [binary]
+│   │   │       ├── users.controller.ts [binary]
+│   │   │       ├── users.module.ts [binary]
+│   │   │       └── users.service.ts [binary]
+│   │   └── websocket/
+│   │       ├── User/
+│   │       │   ├── auth/
+│   │       │   │   ├── auth.service.ts [binary]
+│   │       │   │   ├── connection.handler.ts [binary]
+│   │       │   │   └── index.ts [binary]
+│   │       │   ├── friends/
+│   │       │   │   ├── friends.service.ts [binary]
+│   │       │   │   ├── friendship-notifier.service.ts [binary]
+│   │       │   │   └── index.ts [binary]
+│   │       │   ├── presence/
+│   │       │   │   └── broadcaster.service.ts [binary]
+│   │       │   ├── services/
+│   │       │   │   └── unified-presence.service.ts [binary]
+│   │       │   ├── index.ts [binary]
+│   │       │   └── websocket.gateway.ts [binary]
+│   │       └── websocket.module.ts [binary]
 │   ├── app.module.ts [binary]
 │   └── main.ts [binary]
 ├── test/
@@ -119,6 +157,4431 @@ BackEnd_Discord/
 
 
 --- FILE CONTENTS ---
+============================================================
+FILE: docs/API_DOCUMENTATION.md
+============================================================
+# Discord Clone API Documentation
+
+## 📋 Table of Contents
+1. [Overview](#overview)
+2. [Base URL & Authentication](#base-url--authentication)
+3. [Data Types & Validation](#data-types--validation)
+4. [Response Format](#response-format)
+5. [Authentication APIs](#authentication-apis)
+6. [User Profile APIs](#user-profile-apis)
+7. [Friendship APIs](#friendship-apis)
+8. [User Relations APIs](#user-relations-apis)
+9. [Error Handling](#error-handling)
+10. [Frontend Integration Guide](#frontend-integration-guide)
+
+---
+
+## Overview
+
+This is a Discord Clone backend API built with NestJS, Prisma, and PostgreSQL. The API provides user authentication, profile management, friendship system, and user relations (block, mute, ignore).
+
+**Tech Stack:**
+- NestJS (Node.js framework)
+- Prisma (ORM)
+- PostgreSQL (Database)
+- **Redis** (Presence & Caching) ⭐
+- JWT (Authentication)
+- Socket.IO (WebSocket)
+- Class Validator (Validation)
+
+**Key Feature:**
+- **Redis-Based Presence System** - نظام presence مثل Discord تماماً، يعتمد على Redis فقط (volatile) وليس على Database
+
+---
+
+## Base URL & Authentication
+
+### Base URL
+```
+http://localhost:3000/api/v1
+```
+
+### Authentication
+All protected endpoints require a JWT token in the Authorization header:
+
+```http
+Authorization: Bearer <your_jwt_token>
+```
+
+**Token Format:**
+- Access Token: Used for API requests
+- Refresh Token: Used to get new access tokens
+
+---
+
+## Data Types & Validation
+
+### User ID Format
+- **Type:** String
+- **Format:** 16-19 digits (Snowflake ID)
+- **Example:** `"123456789012345678"`
+- **Validation:** Must match regex `/^\d{16,19}$/`
+
+### Username Format
+- **Type:** String
+- **Length:** 3-32 characters
+- **Allowed Characters:** Letters (a-z, A-Z), numbers (0-9), underscores (_), dots (.)
+- **Reserved Words:** `admin`, `support`, `discord`, `system`
+- **Example:** `"john_doe"`, `"user123"`, `"alice.dev"`
+- **Validation:** Must match regex `/^[a-zA-Z0-9._]+$/`
+
+### Email Format
+- **Type:** String
+- **Format:** Valid email address
+- **Example:** `"user@example.com"`
+
+### Password Format
+- **Type:** String
+- **Requirements:** Strong password (at least 8 characters, uppercase, lowercase, number, special character)
+- **Example:** `"MyPassword123!"`
+
+### Date Format
+- **Type:** Date
+- **Format:** ISO 8601 (`YYYY-MM-DD`)
+- **Example:** `"2002-10-26"`
+
+### Enums
+
+#### User Status
+```typescript
+enum UserStatus {
+  ONLINE = "ONLINE"
+  OFFLINE = "OFFLINE"
+  IDLE = "IDLE"
+  DND = "DND" // Do Not Disturb
+}
+```
+
+#### Friendship Status
+```typescript
+enum FriendshipStatus {
+  PENDING = "PENDING"
+  ACCEPTED = "ACCEPTED"
+}
+```
+
+#### Relation Type
+```typescript
+enum RelationType {
+  BLOCKED = "BLOCKED"
+  IGNORED = "IGNORED"
+  MUTED = "MUTED"
+}
+```
+
+---
+
+## Response Format
+
+### Success Response
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Operation completed successfully",
+  "data": {
+    // Response data here
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### Error Response
+```json
+{
+  "status": "error",
+  "code": 400,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "username",
+      "message": "Username must be at least 3 characters long",
+      "value": "ab"
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### Validation Error Response
+```json
+{
+  "status": "fail",
+  "code": 422,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Email must be a valid email address",
+      "value": "invalid-email"
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+---
+
+## Authentication APIs
+
+### 1. Register User
+
+**Endpoint:** `POST /auth/register`
+
+**Description:** Create a new user account
+
+**Request Body:**
+```json
+{
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "MyPassword123!",
+  "birthdate": "2002-10-26"
+}
+```
+
+**Validation Rules:**
+- `username`: Required, 3-32 chars, alphanumeric + underscore + dot
+- `email`: Required, valid email format
+- `password`: Required, strong password
+- `birthdate`: Required, valid date, must be in the past
+
+**Success Response (201):**
+```json
+{
+  "status": "success",
+  "code": 201,
+  "message": "User registered successfully",
+  "data": {
+    "user": {
+      "id": "123456789012345678",
+      "username": "john_doe",
+      "email": "john@example.com",
+      "globalname": null,
+      "phone": null,
+      "avatar": null,
+      "status": "OFFLINE",
+      "customStatus": null,
+      "isBot": false,
+      "birthdate": "2002-10-26T00:00:00.000Z",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
+    },
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Error Responses:**
+- `400`: Username already exists
+- `400`: Email already exists
+- `422`: Validation errors
+
+### 2. Login User
+
+**Endpoint:** `POST /auth/login`
+
+**Description:** Authenticate user and get tokens
+
+**Request Body:**
+```json
+{
+  "email": "john@example.com",
+  "password": "MyPassword123!"
+}
+```
+
+**Validation Rules:**
+- `email`: Required, valid email format
+- `password`: Required, strong password
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Login successful",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Error Responses:**
+- `401`: Invalid credentials
+- `422`: Validation errors
+
+---
+
+## User Profile APIs
+
+### 1. Get User Profile
+
+**Endpoint:** `GET /users/profile`
+
+**Description:** Get current user's profile information
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Profile retrieved successfully",
+  "data": {
+    "id": "123456789012345678",
+    "username": "john_doe",
+    "globalname": "John Doe",
+    "email": "john@example.com",
+    "phone": "+1234567890",
+    "avatar": "https://example.com/avatar.jpg",
+    "isOnline": true,
+    "status": "ONLINE",
+    "customStatus": "Playing Minecraft",
+    "isBot": false,
+    "birthdate": "2002-10-26T00:00:00.000Z",
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Important Notes:**
+- `isOnline`: Comes from **Redis** (real-time connection status), NOT from database
+- `status`: Display status from **Redis** (ONLINE, IDLE, DND, Invisible)
+- These values reflect the **actual current state** of the user
+
+### 2. Update Password
+
+**Endpoint:** `PUT /users/profile/password`
+
+**Description:** Update user password
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "currentPassword": "OldPassword123!",
+  "newPassword": "NewPassword123!"
+}
+```
+
+**Validation Rules:**
+- `currentPassword`: Required, strong password
+- `newPassword`: Required, strong password
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Password updated successfully",
+  "data": {
+    "id": "123456789012345678",
+    "username": "john_doe",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 3. Update Global Name
+
+**Endpoint:** `PUT /users/profile/global-name`
+
+**Description:** Update user's global display name
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "globalname": "John Doe"
+}
+```
+
+**Validation Rules:**
+- `globalname`: Optional, max 32 characters
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Global name updated successfully",
+  "data": {
+    "id": "123456789012345678",
+    "username": "john_doe",
+    "globalname": "John Doe",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 4. Update Custom Status
+
+**Endpoint:** `PUT /users/profile/custom-status`
+
+**Description:** Update user's custom status message
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "customStatus": "Playing Minecraft"
+}
+```
+
+**Validation Rules:**
+- `customStatus`: Optional, max 128 characters
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Custom status updated successfully",
+  "data": {
+    "id": "123456789012345678",
+    "username": "john_doe",
+    "customStatus": "Playing Minecraft",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 5. Update Username
+
+**Endpoint:** `PUT /users/profile/username`
+
+**Description:** Update user's username
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "username": "john_doe_2024"
+}
+```
+
+**Validation Rules:**
+- `username`: Required, 3-32 chars, alphanumeric + underscore + dot, not reserved
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Username updated successfully",
+  "data": {
+    "id": "123456789012345678",
+    "username": "john_doe_2024",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+---
+
+## Friendship APIs
+
+### 1. Send Friend Request
+
+**Endpoint:** `POST /users/friends/request`
+
+**Description:** Send a friend request to another user
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "username": "jane_doe"
+}
+```
+OR
+```json
+{
+  "userId": "987654321098765432"
+}
+```
+
+**Validation Rules:**
+- Either `username` OR `userId` is required (not both)
+- `username`: Valid username format
+- `userId`: Valid ID format (16-19 digits)
+
+**Success Response (201):**
+```json
+{
+  "status": "success",
+  "code": 201,
+  "message": "Friend request sent successfully",
+  "data": {
+    "id": "123456789012345678",
+    "user1Id": "123456789012345678",
+    "user2Id": "987654321098765432",
+    "status": "PENDING",
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 2. Respond to Friend Request
+
+**Endpoint:** `PUT /users/friends/respond`
+
+**Description:** Accept or reject a friend request
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "friendshipId": "123456789012345678",
+  "status": "ACCEPTED"
+}
+```
+
+**Validation Rules:**
+- `friendshipId`: Required, valid ID format
+- `status`: Required, must be "ACCEPTED" or "REJECTED"
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Friend request responded successfully",
+  "data": {
+    "id": "123456789012345678",
+    "user1Id": "123456789012345678",
+    "user2Id": "987654321098765432",
+    "status": "ACCEPTED",
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 3. Get Friends List
+
+**Endpoint:** `GET /users/friends`
+
+**Description:** Get user's friends list
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Query Parameters:**
+- `status` (optional): Filter by friendship status (PENDING, ACCEPTED)
+- `page` (optional): Page number for pagination
+- `limit` (optional): Number of items per page
+
+**Example:**
+```
+GET /users/friends?status=ACCEPTED&page=1&limit=20
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Friends list retrieved successfully",
+  "data": [
+    {
+      "id": "123456789012345678",
+      "user1Id": "123456789012345678",
+      "user2Id": "987654321098765432",
+      "status": "ACCEPTED",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z",
+      "friend": {
+        "id": "987654321098765432",
+        "username": "jane_doe",
+        "globalname": "Jane Doe",
+        "avatar": "https://example.com/avatar.jpg",
+        "status": "ONLINE"
+      }
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 4. Get Incoming Friend Requests
+
+**Endpoint:** `GET /users/friends/requests/incoming`
+
+**Description:** Get pending friend requests received by the user
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Incoming friend requests retrieved successfully",
+  "data": [
+    {
+      "id": "123456789012345678",
+      "user1Id": "987654321098765432",
+      "user2Id": "123456789012345678",
+      "status": "PENDING",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z",
+      "requester": {
+        "id": "987654321098765432",
+        "username": "jane_doe",
+        "globalname": "Jane Doe",
+        "avatar": "https://example.com/avatar.jpg",
+        "status": "ONLINE"
+      }
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 5. Get Outgoing Friend Requests
+
+**Endpoint:** `GET /users/friends/requests/outgoing`
+
+**Description:** Get pending friend requests sent by the user
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Outgoing friend requests retrieved successfully",
+  "data": [
+    {
+      "id": "123456789012345678",
+      "user1Id": "123456789012345678",
+      "user2Id": "987654321098765432",
+      "status": "PENDING",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z",
+      "target": {
+        "id": "987654321098765432",
+        "username": "jane_doe",
+        "globalname": "Jane Doe",
+        "avatar": "https://example.com/avatar.jpg",
+        "status": "ONLINE"
+      }
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 6. Get Mutual Friends
+
+**Endpoint:** `GET /users/friends/mutual/{userId}`
+
+**Description:** Get mutual friends with another user
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Path Parameters:**
+- `userId`: The ID of the user to get mutual friends with
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Mutual friends retrieved successfully",
+  "data": [
+    {
+      "id": "111111111111111111",
+      "username": "mutual_friend",
+      "globalname": "Mutual Friend",
+      "avatar": "https://example.com/avatar.jpg",
+      "status": "ONLINE"
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 7. Check Friendship Status
+
+**Endpoint:** `GET /users/friends/check/{userId}`
+
+**Description:** Check friendship status with another user
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Path Parameters:**
+- `userId`: The ID of the user to check friendship with
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Friendship status checked successfully",
+  "data": {
+    "isFriend": true,
+    "status": "ACCEPTED",
+    "friendshipId": "123456789012345678"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 8. Remove Friend
+
+**Endpoint:** `DELETE /users/friends/remove`
+
+**Description:** Remove a user from friends list
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "userId": "987654321098765432"
+}
+```
+
+**Validation Rules:**
+- `userId`: Required, valid ID format
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Friend removed successfully",
+  "data": {
+    "id": "123456789012345678",
+    "removedUserId": "987654321098765432",
+    "removedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+---
+
+## User Relations APIs
+
+### 1. Create User Relation
+
+**Endpoint:** `POST /users/relations`
+
+**Description:** Block, ignore, or mute a user
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "targetUserId": "987654321098765432",
+  "type": "BLOCKED",
+  "note": "Spam user"
+}
+```
+
+**Validation Rules:**
+- `targetUserId`: Required, valid ID format
+- `type`: Required, must be "BLOCKED", "IGNORED", or "MUTED"
+- `note`: Optional, max 500 characters
+
+**Success Response (201):**
+```json
+{
+  "status": "success",
+  "code": 201,
+  "message": "User relation created successfully",
+  "data": {
+    "id": "123456789012345678",
+    "sourceId": "123456789012345678",
+    "targetId": "987654321098765432",
+    "type": "BLOCKED",
+    "note": "Spam user",
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 2. Get User Relations
+
+**Endpoint:** `GET /users/relations`
+
+**Description:** Get all user relations (blocked, ignored, muted users)
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Query Parameters:**
+- `type` (optional): Filter by relation type (BLOCKED, IGNORED, MUTED)
+
+**Example:**
+```
+GET /users/relations?type=BLOCKED
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "User relations retrieved successfully",
+  "data": [
+    {
+      "id": "123456789012345678",
+      "sourceId": "123456789012345678",
+      "targetId": "987654321098765432",
+      "type": "BLOCKED",
+      "note": "Spam user",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z",
+      "target": {
+        "id": "987654321098765432",
+        "username": "jane_doe",
+        "globalname": "Jane Doe",
+        "avatar": "https://example.com/avatar.jpg",
+        "status": "ONLINE"
+      }
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 3. Get Blocked Users
+
+**Endpoint:** `GET /users/relations/blocked`
+
+**Description:** Get all blocked users
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Blocked users retrieved successfully",
+  "data": [
+    {
+      "id": "123456789012345678",
+      "sourceId": "123456789012345678",
+      "targetId": "987654321098765432",
+      "type": "BLOCKED",
+      "note": "Spam user",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z",
+      "target": {
+        "id": "987654321098765432",
+        "username": "jane_doe",
+        "globalname": "Jane Doe",
+        "avatar": "https://example.com/avatar.jpg",
+        "status": "ONLINE"
+      }
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 4. Get Ignored Users
+
+**Endpoint:** `GET /users/relations/ignored`
+
+**Description:** Get all ignored users
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Ignored users retrieved successfully",
+  "data": [
+    {
+      "id": "123456789012345678",
+      "sourceId": "123456789012345678",
+      "targetId": "987654321098765432",
+      "type": "IGNORED",
+      "note": "Too many messages",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z",
+      "target": {
+        "id": "987654321098765432",
+        "username": "jane_doe",
+        "globalname": "Jane Doe",
+        "avatar": "https://example.com/avatar.jpg",
+        "status": "ONLINE"
+      }
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 5. Get Muted Users
+
+**Endpoint:** `GET /users/relations/muted`
+
+**Description:** Get all muted users
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Muted users retrieved successfully",
+  "data": [
+    {
+      "id": "123456789012345678",
+      "sourceId": "123456789012345678",
+      "targetId": "987654321098765432",
+      "type": "MUTED",
+      "note": "Too many notifications",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z",
+      "target": {
+        "id": "987654321098765432",
+        "username": "jane_doe",
+        "globalname": "Jane Doe",
+        "avatar": "https://example.com/avatar.jpg",
+        "status": "ONLINE"
+      }
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 6. Check User Relation
+
+**Endpoint:** `GET /users/relations/check`
+
+**Description:** Check relation status with another user
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Query Parameters:**
+- `targetUserId`: Required, ID of the user to check relation with
+- `type`: Required, relation type to check (BLOCKED, IGNORED, MUTED)
+
+**Example:**
+```
+GET /users/relations/check?targetUserId=987654321098765432&type=BLOCKED
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "User relation checked successfully",
+  "data": {
+    "hasRelation": true,
+    "type": "BLOCKED",
+    "relationId": "123456789012345678",
+    "note": "Spam user"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 7. Update Relation Note
+
+**Endpoint:** `PUT /users/relations/note`
+
+**Description:** Update the note for a user relation
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "targetUserId": "987654321098765432",
+  "type": "BLOCKED",
+  "note": "Updated reason for blocking"
+}
+```
+
+**Validation Rules:**
+- `targetUserId`: Required, valid ID format
+- `type`: Required, must be "BLOCKED", "IGNORED", or "MUTED"
+- `note`: Required, max 500 characters
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Relation note updated successfully",
+  "data": {
+    "id": "123456789012345678",
+    "sourceId": "123456789012345678",
+    "targetId": "987654321098765432",
+    "type": "BLOCKED",
+    "note": "Updated reason for blocking",
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 8. Remove User Relation
+
+**Endpoint:** `DELETE /users/relations`
+
+**Description:** Remove a user relation (unblock, unignore, unmute)
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "targetUserId": "987654321098765432",
+  "type": "BLOCKED"
+}
+```
+
+**Validation Rules:**
+- `targetUserId`: Required, valid ID format
+- `type`: Required, must be "BLOCKED", "IGNORED", or "MUTED"
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "User relation removed successfully",
+  "data": {
+    "id": "123456789012345678",
+    "removedUserId": "987654321098765432",
+    "removedType": "BLOCKED",
+    "removedAt": "2024-01-15T10:30:00.000Z"
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+### 9. Get Relation Stats
+
+**Endpoint:** `GET /users/relations/stats`
+
+**Description:** Get statistics about user relations
+
+**Headers:**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Success Response (200):**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "message": "Relation stats retrieved successfully",
+  "data": {
+    "blocked": 5,
+    "ignored": 3,
+    "muted": 2,
+    "total": 10
+  },
+  "timestamp": "2024-01-15T10:30:00.000Z"
+}
+```
+
+---
+
+## Error Handling
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 409 | Conflict |
+| 422 | Validation Error |
+| 500 | Internal Server Error |
+
+### Common Error Messages
+
+#### Authentication Errors
+- `"Forbidden resource. No token provided"` - Missing Authorization header
+- `"Forbidden resource. Invalid token"` - Invalid or expired token
+- `"Forbidden resource. User not found or invalid"` - User not found
+- `"Invalid credentials"` - Wrong email/password
+
+#### Validation Errors
+- `"Username must be at least 3 characters long"`
+- `"Username can only contain letters, numbers, underscores, and dots"`
+- `"Username 'admin' is reserved and cannot be used"`
+- `"Email must be a valid email address"`
+- `"Password must be a strong password"`
+- `"User ID must be a valid ID (16-19 digits)"`
+
+#### Business Logic Errors
+- `"Username already exists"`
+- `"Email already exists"`
+- `"User not found"`
+- `"Friendship request already exists"`
+- `"Cannot send friend request to yourself"`
+- `"User is already blocked"`
+
+---
+
+## Frontend Integration Guide
+
+### 1. Authentication Flow
+
+```javascript
+// Register user
+const registerUser = async (userData) => {
+  try {
+    const response = await fetch('http://localhost:3000/api/v1/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        birthdate: userData.birthdate, // Format: YYYY-MM-DD
+      }),
+    });
+
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      // Store tokens
+      localStorage.setItem('accessToken', result.data.accessToken);
+      localStorage.setItem('refreshToken', result.data.refreshToken);
+      return result.data.user;
+    } else {
+      throw new Error(result.message);
+    }
+  } catch (error) {
+    console.error('Registration failed:', error);
+    throw error;
+  }
+};
+
+// Login user
+const loginUser = async (email, password) => {
+  try {
+    const response = await fetch('http://localhost:3000/api/v1/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      // Store tokens
+      localStorage.setItem('accessToken', result.data.accessToken);
+      localStorage.setItem('refreshToken', result.data.refreshToken);
+      return result.data;
+    } else {
+      throw new Error(result.message);
+    }
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw error;
+  }
+};
+```
+
+### 2. API Client Setup
+
+```javascript
+class DiscordAPI {
+  constructor(baseURL = 'http://localhost:3000/api/v1') {
+    this.baseURL = baseURL;
+  }
+
+  // Get authorization header
+  getAuthHeader() {
+    const token = localStorage.getItem('accessToken');
+    return token ? `Bearer ${token}` : null;
+  }
+
+  // Make authenticated request
+  async makeRequest(endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    const authHeader = this.getAuthHeader();
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader && { Authorization: authHeader }),
+        ...options.headers,
+      },
+      ...options,
+    };
+
+    try {
+      const response = await fetch(url, config);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        return result.data;
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
+  // User Profile Methods
+  async getProfile() {
+    return this.makeRequest('/users/profile');
+  }
+
+  async updatePassword(currentPassword, newPassword) {
+    return this.makeRequest('/users/profile/password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  }
+
+  async updateglobalname(globalname) {
+    return this.makeRequest('/users/profile/global-name', {
+      method: 'PUT',
+      body: JSON.stringify({ globalname }),
+    });
+  }
+
+  async updateCustomStatus(customStatus) {
+    return this.makeRequest('/users/profile/custom-status', {
+      method: 'PUT',
+      body: JSON.stringify({ customStatus }),
+    });
+  }
+
+  async updateUsername(username) {
+    return this.makeRequest('/users/profile/username', {
+      method: 'PUT',
+      body: JSON.stringify({ username }),
+    });
+  }
+
+  // Friendship Methods
+  async sendFriendRequest(username) {
+    return this.makeRequest('/users/friends/request', {
+      method: 'POST',
+      body: JSON.stringify({ username }),
+    });
+  }
+
+  async respondToFriendRequest(friendshipId, status) {
+    return this.makeRequest('/users/friends/respond', {
+      method: 'PUT',
+      body: JSON.stringify({ friendshipId, status }),
+    });
+  }
+
+  async getFriends(status = null) {
+    const query = status ? `?status=${status}` : '';
+    return this.makeRequest(`/users/friends${query}`);
+  }
+
+  async getIncomingRequests() {
+    return this.makeRequest('/users/friends/requests/incoming');
+  }
+
+  async getOutgoingRequests() {
+    return this.makeRequest('/users/friends/requests/outgoing');
+  }
+
+  async getMutualFriends(userId) {
+    return this.makeRequest(`/users/friends/mutual/${userId}`);
+  }
+
+  async checkFriendship(userId) {
+    return this.makeRequest(`/users/friends/check/${userId}`);
+  }
+
+  async removeFriend(userId) {
+    return this.makeRequest('/users/friends/remove', {
+      method: 'DELETE',
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  // User Relations Methods
+  async createUserRelation(targetUserId, type, note = null) {
+    return this.makeRequest('/users/relations', {
+      method: 'POST',
+      body: JSON.stringify({ targetUserId, type, note }),
+    });
+  }
+
+  async getUserRelations(type = null) {
+    const query = type ? `?type=${type}` : '';
+    return this.makeRequest(`/users/relations${query}`);
+  }
+
+  async getBlockedUsers() {
+    return this.makeRequest('/users/relations/blocked');
+  }
+
+  async getIgnoredUsers() {
+    return this.makeRequest('/users/relations/ignored');
+  }
+
+  async getMutedUsers() {
+    return this.makeRequest('/users/relations/muted');
+  }
+
+  async checkUserRelation(targetUserId, type) {
+    return this.makeRequest(`/users/relations/check?targetUserId=${targetUserId}&type=${type}`);
+  }
+
+  async updateRelationNote(targetUserId, type, note) {
+    return this.makeRequest('/users/relations/note', {
+      method: 'PUT',
+      body: JSON.stringify({ targetUserId, type, note }),
+    });
+  }
+
+  async removeUserRelation(targetUserId, type) {
+    return this.makeRequest('/users/relations', {
+      method: 'DELETE',
+      body: JSON.stringify({ targetUserId, type }),
+    });
+  }
+
+  async getRelationStats() {
+    return this.makeRequest('/users/relations/stats');
+  }
+}
+
+// Usage
+const api = new DiscordAPI();
+
+// Example usage
+try {
+  const profile = await api.getProfile();
+  console.log('User profile:', profile);
+
+  const friends = await api.getFriends();
+  console.log('Friends list:', friends);
+
+  const blockedUsers = await api.getBlockedUsers();
+  console.log('Blocked users:', blockedUsers);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+
+### 3. Form Validation (Frontend)
+
+```javascript
+// Username validation
+const validateUsername = (username) => {
+  const errors = [];
+  
+  if (!username) {
+    errors.push('Username is required');
+  } else if (username.length < 3) {
+    errors.push('Username must be at least 3 characters long');
+  } else if (username.length > 32) {
+    errors.push('Username must not exceed 32 characters');
+  } else if (!/^[a-zA-Z0-9._]+$/.test(username)) {
+    errors.push('Username can only contain letters, numbers, underscores, and dots');
+  } else if (['admin', 'support', 'discord', 'system'].includes(username.toLowerCase())) {
+    errors.push(`Username '${username}' is reserved and cannot be used`);
+  }
+  
+  return errors;
+};
+
+// Email validation
+const validateEmail = (email) => {
+  const errors = [];
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  if (!email) {
+    errors.push('Email is required');
+  } else if (!emailRegex.test(email)) {
+    errors.push('Email must be a valid email address');
+  }
+  
+  return errors;
+};
+
+// Password validation
+const validatePassword = (password) => {
+  const errors = [];
+  
+  if (!password) {
+    errors.push('Password is required');
+  } else if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
+  } else if (!/(?=.*[a-z])/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter');
+  } else if (!/(?=.*[A-Z])/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
+  } else if (!/(?=.*\d)/.test(password)) {
+    errors.push('Password must contain at least one number');
+  } else if (!/(?=.*[@$!%*?&])/.test(password)) {
+    errors.push('Password must contain at least one special character');
+  }
+  
+  return errors;
+};
+
+// User ID validation
+const validateUserId = (userId) => {
+  const errors = [];
+  
+  if (!userId) {
+    errors.push('User ID is required');
+  } else if (!/^\d{16,19}$/.test(userId)) {
+    errors.push('User ID must be a valid ID (16-19 digits)');
+  }
+  
+  return errors;
+};
+
+// Date validation
+const validateBirthdate = (birthdate) => {
+  const errors = [];
+  
+  if (!birthdate) {
+    errors.push('Birthdate is required');
+  } else {
+    const date = new Date(birthdate);
+    const today = new Date();
+    
+    if (isNaN(date.getTime())) {
+      errors.push('Birthdate must be a valid date');
+    } else if (date >= today) {
+      errors.push('Birthdate must be in the past');
+    } else {
+      const age = today.getFullYear() - date.getFullYear();
+      if (age < 13) {
+        errors.push('You must be at least 13 years old');
+      }
+    }
+  }
+  
+  return errors;
+};
+```
+
+### 4. Error Handling
+
+```javascript
+const handleApiError = (error) => {
+  if (error.response) {
+    // Server responded with error status
+    const { status, data } = error.response;
+    
+    switch (status) {
+      case 401:
+        // Unauthorized - redirect to login
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+        break;
+      case 422:
+        // Validation errors
+        if (data.errors) {
+          data.errors.forEach(err => {
+            console.error(`${err.field}: ${err.message}`);
+          });
+        }
+        break;
+      case 409:
+        // Conflict - show specific message
+        alert(data.message);
+        break;
+      default:
+        alert(data.message || 'An error occurred');
+    }
+  } else if (error.request) {
+    // Network error
+    alert('Network error. Please check your connection.');
+  } else {
+    // Other error
+    alert(error.message || 'An unexpected error occurred');
+  }
+};
+```
+
+### 5. React Hook Example
+
+```javascript
+import { useState, useEffect } from 'react';
+
+const useDiscordAPI = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const api = new DiscordAPI();
+
+  const login = async (email, password) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await api.loginUser(email, password);
+      const profile = await api.getProfile();
+      setUser(profile);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setUser(null);
+  };
+
+  useEffect(() => {
+    // Check if user is logged in on app start
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      api.getProfile()
+        .then(profile => setUser(profile))
+        .catch(() => logout());
+    }
+  }, []);
+
+  return {
+    user,
+    loading,
+    error,
+    login,
+    logout,
+    api,
+  };
+};
+
+export default useDiscordAPI;
+```
+
+---
+
+## Summary
+
+This Discord Clone API provides:
+
+✅ **Complete Authentication System**
+- User registration with validation
+- JWT-based authentication
+- Password management
+
+✅ **User Profile Management**
+- Profile information retrieval
+- Username, global name, custom status updates
+- Password changes
+
+✅ **Friendship System**
+- Send/accept/reject friend requests
+- Friends list management
+- Mutual friends discovery
+- Friendship status checking
+
+✅ **User Relations**
+- Block, ignore, mute users
+- Relation management with notes
+- Statistics and filtering
+
+✅ **Comprehensive Validation**
+- Username format validation
+- Email validation
+- Password strength requirements
+- User ID format validation
+- Date validation
+
+✅ **Frontend Integration Ready**
+- Complete API client class
+- Form validation functions
+- Error handling patterns
+- React hooks example
+
+The API is designed to be simple, consistent, and easy to integrate with any frontend framework. All endpoints follow RESTful conventions and return consistent response formats.
+
+
+============================================================
+FILE: docs/BACKEND_ARCHITECTURE.md
+============================================================
+# Backend Architecture Documentation
+
+## 📋 نظرة عامة (Overview)
+
+Discord Clone Backend مبني باستخدام:
+- **NestJS** - Framework
+- **Prisma** - ORM
+- **PostgreSQL** - Database
+- **Redis** - Caching & Presence
+- **Socket.IO** - WebSocket
+
+---
+
+## 🏗️ System Architecture
+
+### High-Level Overview
+
+```
+┌──────────────┐
+│   Frontend   │
+└──────┬───────┘
+       │
+       ├──► REST API (HTTP)
+       │   └─► NestJS Controllers
+       │       └─► Services
+       │           ├─► Database (PostgreSQL)
+       │           └─► Redis (Presence)
+       │
+       └──► WebSocket (Socket.IO)
+           └─► Gateway
+               └─► UnifiedPresenceService
+                   └─► Redis (Real-time)
+```
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+├── common/
+│   ├── bootstrap/          # App initialization
+│   ├── config/             # Configuration files
+│   ├── database/           # Prisma service & repositories
+│   ├── decorators/         # Custom decorators
+│   ├── dto/                # Shared DTOs
+│   ├── filters/            # Exception filters
+│   ├── Global/             # Global utilities
+│   │   ├── cache/          # Redis cache services
+│   │   ├── security/       # JWT, hashing, encryption
+│   │   └── validators/     # Custom validators
+│   ├── guards/             # Auth guards
+│   ├── interceptors/       # Response interceptors
+│   └── utils/              # Helper functions
+│
+├── modules/
+│   ├── auth/               # Authentication
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   └── dto/
+│   │
+│   ├── users/              # User management
+│   │   └── v1/
+│   │       ├── users.controller.ts
+│   │       ├── users.service.ts
+│   │       ├── dto/
+│   │       └── decorators/
+│   │
+│   └── websocket/          # WebSocket Gateway
+│       └── User/
+│           ├── websocket.gateway.ts
+│           ├── auth/       # WebSocket authentication
+│           ├── services/
+│           │   └── unified-presence.service.ts  # ⭐ Core presence logic
+│           ├── friends/    # Friend notifications
+│           └── presence/   # Presence broadcasting
+│
+└── main.ts                 # Application entry point
+```
+
+---
+
+## 🔴 Presence System Architecture
+
+### Redis-Based Presence (Discord-like)
+
+```
+User Connects
+    │
+    ├─► WebSocket Gateway
+    │       │
+    │       ├─► Authenticate (JWT)
+    │       │
+    │       └─► UnifiedPresenceService.markOnline()
+    │               │
+    │               ├─► Redis: presence:online:{userId} = 'true'
+    │               ├─► Redis: presence:sockets:{userId} = Set[socketId]
+    │               └─► Redis: presence:{userId}:{socketId} = Metadata
+    │
+    └─► Update Redis only (NO database update!)
+```
+
+### Key Components
+
+#### 1. UnifiedPresenceService
+**Location:** `src/modules/websocket/User/services/unified-presence.service.ts`
+
+**Responsibilities:**
+- Connection tracking (online/offline)
+- Display status management (ONLINE, IDLE, DND, Invisible)
+- Redis operations
+- WebSocket event handling
+
+**Key Methods:**
+```typescript
+markOnline(userId, socketId, metadata)     // Mark user online
+markOffline(userId, socketId)               // Mark user offline
+isOnline(userId)                            // Check if online
+getPresenceStatus(userId)                   // Get complete status
+getDisplayStatus(userId)                    // Get display status
+setDisplayStatus(userId, status)             // Set display status
+```
+
+#### 2. Redis Keys Structure
+
+```redis
+# Connection Tracking (TTL: 90s)
+presence:{userId}:{socketId}        → Hash {device, connectedAt, ip, lastPing}
+presence:sockets:{userId}            → Set of socketIds
+presence:online:{userId}             → 'true' | (deleted)
+
+# Display Status (TTL: 24h)
+display:status:{userId}              → 'ONLINE' | 'IDLE' | 'DND' | 'Invisible'
+```
+
+#### 3. Database vs Redis
+
+| Data | Storage | Purpose | Volatile? |
+|------|---------|---------|-----------|
+| User Info | PostgreSQL | Permanent data | ❌ No |
+| **Presence Status** | **Redis** | **Real-time connection** | ✅ **Yes** |
+| Display Status | Redis | User's chosen status | ✅ Yes |
+| Friendships | PostgreSQL | Permanent relationships | ❌ No |
+| Custom Status | PostgreSQL | User's status text/emoji | ❌ No |
+
+---
+
+## 🔐 Authentication Flow
+
+### REST API Authentication
+
+```
+1. User sends credentials
+   ↓
+2. AuthController receives request
+   ↓
+3. AuthService validates
+   ↓
+4. Returns JWT tokens (access + refresh)
+   ↓
+5. Client stores tokens
+   ↓
+6. Client sends token in Authorization header
+   ↓
+7. AuthGuard validates token
+   ↓
+8. Extracts user from token
+   ↓
+9. Attaches user to request
+```
+
+### WebSocket Authentication
+
+```
+1. Client connects with JWT in auth
+   ↓
+2. Gateway receives connection
+   ↓
+3. AuthService.authenticateClient()
+   ↓
+4. Validates JWT token
+   ↓
+5. Extracts userId
+   ↓
+6. Stores user in socket.data
+   ↓
+7. Allows connection or disconnects
+```
+
+---
+
+## 📊 Data Flow Examples
+
+### Example 1: User Connects
+
+```
+Client → WebSocket Connect (JWT)
+    ↓
+Gateway.handleConnection()
+    ↓
+ConnectionHandlerService.handleConnection()
+    ↓
+AuthService.authenticateClient()
+    ↓
+UnifiedPresenceService.markOnline()
+    ↓
+Redis Operations:
+    - presence:online:{userId} = 'true'
+    - presence:sockets:{userId}.add(socketId)
+    - presence:{userId}:{socketId} = metadata
+    ↓
+Socket joins: user:{userId}
+    ↓
+Emit 'connected' event to client
+```
+
+### Example 2: Get User Profile
+
+```
+Client → GET /users/@me (JWT)
+    ↓
+UsersController.getProfile()
+    ↓
+UsersService.getProfile()
+    ↓
+UnifiedPresenceService.getPresenceStatus()
+    ├─► Redis: presence:online:{userId}
+    └─► Redis: display:status:{userId}
+    ↓
+Returns:
+    {
+      isOnline: true,      // From Redis
+      status: "IDLE",      // From Redis
+      ...user data...
+    }
+```
+
+### Example 3: Update Presence Status
+
+```
+Client → PUT /users/@me/update/presenceStatus (JWT)
+    ↓
+UsersController.updatePresenceStatus()
+    ↓
+UsersService.updatePresenceStatus()
+    ↓
+PresenceRepository.updateStatus()      // Update DB (for display)
+    ↓
+UnifiedPresenceService.setDisplayStatus()  // Update Redis
+    ↓
+BroadcasterService broadcasts to friends
+    ↓
+Friends receive 'presence:updated' event
+```
+
+---
+
+## 🗄️ Database Schema
+
+### Key Tables
+
+#### User
+```prisma
+model User {
+  id             BigInt    @id
+  username       String    @unique
+  globalname     String?
+  email          String?   @unique
+  password       String
+  isOnline       Boolean?  @default(false)  // ⚠️ Deprecated - Use Redis
+  ...
+}
+```
+
+**Note:** `isOnline` موجود لكن **لا يُستخدم** للـ presence. الحالة الفعلية من Redis.
+
+#### Presence
+```prisma
+model Presence {
+  id          BigInt      @id
+  userId      BigInt      @unique
+  status      UserStatus? // Display status (optional)
+  expiresAt   DateTime?
+  ...
+}
+```
+
+**Note:** `status` هنا للـ display status فقط، وليس connection status.
+
+#### Friendship
+```prisma
+model Friendship {
+  id        BigInt           @id
+  user1Id   BigInt
+  user2Id   BigInt
+  status    FriendshipStatus
+  ...
+}
+```
+
+---
+
+## 🔄 Services & Repositories
+
+### Services Layer
+
+| Service | Location | Purpose |
+|---------|----------|---------|
+| `AuthService` | `modules/auth/` | Authentication & JWT |
+| `UsersService` | `modules/users/v1/` | User profile & friends |
+| `UnifiedPresenceService` | `modules/websocket/User/services/` | **Presence management** |
+| `FriendsCacheService` | `common/Global/cache/User/` | Friends caching |
+| `BroadcasterService` | `modules/websocket/User/presence/` | WebSocket broadcasting |
+
+### Repositories Layer
+
+| Repository | Location | Purpose |
+|------------|----------|---------|
+| `UserRepository` | `common/database/repositories/User/` | User CRUD |
+| `PresenceRepository` | `common/database/repositories/User/` | Presence CRUD |
+| `FriendshipRepository` | `common/database/repositories/User/` | Friendships |
+| `UserRelationRepository` | `common/database/repositories/User/` | Blocks/Ignores/Mutes |
+
+---
+
+## 🔌 WebSocket Gateway
+
+### Gateway Structure
+
+```
+WebSocketGatewayService
+    │
+    ├─► ConnectionHandlerService
+    │       ├─► handleConnection()
+    │       └─► handleDisconnect()
+    │
+    ├─► UnifiedPresenceService
+    │       ├─► markOnline()
+    │       ├─► markOffline()
+    │       └─► getPresenceStatus()
+    │
+    ├─► BroadcasterService
+    │       └─► Broadcast to friends
+    │
+    └─► FriendsService
+            └─► Friend notifications
+```
+
+### Events Flow
+
+```
+Client Event              →  Gateway Handler          →  Action
+─────────────────────────────────────────────────────────────────
+connect                  →  handleConnection()        →  markOnline()
+disconnect               →  handleDisconnect()        →  markOffline()
+status:get              →  handleGetStatus()          →  getPresenceStatus()
+status:update           →  handleStatusUpdate()      →  setDisplayStatus()
+```
+
+---
+
+## 🎯 Key Design Decisions
+
+### 1. Why Redis for Presence?
+
+✅ **Volatile Data**: Connection status changes frequently  
+✅ **Performance**: Redis is faster than DB for reads  
+✅ **Real-time**: Reflects actual state, not stale data  
+✅ **Auto-cleanup**: TTL ensures accuracy after restart  
+✅ **Scalability**: Works across multiple servers  
+
+### 2. Why Not Database?
+
+❌ **Stale Data**: DB updates might not reflect actual state  
+❌ **Performance**: Slower for frequent reads  
+❌ **Restart Issues**: Users might appear online when offline  
+❌ **Scalability**: Harder to sync across servers  
+
+### 3. Separation of Concerns
+
+- **Connection Status** → Redis (volatile, real-time)
+- **Display Status** → Redis (user choice)
+- **User Data** → PostgreSQL (permanent)
+- **Friendships** → PostgreSQL (relationships)
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```env
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/discord_clone
+
+# Redis (Presence)
+CACHE_HOST=localhost
+CACHE_PORT=6379
+CACHE_PASS=
+
+# JWT
+JWT_SECRET_ACCESS=your_secret_key
+JWT_EXPIRES_IN=7d
+
+# Server
+PORT=3000
+```
+
+### Redis TTL Configuration
+
+```typescript
+// In UnifiedPresenceService
+PRESENCE_TTL = 90;              // Connection tracking (90 seconds)
+DISPLAY_STATUS_TTL = 86400;     // Display status (24 hours)
+```
+
+**Why 90 seconds?**
+- Allows ping/pong to refresh TTL
+- Auto-cleanup dead connections
+- Balance between accuracy and performance
+
+---
+
+## 📈 Performance Considerations
+
+### Redis Optimization
+
+1. **Keys Pattern**: Use consistent prefixes (`presence:*`, `display:*`)
+2. **TTL**: Auto-expire unused keys
+3. **Pipeline**: Batch Redis operations when possible
+4. **Connection Pool**: Reuse Redis connections
+
+### Database Optimization
+
+1. **Indexes**: Username, email, user relationships
+2. **Pagination**: Use for friends lists
+3. **Caching**: Cache friends list in Redis
+
+---
+
+## 🔍 Debugging & Logging
+
+### Logs Locations
+
+- **Application Logs**: Console output
+- **Redis Logs**: Check Redis connection in UnifiedPresenceService
+- **WebSocket Logs**: Connection/disconnection events
+
+### Common Debug Scenarios
+
+1. **User appears offline when online**
+   - Check Redis connection
+   - Verify `presence:online:{userId}` exists
+   - Check WebSocket connection
+
+2. **Status not updating**
+   - Verify Redis key `display:status:{userId}`
+   - Check WebSocket events
+   - Review service logs
+
+---
+
+## 🚀 Deployment Considerations
+
+### Production Setup
+
+1. **Redis**: Use Redis Cluster for high availability
+2. **Database**: PostgreSQL with connection pooling
+3. **WebSocket**: Load balancer with sticky sessions
+4. **Monitoring**: Monitor Redis memory usage
+
+### Multi-Instance Deployment
+
+```
+Load Balancer
+    ├─► Server 1 → Redis Cluster
+    ├─► Server 2 → Redis Cluster
+    └─► Server 3 → Redis Cluster
+```
+
+**All servers share Redis** → Presence syncs across all instances.
+
+---
+
+## 📚 Related Documentation
+
+- [Redis Presence System](./REDIS_PRESENCE_SYSTEM.md) - تفاصيل Presence
+- [Quick Start Guide](./QUICK_START_GUIDE.md) - دليل سريع
+- [API Documentation](./API_DOCUMENTATION.md) - REST APIs
+- [Socket.IO Guide](./SOCKET_IO_GUIDE.md) - WebSocket Events
+
+---
+
+## 🔗 External Resources
+
+- [NestJS Documentation](https://docs.nestjs.com)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Redis Documentation](https://redis.io/docs)
+- [Socket.IO Documentation](https://socket.io/docs)
+
+---
+
+**Last Updated:** 2024-01-15  
+**Version:** 1.0.0
+
+
+
+============================================================
+FILE: docs/QUICK_START_GUIDE.md
+============================================================
+# Quick Start Guide - Discord Clone API
+
+## 🚀 البدء السريع
+
+دليل سريع لاستخدام Discord Clone API بدون تعقيد.
+
+---
+
+## 📋 المحتويات
+
+1. [Authentication](#authentication)
+2. [Profile Management](#profile-management)
+3. [Friends System](#friends-system)
+4. [User Relations](#user-relations)
+5. [Presence System](#presence-system)
+6. [WebSocket](#websocket)
+
+---
+
+## 🔐 Authentication
+
+### 1. Register (التسجيل)
+
+```http
+POST /api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "Password123!",
+  "birthdate": "2000-01-01"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "code": 201,
+  "data": {
+    "user": { ... },
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "..."
+  }
+}
+```
+
+### 2. Login (تسجيل الدخول)
+
+```http
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "Password123!"
+}
+```
+
+**Response:** نفس Register (accessToken + refreshToken)
+
+---
+
+## 👤 Profile Management
+
+### Get Profile (الحصول على Profile)
+
+```http
+GET /api/v1/users/@me
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "5280662395293696",
+    "username": "john_doe",
+    "globalname": "John Doe",
+    "email": "john@example.com",
+    "isOnline": true,        // ✅ من Redis (real-time)
+    "status": "ONLINE",       // ✅ Display Status
+    "customStatus": "Working..."
+  }
+}
+```
+
+### Update Global Name
+
+```http
+PUT /api/v1/users/@me/update/globalname
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "globalname": "John Doe Updated"
+}
+```
+
+### Update Username
+
+```http
+PUT /api/v1/users/@me/update/username
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "username": "john_doe_2024"
+}
+```
+
+### Update Password
+
+```http
+PUT /api/v1/users/@me/update/password
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "currentPassword": "OldPassword123!",
+  "newPassword": "NewPassword123!"
+}
+```
+
+### Update Custom Status
+
+```http
+PUT /api/v1/users/@me/update/customstatus
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "text": "Playing Minecraft 🎮",
+  "emoji": "🎮"
+}
+```
+
+### Update Presence Status
+
+```http
+PUT /api/v1/users/@me/update/presenceStatus
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "status": "IDLE"  // ONLINE | IDLE | DND | Invisible
+}
+```
+
+---
+
+## 👥 Friends System
+
+### Send Friend Request
+
+```http
+POST /api/v1/users/friends/request
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "username": "jane_doe"  // OR "userId": "123456789012345678"
+}
+```
+
+### Respond to Friend Request
+
+```http
+PUT /api/v1/users/friends/respond
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "friendshipId": "123456789012345678",
+  "status": "ACCEPTED"  // or "REJECTED"
+}
+```
+
+### Get Friends List
+
+```http
+GET /api/v1/users/friends
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `status` (optional): `PENDING` | `ACCEPTED`
+- `page` (optional): Page number
+- `limit` (optional): Items per page
+
+**Response:**
+```json
+{
+  "status": "success",
+  "data": {
+    "friends": [
+      {
+        "id": "987654321098765432",
+        "username": "jane_doe",
+        "status": "ONLINE",           // ✅ Real-time from Redis
+        "customStatus": "Coding...",
+        "friendshipId": "...",
+        "createdAt": "..."
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 10
+    }
+  }
+}
+```
+
+### Get Incoming Requests
+
+```http
+GET /api/v1/users/friends/requests/incoming
+Authorization: Bearer <token>
+```
+
+### Get Outgoing Requests
+
+```http
+GET /api/v1/users/friends/requests/outgoing
+Authorization: Bearer <token>
+```
+
+### Cancel Friend Request
+
+```http
+DELETE /api/v1/users/friends/cancel
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "friendshipId": "123456789012345678"
+}
+```
+
+### Remove Friend
+
+```http
+DELETE /api/v1/users/friends/remove
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "userId": "987654321098765432"
+}
+```
+
+### Get Mutual Friends
+
+```http
+GET /api/v1/users/friends/mutual/{userId}
+Authorization: Bearer <token>
+```
+
+### Check Friendship
+
+```http
+GET /api/v1/users/friends/check/{userId}
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "areFriends": true,
+  "hasPendingRequest": false
+}
+```
+
+---
+
+## 🚫 User Relations
+
+### Block User
+
+```http
+POST /api/v1/users/relations
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "targetUserId": "987654321098765432",
+  "type": "BLOCKED",
+  "note": "Spam user"  // optional
+}
+```
+
+### Ignore User
+
+```http
+POST /api/v1/users/relations
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "targetUserId": "987654321098765432",
+  "type": "IGNORED",
+  "note": "Too many messages"
+}
+```
+
+### Mute User
+
+```http
+POST /api/v1/users/relations
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "targetUserId": "987654321098765432",
+  "type": "MUTED",
+  "note": "Too many notifications"
+}
+```
+
+### Get Blocked Users
+
+```http
+GET /api/v1/users/relations/blocked
+Authorization: Bearer <token>
+```
+
+### Get Ignored Users
+
+```http
+GET /api/v1/users/relations/ignored
+Authorization: Bearer <token>
+```
+
+### Get Muted Users
+
+```http
+GET /api/v1/users/relations/muted
+Authorization: Bearer <token>
+```
+
+### Get All Relations
+
+```http
+GET /api/v1/users/relations
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `type` (optional): `BLOCKED` | `IGNORED` | `MUTED`
+
+### Remove Relation
+
+```http
+DELETE /api/v1/users/relations
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "targetUserId": "987654321098765432",
+  "type": "BLOCKED"
+}
+```
+
+### Update Relation Note
+
+```http
+PUT /api/v1/users/relations/note
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "targetUserId": "987654321098765432",
+  "type": "BLOCKED",
+  "note": "Updated reason"
+}
+```
+
+### Check Relation
+
+```http
+GET /api/v1/users/relations/check?targetUserId={userId}&type=BLOCKED
+Authorization: Bearer <token>
+```
+
+### Get Relation Stats
+
+```http
+GET /api/v1/users/relations/stats
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "blocked": 5,
+  "ignored": 3,
+  "muted": 2,
+  "total": 10
+}
+```
+
+---
+
+## 🔴 Presence System
+
+### Status Types
+
+- **ONLINE** - متصل ومتاح
+- **IDLE** - متصل لكن غير نشط
+- **DND** - لا تزعجني (Do Not Disturb)
+- **Invisible** - يظهر offline (لكن متصل فعلياً)
+
+### Update Status
+
+```http
+PUT /api/v1/users/@me/update/presenceStatus
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "status": "IDLE"
+}
+```
+
+### Get Status from Profile
+
+```http
+GET /api/v1/users/@me
+Authorization: Bearer <token>
+```
+
+**Response includes:**
+```json
+{
+  "isOnline": true,    // ✅ Connection status (from Redis)
+  "status": "IDLE"     // ✅ Display status (from Redis)
+}
+```
+
+---
+
+## 🔌 WebSocket
+
+### Connect
+
+```javascript
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000', {
+  auth: { token: 'your_jwt_token' }
+});
+```
+
+### Events
+
+#### Connection Confirmed
+```javascript
+socket.on('connected', (data) => {
+  console.log('Connected:', data.userId);
+});
+```
+
+#### Get Status
+```javascript
+socket.emit('status:get');
+
+socket.on('status:current', (data) => {
+  console.log('Connection:', data.connectionStatus);
+  console.log('Display:', data.displayStatus);
+  console.log('Actual:', data.actualStatus);
+});
+```
+
+#### Friend Status Updates
+```javascript
+socket.on('presence:updated', (data) => {
+  console.log(`${data.username} is now ${data.status}`);
+});
+```
+
+---
+
+## 📝 Example: Complete Flow
+
+```javascript
+// 1. Login
+const loginRes = await fetch('/api/v1/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: 'john@example.com', password: 'Password123!' })
+});
+const { data } = await loginRes.json();
+const token = data.accessToken;
+
+// 2. Get Profile
+const profileRes = await fetch('/api/v1/users/@me', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+const profile = await profileRes.json();
+console.log('Is Online:', profile.data.isOnline); // ✅ From Redis
+
+// 3. Connect WebSocket
+const socket = io('http://localhost:3000', {
+  auth: { token }
+});
+
+socket.on('connected', () => {
+  console.log('✅ Connected!');
+});
+
+// 4. Update Status
+await fetch('/api/v1/users/@me/update/presenceStatus', {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ status: 'IDLE' })
+});
+
+// 5. Send Friend Request
+await fetch('/api/v1/users/friends/request', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ username: 'jane_doe' })
+});
+```
+
+---
+
+## 🔑 Important Notes
+
+### ✅ Always Use
+
+- ✅ `Authorization: Bearer <token>` header for protected endpoints
+- ✅ `isOnline` from API response (not from database)
+- ✅ WebSocket for real-time updates
+- ✅ REST API for status updates
+
+### ❌ Don't Use
+
+- ❌ Database `isOnline` field directly
+- ❌ Hardcoded user IDs (use usernames when possible)
+- ❌ Old WebSocket events (use REST API instead)
+
+---
+
+## 📚 More Documentation
+
+- [Redis Presence System](./REDIS_PRESENCE_SYSTEM.md) - تفاصيل نظام Presence
+- [API Documentation](./API_DOCUMENTATION.md) - تفاصيل كاملة للـ APIs
+- [Socket.IO Guide](./SOCKET_IO_GUIDE.md) - WebSocket Events الكاملة
+
+---
+
+**Base URL:** `http://localhost:3000/api/v1`  
+**WebSocket URL:** `http://localhost:3000`
+
+---
+
+**Last Updated:** 2024-01-15
+
+
+
+============================================================
+FILE: docs/README.md
+============================================================
+# Documentation Index
+
+## 📚 قائمة التوثيق الكاملة
+
+---
+
+## 🚀 للمبتدئين (Beginners)
+
+### [Quick Start Guide](./QUICK_START_GUIDE.md) ⭐
+**ابدأ من هنا!**  
+دليل سريع وبسيط لاستخدام جميع الـ APIs بدون تعقيد.  
+يتضمن أمثلة مباشرة لجميع العمليات.
+
+**يغطي:**
+- Authentication (Register/Login)
+- Profile Management
+- Friends System
+- User Relations
+- Presence System
+- WebSocket
+
+---
+
+## 📖 API Documentation
+
+### [API Documentation](./API_DOCUMENTATION.md) 📋
+**التوثيق الكامل لجميع REST APIs**
+
+**يحتوي على:**
+- جميع Endpoints بالتفصيل
+- Request/Response Examples
+- Validation Rules
+- Error Handling
+- Frontend Integration Examples
+
+**المحتويات:**
+1. Authentication APIs
+2. User Profile APIs
+3. Friendship APIs
+4. User Relations APIs
+5. Error Handling
+6. Frontend Integration Guide
+
+---
+
+## 🔴 Presence System
+
+### [Redis Presence System](./REDIS_PRESENCE_SYSTEM.md) ⭐
+**دليل شامل لنظام Presence**
+
+**لماذا هذا الملف مهم؟**
+- يشرح كيف يعمل نظام Presence مثل Discord
+- يوضح الفرق بين Redis و Database
+- أمثلة عملية للاستخدام
+
+**يحتوي على:**
+- Architecture Overview
+- Redis Keys Structure
+- Connection/Disconnection Flow
+- كيفية الحصول على Presence Status
+- WebSocket Events
+- REST API Endpoints
+- Troubleshooting
+
+### [Status System](./STATUS_SYSTEM.md) 🔄
+**Display Status vs Connection Status**
+
+**يشرح:**
+- الفرق بين Display Status و Connection Status
+- كيف يعمل "Invisible Mode"
+- Status Logic
+- Client-Side Examples
+
+---
+
+## 🔌 WebSocket
+
+### [Socket.IO Guide](./SOCKET_IO_GUIDE.md) 🔌
+**دليل WebSocket Events**
+
+**يحتوي على:**
+- Client Integration
+- WebSocket Events (Client ↔ Server)
+- Authentication
+- Presence Management
+- Testing Examples
+- Configuration
+
+### [WebSocket Testing](./WEBSOCKET_POSTMAN_TESTING.md) 🧪
+**كيفية Testing WebSocket**
+
+**يشرح:**
+- كيفية استخدام Postman للـ WebSocket
+- Testing Scenarios
+- Manual Testing
+- Troubleshooting
+
+---
+
+## 🏗️ Architecture
+
+### [Backend Architecture](./BACKEND_ARCHITECTURE.md) 🏗️
+**البنية المعمارية الكاملة**
+
+**يحتوي على:**
+- System Architecture
+- Project Structure
+- Presence System Architecture
+- Authentication Flow
+- Data Flow Examples
+- Database Schema
+- Services & Repositories
+- Key Design Decisions
+- Performance Considerations
+
+---
+
+## 📊 Quick Reference
+
+### API Endpoints Summary
+
+#### Authentication
+- `POST /api/v1/auth/register` - Register
+- `POST /api/v1/auth/login` - Login
+
+#### Profile
+- `GET /api/v1/users/@me` - Get Profile
+- `PUT /api/v1/users/@me/update/password` - Update Password
+- `PUT /api/v1/users/@me/update/globalname` - Update Global Name
+- `PUT /api/v1/users/@me/update/username` - Update Username
+- `PUT /api/v1/users/@me/update/customstatus` - Update Custom Status
+- `PUT /api/v1/users/@me/update/presenceStatus` - Update Status
+
+#### Friends
+- `POST /api/v1/users/friends/request` - Send Request
+- `PUT /api/v1/users/friends/respond` - Respond to Request
+- `GET /api/v1/users/friends` - Get Friends List
+- `GET /api/v1/users/friends/requests/incoming` - Incoming Requests
+- `GET /api/v1/users/friends/requests/outgoing` - Outgoing Requests
+- `GET /api/v1/users/friends/mutual/{userId}` - Mutual Friends
+- `GET /api/v1/users/friends/check/{userId}` - Check Friendship
+- `DELETE /api/v1/users/friends/remove` - Remove Friend
+- `DELETE /api/v1/users/friends/cancel` - Cancel Request
+
+#### Relations
+- `POST /api/v1/users/relations` - Create Relation (Block/Ignore/Mute)
+- `GET /api/v1/users/relations` - Get All Relations
+- `GET /api/v1/users/relations/blocked` - Get Blocked
+- `GET /api/v1/users/relations/ignored` - Get Ignored
+- `GET /api/v1/users/relations/muted` - Get Muted
+- `GET /api/v1/users/relations/check` - Check Relation
+- `PUT /api/v1/users/relations/note` - Update Note
+- `DELETE /api/v1/users/relations` - Remove Relation
+- `GET /api/v1/users/relations/stats` - Get Stats
+
+### WebSocket Events
+
+#### Client → Server
+- `status:get` - Get current status
+- `status:update` - Update status (deprecated, use REST)
+
+#### Server → Client
+- `connected` - Connection confirmed
+- `status:current` - Current status response
+- `presence:updated` - Friend status changed
+- `status:updated` - Your status updated
+- `friend:request:received` - New friend request
+- `friend:request:accepted` - Friend request accepted
+- `friend:request:rejected` - Friend request rejected
+- `friend:request:cancelled` - Friend request cancelled
+
+---
+
+## 🎯 حسب الهدف
+
+### أريد أن أبدأ بسرعة
+👉 [Quick Start Guide](./QUICK_START_GUIDE.md)
+
+### أريد تفاصيل APIs كاملة
+👉 [API Documentation](./API_DOCUMENTATION.md)
+
+### أريد فهم نظام Presence
+👉 [Redis Presence System](./REDIS_PRESENCE_SYSTEM.md)
+
+### أريد فهم البنية المعمارية
+👉 [Backend Architecture](./BACKEND_ARCHITECTURE.md)
+
+### أريد استخدام WebSocket
+👉 [Socket.IO Guide](./SOCKET_IO_GUIDE.md)
+
+### أريد Testing WebSocket
+👉 [WebSocket Testing](./WEBSOCKET_POSTMAN_TESTING.md)
+
+---
+
+## 💡 نصائح مهمة
+
+### ✅ افعل
+
+- ✅ استخدم Redis للـ presence (ليس Database)
+- ✅ استخدم `getPresenceStatus()` للحصول على الحالة
+- ✅ استخدم REST API لتحديث Status
+- ✅ استمع لـ WebSocket events للتحديثات الفورية
+
+### ❌ لا تفعل
+
+- ❌ لا تستخدم `user.isOnline` من Database
+- ❌ لا تُحدث `isOnline` في Database
+- ❌ لا تعتمد على Database للـ presence
+
+---
+
+## 🔗 Related Links
+
+- [Main README](../README.md) - Project Overview
+- [GitHub Repository](#) - Source Code
+
+---
+
+## 📞 Support
+
+إذا احتجت مساعدة:
+1. راجع الملف المناسب من القائمة أعلاه
+2. راجع Troubleshooting sections
+3. تأكد من Redis connection
+
+---
+
+**Last Updated:** 2024-01-15  
+**Total Documentation Files:** 7
+
+
+
+============================================================
+FILE: docs/REDIS_PRESENCE_SYSTEM.md
+============================================================
+# Redis Presence System Documentation
+
+## 📋 نظرة عامة (Overview)
+
+نظام **Redis Presence System** هو نظام إدارة حالة الاتصال (Online/Offline) للمستخدمين بطريقة مشابهة لـ Discord.
+
+### ✅ المميزات
+
+- **Real-time Presence**: الحالة الحقيقية للمستخدمين من Redis (في الوقت الفعلي)
+- **Volatile Storage**: البيانات لا تُخزن في قاعدة البيانات (volatile)
+- **Auto Cleanup**: عند restart السيرفر، كل المستخدمين يصبحون offline تلقائياً
+- **Multi-Instance Support**: يعمل مع عدة سيرفرات عبر Redis
+- **Scalable**: أداء عالي مع عدد كبير من المستخدمين
+
+---
+
+## 🏗️ البنية المعمارية (Architecture)
+
+### كيف يعمل النظام؟
+
+```
+┌─────────────┐
+│   Client    │
+│  (Browser)  │
+└──────┬──────┘
+       │ WebSocket Connect
+       ▼
+┌─────────────────┐
+│  Socket Gateway │
+│  (NestJS)       │
+└──────┬──────────┘
+       │
+       ├──► Redis: presence:online:{userId} = 'true'
+       ├──► Redis: presence:sockets:{userId} = Set[socketId]
+       └──► Redis: display:status:{userId} = 'ONLINE' | 'IDLE' | 'DND'
+```
+
+### Redis Keys Structure
+
+```redis
+# Connection Tracking
+presence:{userId}:{socketId}          → Hash {device, connectedAt, ip, lastPing}
+presence:sockets:{userId}              → Set of socketIds
+presence:online:{userId}               → 'true' | (deleted if offline)
+
+# Display Status (User Choice)
+display:status:{userId}                → 'ONLINE' | 'IDLE' | 'DND' | 'Invisible'
+
+# All keys have TTL:
+# - Connection keys: 90 seconds
+# - Display status: 24 hours
+```
+
+---
+
+## 🔄 تدفق العمل (Flow)
+
+### 1. عند الاتصال (On Connect)
+
+```typescript
+// User connects via WebSocket
+1. Client sends JWT token
+2. Server validates token
+3. Server calls: markOnline(userId, socketId, metadata)
+   ├─► Stores socket metadata in Redis
+   ├─► Adds socketId to Set
+   ├─► Sets presence:online:{userId} = 'true'
+   └─► Sets TTL = 90 seconds
+
+// Note: NO database update for isOnline!
+```
+
+### 2. عند الانفصال (On Disconnect)
+
+```typescript
+// User disconnects
+1. Server calls: markOffline(userId, socketId)
+   ├─► Removes socket from Set
+   ├─► Checks if Set is empty
+   └─► If empty: Deletes presence:online:{userId}
+
+// Note: NO database update!
+```
+
+### 3. عند Restart السيرفر
+
+```typescript
+// Server restarts
+1. All Redis keys expire (TTL = 90s)
+2. All users appear OFFLINE
+3. When users reconnect → They become ONLINE again
+
+// This is INTENTIONAL - ensures accuracy!
+```
+
+---
+
+## 📊 الحصول على Presence Status
+
+### الطريقة الصحيحة (Correct Way)
+
+```typescript
+// ✅ Use UnifiedPresenceService.getPresenceStatus()
+const presence = await presenceService.getPresenceStatus(userId);
+
+// Returns:
+{
+  isOnline: boolean,        // Real connection status from Redis
+  displayStatus: UserStatus, // User's chosen status (IDLE, DND, etc.)
+  actualStatus: UserStatus  // Final status to display
+}
+```
+
+### ❌ الطريقة الخاطئة (Wrong Way)
+
+```typescript
+// ❌ DON'T use database isOnline field
+const user = await userRepository.findById(userId);
+if (user.isOnline) { ... } // WRONG! This is stale data
+```
+
+---
+
+## 🔌 WebSocket Events
+
+### Client → Server
+
+#### `status:get`
+الحصول على الحالة الحالية
+
+```javascript
+socket.emit('status:get');
+```
+
+**Response:**
+```javascript
+socket.on('status:current', (data) => {
+  console.log(data);
+  // {
+  //   connectionStatus: 'ONLINE' | 'Invisible',
+  //   displayStatus: 'ONLINE' | 'IDLE' | 'DND' | 'Invisible',
+  //   actualStatus: 'ONLINE' | 'IDLE' | 'DND' | 'Invisible'
+  // }
+});
+```
+
+#### `status:update` (Deprecated - Use REST API)
+```javascript
+// ⚠️ Deprecated: Use PUT /users/@me/update/presenceStatus instead
+socket.emit('status:update', { status: 'IDLE' });
+```
+
+### Server → Client
+
+#### `connected`
+عند الاتصال الناجح
+
+```javascript
+socket.on('connected', (data) => {
+  console.log(data);
+  // {
+  //   message: 'Connected successfully',
+  //   userId: '123456789012345678',
+  //   socketId: 'abc123...'
+  // }
+});
+```
+
+#### `status:current`
+رد على `status:get`
+
+```javascript
+socket.on('status:current', (data) => {
+  // See above
+});
+```
+
+#### `presence:updated`
+عند تحديث presence لأحد الأصدقاء
+
+```javascript
+socket.on('presence:updated', (data) => {
+  console.log(data);
+  // {
+  //   userId: '123456789012345678',
+  //   username: 'john_doe',
+  //   status: 'IDLE',
+  //   timestamp: '2024-01-15T10:30:00.000Z'
+  // }
+});
+```
+
+---
+
+## 🌐 REST API Endpoints
+
+### Profile Endpoints
+
+#### `GET /api/v1/users/@me`
+الحصول على Profile (يشمل `isOnline` من Redis)
+
+```http
+GET /api/v1/users/@me
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "id": "5280662395293696",
+    "username": "alice_dev",
+    "globalname": "Alice Johnson",
+    "email": "alice@discordclone.com",
+    "isOnline": true,        // ✅ From Redis (real-time)
+    "status": "IDLE",        // ✅ From Redis (display status)
+    "customStatus": "Working on Discord Clone"
+  }
+}
+```
+
+#### `PUT /api/v1/users/@me/update/presenceStatus`
+تحديث Display Status (ONLINE, IDLE, DND, Invisible)
+
+```http
+PUT /api/v1/users/@me/update/presenceStatus
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "status": "IDLE"
+}
+```
+
+**Valid Values:**
+- `"ONLINE"` - Online and available
+- `"IDLE"` - Online but idle
+- `"DND"` - Do Not Disturb
+- `"Invisible"` - Appear offline (still connected)
+
+---
+
+## 💡 أمثلة الاستخدام (Examples)
+
+### Example 1: Check if User is Online
+
+```typescript
+// ✅ Correct way
+const presence = await presenceService.getPresenceStatus(userId);
+if (presence.isOnline) {
+  console.log('User is connected');
+}
+
+// ❌ Wrong way
+const user = await userRepository.findById(userId);
+if (user.isOnline) { // Stale data!
+  console.log('User might be offline!');
+}
+```
+
+### Example 2: Get Friend's Status
+
+```typescript
+// When fetching friends list
+const friends = await usersService.getFriends(user);
+
+// Each friend includes real-time status:
+friends.forEach(friend => {
+  console.log(`${friend.username}: ${friend.status}`); // ✅ From Redis
+});
+```
+
+### Example 3: Update Your Status
+
+```typescript
+// Via REST API (Recommended)
+await fetch('/api/v1/users/@me/update/presenceStatus', {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ status: 'DND' })
+});
+```
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+```env
+# Redis Configuration
+CACHE_HOST=localhost
+CACHE_PORT=6379
+CACHE_PASS=
+
+# JWT Configuration
+JWT_SECRET_ACCESS=your_secret_key
+JWT_EXPIRES_IN=7d
+```
+
+### TTL Settings
+
+```typescript
+// In UnifiedPresenceService
+PRESENCE_TTL = 90;              // 90 seconds for connection tracking
+DISPLAY_STATUS_TTL = 86400;     // 24 hours for display status
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### المشكلة: المستخدم يظهر online وهو offline
+
+**السبب:** Data قديمة من Database
+
+**الحل:** استخدم `getPresenceStatus()` من Redis
+
+```typescript
+// ❌ Wrong
+const user = await userRepository.findById(userId);
+const isOnline = user.isOnline; // Might be stale!
+
+// ✅ Correct
+const presence = await presenceService.getPresenceStatus(userId);
+const isOnline = presence.isOnline; // Real-time!
+```
+
+### المشكلة: بعد Restart، كل الناس offline
+
+**السبب:** هذا سلوك مقصود! (By Design)
+
+**الحل:** هذا صحيح ✅
+- عند restart → Redis يتم مسحه (volatile)
+- المستخدمون سيظهرون offline حتى يعيدوا الاتصال
+- هذا يضمن الدقة - لا يوجد stale data
+
+### المشكلة: Status لا يتحدث
+
+**الحل:**
+1. تأكد أن Redis يعمل: `redis-cli ping`
+2. تأكد أن WebSocket متصل
+3. استخدم REST API لتحديث Status
+
+---
+
+## 📝 ملاحظات مهمة (Important Notes)
+
+### ✅ DO (افعل)
+
+- ✅ استخدم `getPresenceStatus()` للحصول على الحالة
+- ✅ اعتمد على Redis للـ presence
+- ✅ استخدم REST API لتحديث Status
+- ✅ استمع لـ WebSocket events للتحديثات الفورية
+
+### ❌ DON'T (لا تفعل)
+
+- ❌ لا تستخدم `user.isOnline` من Database
+- ❌ لا تُحدث `isOnline` في Database
+- ❌ لا تعتمد على Database للـ presence
+
+---
+
+## 🔗 Related Documentation
+
+- [API Documentation](./API_DOCUMENTATION.md) - REST APIs الكاملة
+- [Socket.IO Guide](./SOCKET_IO_GUIDE.md) - WebSocket Events
+- [Status System](./STATUS_SYSTEM.md) - Display Status vs Connection Status
+
+---
+
+## 📞 Support
+
+إذا واجهت مشاكل:
+1. راجع الـ Troubleshooting section
+2. تأكد من Redis connection
+3. راجع الـ logs في console
+
+---
+
+**Last Updated:** 2024-01-15  
+**Version:** 1.0.0
+
+
+
+============================================================
+FILE: docs/SOCKET_IO_GUIDE.md
+============================================================
+# Socket.IO Integration Guide
+
+## Overview
+
+The Discord Clone backend now supports **real-time communication** via Socket.IO with **Redis-based presence management** for multi-instance deployment.
+
+## Features
+
+✅ **JWT Authentication** - Secure socket connections  
+✅ **Redis Presence** - Track online/offline status across instances (volatile, like Discord)  
+✅ **Real-time Status** - All presence data from Redis, NOT database  
+✅ **Multi-Instance Support** - Works across multiple server instances  
+✅ **Ping/Pong** - Connection health monitoring  
+✅ **Room Management** - Join user-specific rooms  
+
+---
+
+## Architecture
+
+### Connection Flow
+
+```
+1. Client connects → Send JWT token
+2. Server validates token → Extract userId
+3. Store presence in Redis ONLY (NO database update!)
+4. Join room: user:{userId}
+5. Send confirmation to client
+```
+
+**Important:** Presence is stored in Redis only - NOT in database. This ensures real-time accuracy.
+
+### Redis Data Structure
+
+```redis
+presence:{userId}:{socketId} → {device, connectedAt, ip}
+presence:sockets:{userId}     → Set of socketIds
+presence:online:{userId}      → 'true'/'false'
+```
+
+### Disconnection Flow
+
+```
+1. Client disconnects
+2. Remove socket from Redis
+3. Check socket count
+4. If count = 0 → Remove presence:online:{userId} from Redis
+5. Publish update via Redis Pub/Sub (optional)
+```
+
+**Important:** No database update - presence is volatile (like Discord).
+
+---
+
+## Client Integration
+
+### 1. Install Client Library
+
+```bash
+npm install socket.io-client
+```
+
+### 2. Create Socket Client
+
+```typescript
+import { io, Socket } from 'socket.io-client';
+
+class DiscordSocketClient {
+  private socket: Socket | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+
+  connect(token: string) {
+    if (this.socket?.connected) {
+      console.log('Already connected');
+      return;
+    }
+
+    this.socket = io('http://localhost:3000', {
+      auth: { token },
+      reconnection: true,
+      reconnectionAttempts: this.maxReconnectAttempts,
+      reconnectionDelay: 1000,
+    });
+
+    this.setupEventListeners();
+  }
+
+  private setupEventListeners() {
+    if (!this.socket) return;
+
+    // Connection events
+    this.socket.on('connect', () => {
+      console.log('✅ Connected to server');
+      this.reconnectAttempts = 0;
+    });
+
+    this.socket.on('disconnect', (reason) => {
+      console.log('❌ Disconnected:', reason);
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('Connection error:', error.message);
+      this.reconnectAttempts++;
+
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        console.error('Max reconnection attempts reached');
+      }
+    });
+
+    // Server confirmation
+    this.socket.on('connected', (data) => {
+      console.log('Server confirmed connection:', data);
+    });
+
+    // Presence updates
+    this.socket.on('presence:updated', (data) => {
+      console.log('Presence update:', data);
+      // Update UI with new status
+    });
+  }
+
+  // Ping to keep connection alive
+  startPing() {
+    if (!this.socket) return;
+
+    setInterval(() => {
+      this.socket?.emit('ping');
+    }, 30000); // Every 30 seconds
+  }
+
+  // Update user status
+  updateStatus(status: 'ONLINE' | 'OFFLINE' | 'IDLE' | 'DND') {
+    if (!this.socket) return;
+
+    this.socket.emit('presence:update', { status });
+  }
+
+  // Disconnect
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+  }
+}
+
+export default DiscordSocketClient;
+```
+
+### 3. React Hook Example
+
+```typescript
+import { useEffect, useState, useCallback } from 'react';
+import DiscordSocketClient from './DiscordSocketClient';
+
+const useSocket = (token: string | null) => {
+  const [socket, setSocket] = useState<DiscordSocketClient | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [presence, setPresence] = useState<any>(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const client = new DiscordSocketClient();
+    client.connect(token);
+    
+    client.on('connected', () => {
+      setIsConnected(true);
+    });
+
+    client.on('presence:updated', (data) => {
+      setPresence(data);
+    });
+
+    setSocket(client);
+
+    return () => {
+      client.disconnect();
+    };
+  }, [token]);
+
+  const updateStatus = useCallback((status: 'ONLINE' | 'OFFLINE' | 'IDLE' | 'DND') => {
+    socket?.updateStatus(status);
+  }, [socket]);
+
+  return {
+    socket,
+    isConnected,
+    presence,
+    updateStatus,
+  };
+};
+
+export default useSocket;
+```
+
+### 4. Usage in Component
+
+```typescript
+import React, { useEffect } from 'react';
+import useSocket from './hooks/useSocket';
+
+const ChatComponent: React.FC = () => {
+  const token = localStorage.getItem('accessToken');
+  const { isConnected, presence, updateStatus } = useSocket(token);
+
+  useEffect(() => {
+    // Update status when component mounts
+    if (isConnected) {
+      updateStatus('ONLINE');
+    }
+  }, [isConnected]);
+
+  const handleIdle = () => {
+    updateStatus('IDLE');
+  };
+
+  const handleBack = () => {
+    updateStatus('ONLINE');
+  };
+
+  return (
+    <div>
+      {isConnected ? (
+        <p>✅ Connected</p>
+      ) : (
+        <p>❌ Disconnected</p>
+      )}
+
+      {presence && (
+        <p>Status: {presence.status}</p>
+      )}
+
+      <button onClick={handleIdle}>Set Idle</button>
+      <button onClick={handleBack}>Back Online</button>
+    </div>
+  );
+};
+
+export default ChatComponent;
+```
+
+---
+
+## API Endpoints
+
+### Events
+
+#### Client → Server
+
+**`ping`** - Keep connection alive
+```typescript
+socket.emit('ping');
+// Server responds with 'pong'
+```
+
+**`presence:update`** - Update user status
+```typescript
+socket.emit('presence:update', {
+  status: 'ONLINE' | 'OFFLINE' | 'IDLE' | 'DND'
+});
+```
+
+#### Server → Client
+
+**`connected`** - Connection confirmed
+```typescript
+socket.on('connected', (data) => {
+  console.log(data.userId);
+  console.log(data.socketId);
+});
+```
+
+**`pong`** - Ping response
+```typescript
+socket.on('pong', () => {
+  console.log('Server alive');
+});
+```
+
+**`presence:updated`** - Status update
+```typescript
+socket.on('presence:updated', (data) => {
+  console.log(data.userId);
+  console.log(data.status);
+  console.log(data.timestamp);
+});
+```
+
+---
+
+## How It Works
+
+### Authentication
+
+```typescript
+// Client sends JWT token in auth
+const socket = io('http://localhost:3000', {
+  auth: { token: 'your_jwt_token' }
+});
+
+// Server validates and extracts userId
+// If invalid → disconnect immediately
+```
+
+### Presence Management
+
+#### Online Detection
+
+```typescript
+// When user connects
+await presenceService.markOnline(userId, socketId, {
+  device: 'web',
+  connectedAt: new Date(),
+  ip: clientIp,
+});
+
+// Redis stores:
+// - Socket metadata
+// - Socket IDs set
+// - Online status flag
+```
+
+#### Offline Detection
+
+```typescript
+// When user disconnects
+await presenceService.markOffline(userId, socketId);
+
+// Redis removes socket and checks count
+// If no sockets left → delete presence:online:{userId}
+// NO database update - presence is volatile!
+```
+
+### TTL & Auto-Cleanup
+
+```typescript
+// Every socket connection has 90s TTL
+// Ping resets TTL
+// Dead connections auto-removed
+
+// Client should ping every 30s
+setInterval(() => socket.emit('ping'), 30000);
+```
+
+### Multi-Instance Support
+
+```typescript
+// Redis Pub/Sub broadcasts presence updates
+// All instances receive and react
+// Keeps all servers in sync
+```
+
+---
+
+## Testing
+
+### 1. Start Redis
+
+```bash
+redis-server
+```
+
+### 2. Start Backend
+
+```bash
+npm run start:dev
+```
+
+### 3. Connect Client
+
+```typescript
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000', {
+  auth: { token: 'your_jwt_token_here' }
+});
+
+socket.on('connect', () => {
+  console.log('Connected!');
+});
+
+socket.on('connected', (data) => {
+  console.log('User ID:', data.userId);
+  console.log('Socket ID:', data.socketId);
+});
+```
+
+### 4. Test Presence
+
+```typescript
+// Update status
+socket.emit('presence:update', { status: 'IDLE' });
+
+// Listen for updates
+socket.on('presence:updated', (data) => {
+  console.log('Status changed:', data.status);
+});
+```
+
+---
+
+## Configuration
+
+### Environment Variables
+
+```env
+# Redis Configuration
+CACHE_HOST=localhost
+CACHE_PORT=6379
+CACHE_PASS=
+
+# JWT Configuration (already exists)
+JWT_SECRET_ACCESS=your_secret_key
+JWT_EXPIRES_IN=7d
+```
+
+### WebSocket CORS
+
+Update in `websocket.gateway.ts`:
+
+```typescript
+@WebSocketGateway({
+  cors: {
+    origin: ['http://localhost:3000', 'https://yourdomain.com'],
+    credentials: true,
+  },
+})
+```
+
+---
+
+## Troubleshooting
+
+### Connection Fails
+
+**Problem:** Cannot connect to server
+
+**Solutions:**
+- Check Redis is running: `redis-cli ping`
+- Verify JWT token is valid
+- Check CORS configuration
+- Verify port 3000 is open
+
+### Status Not Updating
+
+**Problem:** Database status doesn't change
+
+**Solutions:**
+- Check Redis connection
+- Verify userId is correct
+- Check database permissions
+- Review logs for errors
+
+### Multiple Instances Issues
+
+**Problem:** Presence updates not syncing
+
+**Solutions:**
+- Verify Redis Pub/Sub is working
+- Check Redis adapter is properly configured
+- Ensure all instances connect to same Redis
+
+---
+
+## Summary
+
+✅ **Authentication:** JWT-based secure connections  
+✅ **Redis Storage:** Multi-instance presence tracking  
+✅ **Auto Status Update:** Automatic ONLINE/OFFLINE  
+✅ **TTL Management:** 90s TTL with ping refresh  
+✅ **Room System:** User-specific rooms  
+✅ **Pub/Sub:** Cross-instance synchronization  
+✅ **Ping/Pong:** Connection health monitoring  
+
+The socket system is now ready for production use!
+
+
+
+============================================================
+FILE: docs/STATUS_SYSTEM.md
+============================================================
+# Status System Documentation
+
+## Overview
+
+The system uses a **dual-status** mechanism (stored in **Redis**, NOT database):
+- **Connection Status**: Real connection state (Socket.IO → Redis)
+- **Display Status**: What the user wants to show (User-controlled → Redis)
+
+**Important:** All status data comes from **Redis** - it's volatile and real-time!
+
+## How It Works
+
+### Status Flow
+
+```
+User opens site → Actual: ONLINE
+     ↓
+User chooses IDLE → Display: IDLE
+     ↓
+User goes offline → Actual: OFFLINE → Display forced to OFFLINE
+```
+
+### Examples
+
+#### Scenario 1: User wants to be invisible
+```typescript
+// User is online, but wants to appear offline
+socket.emit('status:update', { status: 'OFFLINE' });
+
+// Result:
+// Actual: ONLINE (socket connected)
+// Display: OFFLINE (user choice)
+// Friends see: OFFLINE
+```
+
+#### Scenario 2: User wants to be idle
+```typescript
+// User active, but not doing anything
+socket.emit('status:update', { status: 'IDLE' });
+
+// Result:
+// Actual: ONLINE
+// Display: IDLE
+// Friends see: IDLE
+```
+
+#### Scenario 3: User disconnects
+```typescript
+// User closes browser/tab
+// Automatic disconnect
+
+// Result:
+// Actual: OFFLINE (forced)
+// Display: OFFLINE (forced)
+// Friends see: OFFLINE
+```
+
+## API Usage
+
+### Update Display Status
+
+```typescript
+// Client code
+socket.emit('status:update', { 
+  status: 'IDLE' // or 'ONLINE', 'DND', 'OFFLINE'
+});
+
+// Listen for confirmation
+socket.on('status:updated', (data) => {
+  console.log('Status changed:', data.status);
+});
+```
+
+### Get Current Status
+
+```typescript
+// Get both actual and display status
+socket.emit('status:get');
+
+// Listen for response
+socket.on('status:current', (data) => {
+  console.log('Display:', data.displayStatus); // What user wants
+  console.log('Actual:', data.actualStatus);   // Real connection
+});
+```
+
+## Data Storage
+
+### Redis Structure
+
+```redis
+display:status:{userId} → 'ONLINE' | 'IDLE' | 'DND' | 'OFFLINE'
+```
+
+### Storage (Redis)
+
+Both connection and display status are stored in **Redis**:
+- `presence:online:{userId}` → Connection status (true/false)
+- `display:status:{userId}` → Display status (ONLINE, IDLE, DND, Invisible)
+
+**Note:** The `status` field in the `Presence` table is optional and may be outdated. Always use Redis for real-time status!
+
+## Status Logic
+
+### Display Rules
+
+1. **User Online + Chooses Status** → Display = Chosen Status
+2. **User Disconnects** → Display = OFFLINE (forced)
+3. **User Reconnects** → Display = Last chosen status (or ONLINE)
+
+### Implementation
+
+```typescript
+// When user updates status (via REST API)
+PUT /api/v1/users/@me/update/presenceStatus
+// → Updates Redis: display:status:{userId}
+// → Optionally updates DB Presence table (for display only)
+
+// When displaying status to friends
+const presence = await presenceService.getPresenceStatus(userId);
+// Returns: { isOnline, displayStatus, actualStatus }
+
+// Show to friends
+const finalStatus = presence.actualStatus; // Handles offline automatically
+```
+
+## Client-Side Example
+
+```typescript
+class StatusManager {
+  private socket: Socket;
+
+  constructor(socket: Socket) {
+    this.socket = socket;
+    this.setupListeners();
+  }
+
+  // Set status manually
+  setStatus(status: 'ONLINE' | 'IDLE' | 'DND' | 'OFFLINE') {
+    this.socket.emit('status:update', { status });
+  }
+
+  // Get current status
+  getStatus() {
+    this.socket.emit('status:get');
+  }
+
+  // Listen for status updates from server
+  onStatusUpdate(callback: (data: any) => void) {
+    this.socket.on('status:updated', callback);
+  }
+
+  // Listen for current status response
+  onStatusCurrent(callback: (data: any) => void) {
+    this.socket.on('status:current', callback);
+  }
+
+  private setupListeners() {
+    this.onStatusUpdate((data) => {
+      console.log('Status updated:', data.status);
+      // Update UI
+    });
+
+    this.onStatusCurrent((data) => {
+      console.log('Current status:', data.displayStatus);
+      console.log('Actual status:', data.actualStatus);
+      // Update UI
+    });
+  }
+}
+```
+
+## Auto-Idle Detection (Future Enhancement)
+
+For automatic IDLE detection, you can add:
+
+```typescript
+// After 5 minutes of no user activity
+setTimeout(() => {
+  if (userNotActive) {
+    socket.emit('status:update', { status: 'IDLE' });
+  }
+}, 5 * 60 * 1000);
+```
+
+## Status Priority
+
+| Actual Status | User Choice | Displayed Status |
+|--------------|-------------|------------------|
+| ONLINE | OFFLINE | OFFLINE (invisible) |
+| ONLINE | IDLE | IDLE |
+| ONLINE | DND | DND |
+| ONLINE | ONLINE | ONLINE |
+| OFFLINE | * | OFFLINE (forced) |
+
+This provides the perfect "invisible mode" feature where users can be online but appear offline to others.
+
+
+
+============================================================
+FILE: docs/WEBSOCKET_POSTMAN_TESTING.md
+============================================================
+# WebSocket Testing with Postman
+
+## Overview
+
+This guide shows how to test WebSocket connections using Postman's WebSocket support.
+
+## Prerequisites
+
+1. Latest Postman version (with WebSocket support)
+2. Server running on `localhost:3000`
+3. Valid JWT access token
+
+---
+
+## Step 1: Get Access Token
+
+Before connecting to WebSocket, get your access token:
+
+```http
+POST http://localhost:3000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "test_user",
+  "email": "test@example.com",
+  "password": "Test123!",
+  "birthdate": "2000-01-01"
+}
+```
+
+Or login:
+
+```http
+POST http://localhost:3000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Test123!"
+}
+```
+
+Save the `accessToken` from the response.
+
+---
+
+## Step 2: Connect to WebSocket
+
+### Using Postman UI
+
+1. Open Postman
+2. Click **New** → **WebSocket Request**
+3. Enter URL: `ws://localhost:3000`
+4. Add header:
+   ```
+   Authorization: Bearer <your_jwt_token>
+   ```
+5. Click **Connect**
+
+### Expected Response
+
+```json
+{
+  "message": "Connected successfully",
+  "userId": "123456789012345678",
+  "socketId": "abc123..."
+}
+```
+
+---
+
+## Step 3: Test Status Update
+
+After connecting, send messages to test status updates:
+
+### Set Status to IDLE
+
+```json
+{
+  "event": "status:update",
+  "data": {
+    "status": "IDLE"
+  }
+}
+```
+
+### Set Status to DND
+
+```json
+{
+  "event": "status:update",
+  "data": {
+    "status": "DND"
+  }
+}
+```
+
+### Set Status to OFFLINE (Invisible)
+
+```json
+{
+  "event": "status:update",
+  "data": {
+    "status": "OFFLINE"
+  }
+}
+```
+
+### Expected Response
+
+```json
+{
+  "event": "status:updated",
+  "data": {
+    "userId": "123456789012345678",
+    "status": "IDLE",
+    "timestamp": "2024-01-15T10:30:00.000Z"
+  }
+}
+```
+
+---
+
+## Step 4: Get Current Status
+
+### Request
+
+```json
+{
+  "event": "status:get",
+  "data": {}
+}
+```
+
+### Expected Response
+
+```json
+{
+  "event": "status:current",
+  "data": {
+    "displayStatus": "IDLE",
+    "actualStatus": "ONLINE"
+  }
+}
+```
+
+---
+
+## Step 5: Test Ping (Optional)
+
+### Request
+
+```json
+{
+  "event": "ping",
+  "data": {}
+}
+```
+
+### Expected Response
+
+```json
+{
+  "event": "pong",
+  "data": {}
+}
+```
+
+---
+
+## Complete Testing Flow
+
+### 1. Register/Login
+
+```javascript
+// Use existing REST API
+POST /auth/register
+→ Get accessToken
+```
+
+### 2. Connect to WebSocket
+
+```javascript
+ws://localhost:3000
+Header: Authorization: Bearer <token>
+→ Should receive 'connected' event
+```
+
+### 3. Test Status Updates
+
+```javascript
+// Send
+{ "event": "status:update", "data": { "status": "IDLE" } }
+// Receive
+{ "event": "status:updated", "data": {...} }
+```
+
+### 4. Test Get Status
+
+```javascript
+// Send
+{ "event": "status:get", "data": {} }
+// Receive
+{ "event": "status:current", "data": {...} }
+```
+
+### 5. Disconnect
+
+```javascript
+// Close connection or send disconnect event
+→ Check if status changed to OFFLINE in database
+```
+
+---
+
+## Postman Collection Structure
+
+```json
+{
+  "info": {
+    "name": "Discord WebSocket API"
+  },
+  "item": [
+    {
+      "name": "Connect",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "ws://localhost:3000"
+        },
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Testing Scenarios
+
+### Scenario 1: Normal Status Change
+
+```
+1. Connect → Receives 'connected'
+2. Update status to IDLE → Receives 'status:updated'
+3. Get status → Receives 'status:current' with IDLE
+4. Update status to DND → Receives 'status:updated'
+5. Disconnect → Status should be OFFLINE
+```
+
+### Scenario 2: Invisible Mode
+
+```
+1. Connect → Actual: ONLINE
+2. Set status to OFFLINE → Display: OFFLINE, Actual: ONLINE
+3. Check database → Should show OFFLINE
+4. Disconnect → Both should be OFFLINE
+```
+
+### Scenario 3: Multi-Device
+
+```
+1. Connect Device 1 → Online
+2. Update status on Device 1 → IDLE
+3. Connect Device 2 → Should receive status as IDLE
+4. Update status on Device 2 → DND
+5. Device 1 should receive status update event
+```
+
+---
+
+## Troubleshooting
+
+### Connection Failed
+
+**Problem:** Cannot connect to WebSocket
+
+**Solutions:**
+- Check if server is running
+- Verify JWT token is valid
+- Check CORS configuration
+- Try with different connection protocol (ws/wss)
+
+### No Response
+
+**Problem:** Connected but no responses
+
+**Solutions:**
+- Check server logs for errors
+- Verify Redis is running
+- Check network tab in browser developer tools
+- Verify event names are correct
+
+### Status Not Updating
+
+**Problem:** Status change not reflected
+
+**Solutions:**
+- Check Redis connection
+- Verify database update
+- Check for errors in server logs
+- Verify userId is correct
+
+---
+
+## Manual cURL Alternative
+
+If Postman doesn't work, use a WebSocket client:
+
+```bash
+npm install -g wscat
+wscat -c ws://localhost:3000 -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+Then send events manually:
+
+```json
+{"event": "status:update", "data": {"status": "IDLE"}}
+```
+
+---
+
+## Reference
+
+### Available Events
+
+#### Client → Server
+
+- `status:update` - Update display status
+- `status:get` - Get current status
+- `ping` - Ping server (optional)
+
+#### Server → Client
+
+- `connected` - Connection established
+- `status:updated` - Status change confirmed
+- `status:current` - Current status response
+- `pong` - Ping response (optional)
+
+---
+
+## Next Steps
+
+1. Test all status transitions
+2. Test with multiple devices
+3. Test disconnect scenarios
+4. Test with invalid tokens
+5. Test with Redis down scenario
+
+
+
 ============================================================
 FILE: postman/User1_Alice.postman_collection.json
 ============================================================
@@ -1752,6 +6215,101 @@ FILE: postman/User3_Charlie.postman_collection.json
 
 
 ============================================================
+FILE: postman/WebSocket_Testing.postman_collection.json
+============================================================
+{
+  "info": {
+    "name": "Discord WebSocket API",
+    "description": "WebSocket testing for Discord Clone API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Connect to WebSocket",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Generate WebSocket URL with JWT token",
+              "const baseUrl = 'ws://localhost:3000';",
+              "const token = pm.collectionVariables.get('accessToken');",
+              "",
+              "pm.request.url = baseUrl;",
+              "pm.request.auth = {",
+              "    type: 'jwt',",
+              "    jwt: {",
+              "        token: token",
+              "    }",
+              "};",
+              "",
+              "console.log('Connecting with token:', token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "ws://localhost:3000",
+          "protocol": "ws",
+          "host": ["localhost"],
+          "port": "3000"
+        },
+        "description": "Connect to WebSocket server with JWT authentication"
+      },
+      "response": []
+    },
+    {
+      "name": "Test Connection with Events",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Connection opened', function() {",
+              "    pm.expect(pm.response.code).to.eql(101);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "ws://localhost:3000",
+          "protocol": "ws",
+          "host": ["localhost"],
+          "port": "3000"
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
+
+
+
+============================================================
 FILE: prisma/migrations/migration_lock.toml
 ============================================================
 # Please do not edit this file manually
@@ -1773,28 +6331,28 @@ generator client {
 
 enum UserStatus {
   ONLINE
-  OFFLINE
+  Invisible
   IDLE
   DND
 }
 
 model User {
-  id           BigInt     @id
-  username     String     @unique
-  globalname   String?
-  email        String?    @unique
-  phone        String?    @unique
-  password     String
-  avatar       String?
-  birthdate    DateTime?
+  id             BigInt             @id
+  username       String             @unique
+  globalname     String?
+  email          String?            @unique
+  phone          String?            @unique
+  password       String
+  avatar         String?
+  birthdate      DateTime?
+  isBot          Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
-  status       UserStatus @default(OFFLINE)
-  customStatus String?
-  isBot        Boolean    @default(false)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  
   // relations
+  presence       Presence?
+  statusRecord   UserStatusRecord?
+
   sentMessages     Message[]          @relation("SentMessages")
   receivedMessages Message[]          @relation("ReceivedMessages")
   friendships1     Friendship[]       @relation("UserFriend1")
@@ -1806,6 +6364,28 @@ model User {
 
   @@index([username])
 }
+
+model Presence {
+  id          BigInt      @id
+  userId      BigInt      @unique
+  user        User        @relation(fields: [userId], references: [id])
+  status      UserStatus?
+  expiresAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model UserStatusRecord {
+  id           BigInt      @id
+  userId       BigInt      @unique
+  user         User        @relation(fields: [userId], references: [id])
+  text   String?
+  emoji  String?
+  expiresAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
 
 model Friendship {
   id        BigInt           @id
@@ -2037,15 +6617,20 @@ FILE: package.json
     "@nestjs/core": "^11.1.6",
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.7",
     "@nestjs/swagger": "^11.2.1",
+    "@nestjs/websockets": "^11.1.7",
     "@prisma/client": "^6.17.1",
     "@sapphire/snowflake": "^3.5.5",
     "argon2": "^0.44.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "ioredis": "^5.8.1",
+    "ms": "^2.1.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.1",
+    "socket.io-redis-adapter": "^8.4.6",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -2056,6 +6641,7 @@ FILE: package.json
     "@nestjs/testing": "^11.0.1",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/ms": "^2.1.0",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
@@ -2097,104 +6683,279 @@ FILE: package.json
 ============================================================
 FILE: README.md
 ============================================================
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Discord Clone Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend API لـ Discord Clone مبني بـ NestJS مع نظام Presence بالكامل باستخدام Redis.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 📚 Documentation
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 🚀 Quick Start
+- **[Quick Start Guide](./docs/QUICK_START_GUIDE.md)** - دليل سريع لاستخدام الـ APIs
 
-## Project setup
+### 📖 API Documentation
+- **[API Documentation](./docs/API_DOCUMENTATION.md)** - تفاصيل كاملة لجميع REST APIs
 
-```bash
-$ npm install
-```
+### 🔴 Presence System
+- **[Redis Presence System](./docs/REDIS_PRESENCE_SYSTEM.md)** - نظام Presence باستخدام Redis (مثل Discord)
+- **[Status System](./docs/STATUS_SYSTEM.md)** - شرح Display Status vs Connection Status
 
-## Compile and run the project
+### 🔌 WebSocket
+- **[Socket.IO Guide](./docs/SOCKET_IO_GUIDE.md)** - دليل WebSocket Events
+- **[WebSocket Testing](./docs/WEBSOCKET_POSTMAN_TESTING.md)** - كيفية Testing WebSocket
 
-```bash
-# development
-$ npm run start
+### 🏗️ Architecture
+- **[Backend Architecture](./docs/BACKEND_ARCHITECTURE.md)** - البنية المعمارية الكاملة
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## ✨ المميزات الرئيسية
 
-## Run tests
+✅ **Redis-Based Presence System** - نظام presence مثل Discord تماماً  
+✅ **Real-time Status Updates** - تحديثات فورية عبر WebSocket  
+✅ **Friends System** - نظام أصدقاء كامل  
+✅ **User Relations** - Block, Ignore, Mute  
+✅ **JWT Authentication** - أمان عالي  
+✅ **Scalable Architecture** - يدعم Multi-instance deployment  
+
+---
+
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
+### Environment Setup
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+إنشاء ملف `.env`:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/discord_clone
+CACHE_HOST=localhost
+CACHE_PORT=6379
+CACHE_PASS=
+JWT_SECRET_ACCESS=your_secret_key
+JWT_EXPIRES_IN=7d
+PORT=3000
+```
+
+### Database Setup
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma migrate dev
+npx prisma generate
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Run Application
 
-## Resources
+```bash
+# Development
+npm run start:dev
 
-Check out a few resources that may come in handy when working with NestJS:
+# Production
+npm run build
+npm run start:prod
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 📋 Tech Stack
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **Framework**: NestJS
+- **Database**: PostgreSQL + Prisma
+- **Cache/Presence**: Redis
+- **WebSocket**: Socket.IO
+- **Authentication**: JWT
+- **Validation**: Class Validator
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🔑 Key Features
 
-## License
+### 1. Redis Presence System
+- ✅ Presence في Redis فقط (volatile)
+- ✅ Auto-cleanup عند restart
+- ✅ Real-time status updates
+- ✅ Multi-instance support
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### 2. REST APIs
+- ✅ Authentication (Register/Login)
+- ✅ Profile Management
+- ✅ Friends System
+- ✅ User Relations (Block/Ignore/Mute)
+
+### 3. WebSocket
+- ✅ Real-time presence updates
+- ✅ Friend request notifications
+- ✅ Status changes broadcasting
+
+---
+
+## 📖 API Examples
+
+### Get Profile
+
+```http
+GET /api/v1/users/@me
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "5280662395293696",
+    "username": "john_doe",
+    "isOnline": true,    // ✅ From Redis (real-time)
+    "status": "ONLINE"   // ✅ Display status
+  }
+}
+```
+
+### Update Status
+
+```http
+PUT /api/v1/users/@me/update/presenceStatus
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "status": "IDLE"
+}
+```
+
+---
+
+## 🔌 WebSocket Connection
+
+```javascript
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000', {
+  auth: { token: 'your_jwt_token' }
+});
+
+socket.on('connected', (data) => {
+  console.log('Connected:', data.userId);
+});
+
+socket.on('presence:updated', (data) => {
+  console.log(`${data.username} is now ${data.status}`);
+});
+```
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+├── modules/
+│   ├── auth/              # Authentication
+│   ├── users/             # User management
+│   └── websocket/         # WebSocket Gateway
+│
+├── common/
+│   ├── database/          # Repositories
+│   ├── Global/cache/      # Redis services
+│   └── guards/            # Auth guards
+│
+└── main.ts
+```
+
+---
+
+## 📚 Documentation Files
+
+| File | Description |
+|------|-------------|
+| [QUICK_START_GUIDE.md](./docs/QUICK_START_GUIDE.md) | دليل سريع للبدء |
+| [API_DOCUMENTATION.md](./docs/API_DOCUMENTATION.md) | تفاصيل REST APIs |
+| [REDIS_PRESENCE_SYSTEM.md](./docs/REDIS_PRESENCE_SYSTEM.md) | نظام Presence |
+| [BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md) | البنية المعمارية |
+| [SOCKET_IO_GUIDE.md](./docs/SOCKET_IO_GUIDE.md) | WebSocket Guide |
+| [STATUS_SYSTEM.md](./docs/STATUS_SYSTEM.md) | Status System |
+
+---
+
+## 🧪 Testing
+
+### Test WebSocket
+
+افتح `public/websocket-test.html` في المتصفح لـ testing مباشر.
+
+### Postman Collections
+
+جميع الـ collections موجودة في `postman/`:
+- `User1_Alice.postman_collection.json`
+- `User2_Bob.postman_collection.json`
+- `User3_Charlie.postman_collection.json`
+- `WebSocket_Testing.postman_collection.json`
+
+---
+
+## ⚙️ Configuration
+
+### Required Services
+
+1. **PostgreSQL** - Database
+2. **Redis** - Cache & Presence
+3. **Node.js** - Runtime
+
+### Environment Variables
+
+راجع [Quick Start Guide](./docs/QUICK_START_GUIDE.md) للـ environment variables الكاملة.
+
+---
+
+## 🐛 Troubleshooting
+
+### Presence Issues
+
+إذا كان المستخدم يظهر online وهو offline:
+- ✅ استخدم `getPresenceStatus()` من Redis
+- ❌ لا تستخدم `isOnline` من Database
+
+راجع [Redis Presence System](./docs/REDIS_PRESENCE_SYSTEM.md) للتفاصيل.
+
+---
+
+## 📝 Important Notes
+
+### ✅ DO
+
+- ✅ استخدم Redis للـ presence
+- ✅ استخدم REST API لتحديث Status
+- ✅ استمع لـ WebSocket events
+
+### ❌ DON'T
+
+- ❌ لا تستخدم Database `isOnline` field
+- ❌ لا تُحدث `isOnline` في Database
+- ❌ لا تعتمد على Database للـ presence
+
+---
+
+## 🔗 Links
+
+- [API Documentation](./docs/API_DOCUMENTATION.md)
+- [Quick Start](./docs/QUICK_START_GUIDE.md)
+- [Redis Presence](./docs/REDIS_PRESENCE_SYSTEM.md)
+- [Architecture](./docs/BACKEND_ARCHITECTURE.md)
+
+---
+
+## 📄 License
+
+Private project
+
+---
+
+**Last Updated:** 2024-01-15
 
 
 ============================================================

@@ -8,6 +8,7 @@ import type { SocketMetadata } from '../../../../common/Types/websocket.types';
 import { BroadcasterService } from '../presence/broadcaster.service';
 import { UserRepository, PresenceRepository, UserStatusRecordRepository } from 'src/common/database/repositories';
 import { UserStatus } from '@prisma/client';
+import { UserPresenceDto } from '../../../../common/Types/presence.dto';
 
 /**
  * Unified Presence Service
@@ -82,10 +83,6 @@ export class UnifiedPresenceService implements OnModuleDestroy {
     const socketCount = await this.redis.scard(socketsSetKey);
     if (socketCount === 1) {
       await this.redis.setex(onlineKey, this.PRESENCE_TTL, 'true');
-      
-      // Update user's isOnline status in database
-      await this.userRepository.updateOnlineStatus(userId, true);
-      
       // Publish to Redis Stream for other instances
       await this.redis.xadd('presence:stream', '*', 
         'userId', userId,
@@ -94,6 +91,9 @@ export class UnifiedPresenceService implements OnModuleDestroy {
         'timestamp', new Date().toISOString()
       );
     }
+
+    // Pub/Sub broadcast
+    await this.publishPresenceUpdate(userId, { event: 'ONLINE', socketId });
   }
 
   /**
@@ -110,10 +110,6 @@ export class UnifiedPresenceService implements OnModuleDestroy {
     const count = await this.redis.scard(socketsSetKey);
     if (count === 0) {
       await this.redis.del(onlineKey);
-      
-      // Update user's isOnline status in database
-      await this.userRepository.updateOnlineStatus(userId, false);
-      
       // Publish to Redis Stream for other instances
       await this.redis.xadd('presence:stream', '*',
         'userId', userId,
@@ -122,6 +118,9 @@ export class UnifiedPresenceService implements OnModuleDestroy {
         'timestamp', new Date().toISOString()
       );
     }
+
+    // Pub/Sub broadcast
+    await this.publishPresenceUpdate(userId, { event: 'OFFLINE', socketId });
   }
 
   /**
@@ -138,6 +137,21 @@ export class UnifiedPresenceService implements OnModuleDestroy {
   async getSocketCount(userId: string): Promise<number> {
     const socketsSetKey = `presence:sockets:${userId}`;
     return await this.redis.scard(socketsSetKey);
+  }
+
+  /**
+   * Get count of online users (users with active socket connections)
+   */
+  async getOnlineUsersCount(): Promise<number> {
+    // Get all keys matching presence:online:*
+    const pattern = 'presence:online:*';
+    const keys = await this.redis.keys(pattern);
+    
+    // Count how many are actually set to 'true'
+    if (keys.length === 0) return 0;
+    
+    const values = await this.redis.mget(...keys);
+    return values.filter(v => v === 'true').length;
   }
 
   // ==================== DISPLAY STATUS MANAGEMENT ====================
@@ -157,6 +171,75 @@ export class UnifiedPresenceService implements OnModuleDestroy {
     const key = `display:status:${userId}`;
     return await this.redis.get(key) as UserStatus | null;
   }
+
+  /**
+   * Get complete presence status (connection + display status)
+   * Optimized: Uses MGET for single Redis round-trip instead of 2 separate calls
+   */
+  async getPresenceStatus(userId: string): Promise<{
+    isOnline: boolean;
+    displayStatus: UserStatus;
+    actualStatus: UserStatus;
+  }> {
+    // Optimized: Fetch both values in a single Redis round-trip using MGET
+    const [isOnlineValue, displayStatusValue] = await this.redis.mget(
+      `presence:online:${userId}`,
+      `display:status:${userId}`
+    );
+
+    const isOnline = isOnlineValue === 'true';
+    const displayStatus = displayStatusValue as UserStatus | null;
+
+    // Determine actual status
+    // If offline → status is OFFLINE
+    // If online → use display status or default to ONLINE
+    const actualStatus = !isOnline 
+      ? UserStatus.Invisible 
+      : (displayStatus || UserStatus.ONLINE);
+
+    return {
+      isOnline,
+      displayStatus: displayStatus || UserStatus.Invisible,
+      actualStatus,
+    };
+  }
+
+  /**
+   * Batch presence lookup using Redis pipeline
+   * Returns presence snapshot suitable for friend lists or guild members
+   */
+  async getBatchPresence(userIds: string[]): Promise<UserPresenceDto[]> {
+    if (!userIds || userIds.length === 0) return [];
+
+    const pipeline = this.redis.pipeline();
+    for (const id of userIds) {
+      pipeline.get(`presence:online:${id}`);
+      pipeline.get(`display:status:${id}`);
+    }
+    const execResults = await pipeline.exec();
+    // results is array of [err, value]; pair per user (online, display)
+    const presences: UserPresenceDto[] = [];
+    for (let i = 0; i < userIds.length; i++) {
+      const onlineIdx = i * 2;
+      const displayIdx = i * 2 + 1;
+      const isOnlineVal = execResults?.[onlineIdx]?.[1] as string | null;
+      const displayVal = execResults?.[displayIdx]?.[1] as string | null;
+      const isOnline = isOnlineVal === 'true';
+      const displayStatus = (displayVal as UserStatus | null) || UserStatus.Invisible;
+      const status: UserStatus = isOnline ? (displayStatus || UserStatus.ONLINE) : UserStatus.Invisible;
+      presences.push({ userId: userIds[i], status, lastSeen: null });
+    }
+    return presences;
+  }
+
+  // Publish presence updates to Redis Pub/Sub
+  private async publishPresenceUpdate(userId: string, payload: any) {
+    try {
+      await this.redis.publish('presence:updates', JSON.stringify({ userId, ...payload }));
+    } catch {}
+  }
+
+  // (Removed duplicate alternative markOnline/markOffline implementation)
 
   /**
    * Remove user's display status
@@ -269,17 +352,12 @@ export class UnifiedPresenceService implements OnModuleDestroy {
     const user = this.authService.getUserFromClient(client);
     if (!user) return;
 
-    const displayStatus = await this.getDisplayStatus(user.id);
-    const isOnline = await this.isOnline(user.id);
-
-    // Get current presence status from database
-    const presence = await this.presenceRepository.getPresenceWithCurrentStatus(user.id) as any;
-    const currentPresenceStatus = presence?.user?.isOnline ? UserStatus.ONLINE : UserStatus.Invisible;
+    const presence = await this.getPresenceStatus(user.id);
 
     client.emit(WebSocketEvents.STATUS_CURRENT, {
-      connectionStatus: isOnline ? UserStatus.ONLINE : UserStatus.Invisible, // Based on socket connection
-      displayStatus: displayStatus || currentPresenceStatus, // User's chosen display status
-      actualPresence: currentPresenceStatus, // Current presence from database
+      connectionStatus: presence.isOnline ? UserStatus.ONLINE : UserStatus.Invisible, // Based on socket connection
+      displayStatus: presence.displayStatus, // User's chosen display status
+      actualStatus: presence.actualStatus, // Final status to display (OFFLINE if disconnected, else display status)
     });
   }
 

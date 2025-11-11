@@ -7,11 +7,11 @@ import { RedisService } from './cache/redis.service';
 import { JwtHelper } from './security';
 import CatchAllFilter from '../filters/catchAll.filter';
 import CustomHttpException from '../filters/customHttpException.filter';
-import { TransformInterceptor } from '../interceptors/transform.interceptor';
 import { snowflake } from '../utils/snowflake';
 import { ValidationUtil } from '../utils/validation.util';
 import { UserRepository } from 'src/common/database/repositories';
 import { ConfigModule } from '@nestjs/config';
+import { ResponseInterceptor } from '../interceptors/response.interceptor';
 
 @Global()
 @Module({
@@ -46,7 +46,7 @@ import { ConfigModule } from '@nestjs/config';
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor,
+      useClass: ResponseInterceptor,
     },
   ],
   exports: [RedisService, JwtService, JwtHelper, 'SNOWFLAKE', 'VALIDATION_UTIL'],

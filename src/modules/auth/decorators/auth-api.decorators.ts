@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBadRequestResponse, ApiConflictResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { HttpCode, HttpStatus } from '@nestjs/common';
-import { AuthResponseDto, LoginResponseDto } from '../../../common/dto/auth-response.dto';
+// import { AuthResponseDto } from '../../../common/dto/auth-response.dto';
 import { ErrorResponseDto, ValidationErrorResponseDto } from '../../../common/dto/shared-response.dto';
 
 /**
@@ -17,7 +17,7 @@ export function RegisterApiDocs() {
     ApiResponse({ 
       status: 201, 
       description: 'User successfully registered',
-      type: AuthResponseDto,
+      // type: AuthResponseDto,
       schema: {
         example: {
           status: 'success',
@@ -83,16 +83,11 @@ export function LoginApiDocs() {
     ApiResponse({ 
       status: 200, 
       description: 'User successfully logged in',
-      type: LoginResponseDto,
       schema: {
         example: {
           status: 'success',
           code: 'LOGIN_SUCCESS',
           message: 'Logged in successfully',
-          data: {
-            accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-            refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-          }
         }
       }
     }),

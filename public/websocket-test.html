@@ -346,39 +346,258 @@
             gap: 8px;
         }
         
-        .profile-section {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 20px;
+        /* Profile Card Styles */
+        .profile-card {
             background: #2f3136;
-            border-radius: 8px;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #202225;
             margin-bottom: 20px;
         }
-        
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #202225;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar-container {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar-img {
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            border: 3px solid #5865f2;
+            border: 4px solid #5865f2;
+            object-fit: cover;
+            background: #40444b;
         }
-        
-        .profile-info h3 {
+
+        .status-indicator-large {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 4px solid #2f3136;
+            background: #747f8d;
+        }
+
+        .status-indicator-large.online {
+            background: #43b581;
+        }
+
+        .status-indicator-large.idle {
+            background: #faa61a;
+        }
+
+        .status-indicator-large.dnd {
+            background: #f04747;
+        }
+
+        .status-indicator-large.offline {
+            background: #747f8d;
+        }
+
+        .profile-header-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profile-username {
             color: #ffffff;
-            font-size: 20px;
+            font-size: 24px;
+            font-weight: 600;
             margin-bottom: 4px;
+            word-wrap: break-word;
         }
-        
-        .profile-info p {
+
+        .profile-globalname {
+            color: #b9bbbe;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .profile-connection-badge {
+            display: inline-block;
+        }
+
+        .profile-details {
+            margin-bottom: 20px;
+        }
+
+        .profile-detail-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #202225;
+        }
+
+        .profile-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
             color: #b9bbbe;
             font-size: 14px;
-            margin-bottom: 2px;
+            min-width: 120px;
+            font-weight: 500;
         }
-        
-        .profile-info .custom-status {
+
+        .detail-value {
+            color: #ffffff;
+            font-size: 14px;
+            flex: 1;
+            word-wrap: break-word;
+        }
+
+        .profile-status-section {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #40444b;
+            border-radius: 8px;
+            border: 1px solid #202225;
+        }
+
+        .section-title {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #2f3136;
+            border-radius: 6px;
+        }
+
+        .status-item-label {
+            color: #b9bbbe;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .profile-custom-status-section {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #40444b;
+            border-radius: 8px;
+            border: 1px solid #202225;
+        }
+
+        .custom-status-display {
             color: #7289da;
             font-style: italic;
+            font-size: 16px;
+            padding: 8px 12px;
+            background: #2f3136;
+            border-radius: 6px;
+            min-height: 24px;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: #2f3136;
+            padding: 28px;
+            border-radius: 12px;
+            max-width: 520px;
+            width: 90%;
+            border: 1px solid #202225;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-title {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .modal-form-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-label {
+            color: #b9bbbe;
+            display: block;
+            margin-bottom: 8px;
             font-size: 14px;
+            font-weight: 500;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #40444b;
+            border: 1px solid #202225;
+            border-radius: 6px;
+            color: #dcddde;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #5865f2;
+        }
+
+        .modal-input-emoji {
+            font-size: 28px;
+            text-align: center;
+            padding: 16px;
+        }
+
+        .modal-hint {
+            color: #747f8d;
+            font-size: 12px;
+            display: block;
+            margin-top: 6px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
         }
         
         .log-container {
@@ -589,43 +808,96 @@
                 <div id="profile-section" class="section hidden">
                     <div class="section-header">
                         <h3>👤 My Profile</h3>
-            </div>
+                    </div>
                     <div class="section-content">
-                        <div id="profileSection" class="profile-section hidden">
-                            <img id="profileAvatar" src="" alt="Avatar" class="profile-avatar">
-                            <div class="profile-info">
-                                <h3 id="profileUsername"></h3>
-                                <p id="profileglobalname" style="color: #b9bbbe; margin: 4px 0;"></p>
-                                <div id="profileStatus" style="margin: 8px 0;"></div>
-                                <div id="profileCustomStatusContainer" style="margin: 8px 0;">
-                                    <p style="color: #7289da; font-style: italic; font-size: 14px;" id="profileCustomStatus"></p>
+                        <!-- Profile Card -->
+                        <div id="profileCard" class="profile-card hidden">
+                            <div class="profile-header">
+                                <div class="profile-avatar-container">
+                                    <img id="profileAvatar" src="" alt="Avatar" class="profile-avatar-img">
+                                    <div id="profileStatusIndicator" class="status-indicator-large"></div>
                                 </div>
-                                <div style="margin-top: 12px; display: flex; gap: 8px;">
-                                    <button class="btn btn-secondary" onclick="updateCustomStatus()">✏️ Update Custom Status</button>
-                                    <button class="btn btn-primary" onclick="getUserProfile()">🔄 Refresh Profile</button>
+                                <div class="profile-header-info">
+                                    <h3 id="profileUsername" class="profile-username">Loading...</h3>
+                                    <p id="profileGlobalname" class="profile-globalname"></p>
+                                    <div id="profileConnectionStatus" class="profile-connection-badge"></div>
                                 </div>
-        </div>
-    </div>
+                            </div>
+                            
+                            <div class="profile-details">
+                                <div class="profile-detail-row">
+                                    <span class="detail-label">🆔 User ID:</span>
+                                    <span id="profileUserId" class="detail-value">-</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="detail-label">📧 Email:</span>
+                                    <span id="profileEmail" class="detail-value">-</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="detail-label">📱 Phone:</span>
+                                    <span id="profilePhone" class="detail-value">-</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="detail-label">🎂 Birthdate:</span>
+                                    <span id="profileBirthdate" class="detail-value">-</span>
+                                </div>
+                                <div class="profile-detail-row">
+                                    <span class="detail-label">📅 Created:</span>
+                                    <span id="profileCreatedAt" class="detail-value">-</span>
+                                </div>
+                            </div>
 
-                        <div class="form-group">
-                            <h4 style="color: #ffffff; margin-bottom: 16px;">Profile Management</h4>
-                            <div class="form-row">
-                                <input type="text" id="newglobalname" placeholder="New Global Name">
-                                <button class="btn btn-primary" onclick="updateglobalname()">✏️ Update Global Name</button>
+                            <div class="profile-status-section">
+                                <h4 class="section-title">🔴 Presence Status</h4>
+                                <div class="status-grid">
+                                    <div class="status-item">
+                                        <span class="status-item-label">Connection:</span>
+                                        <span id="profileConnectionBadge" class="status-badge status-offline">⚪ OFFLINE</span>
+                                    </div>
+                                    <div class="status-item">
+                                        <span class="status-item-label">Display Status:</span>
+                                        <span id="profileDisplayStatus" class="status-badge status-offline">Invisible</span>
+                                    </div>
+                                    <div class="status-item">
+                                        <span class="status-item-label">Actual Status:</span>
+                                        <span id="profileActualStatus" class="status-badge status-offline">Invisible</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-row">
-                                <input type="text" id="newUsername" placeholder="New Username">
-                                <button class="btn btn-primary" onclick="updateUsername()">👤 Update Username</button>
+
+                            <div id="profileCustomStatusSection" class="profile-custom-status-section hidden">
+                                <h4 class="section-title">✨ Custom Status</h4>
+                                <div id="profileCustomStatusDisplay" class="custom-status-display"></div>
                             </div>
-                            <div class="form-row">
-                                <input type="password" id="currentPassword" placeholder="Current Password">
-                                <input type="password" id="newPassword" placeholder="New Password">
-                                <input type="password" id="confirmPassword" placeholder="Confirm Password">
-                                <button class="btn btn-danger" onclick="updatePassword()">🔒 Update Password</button>
+
+                            <div class="profile-actions">
+                                <button class="btn btn-primary" onclick="getUserProfile()">🔄 Refresh Profile</button>
+                                <button class="btn btn-secondary" onclick="showCustomStatusModal()">✏️ Update Custom Status</button>
                             </div>
                         </div>
-            </div>
-        </div>
+
+                        <!-- Custom Status Modal -->
+                        <div id="customStatusModal" class="modal-overlay hidden">
+                            <div class="modal-content">
+                                <h3 class="modal-title">✏️ Update Custom Status</h3>
+                                <div class="modal-form-group">
+                                    <label class="modal-label">Status Text (max 128 characters):</label>
+                                    <input type="text" id="customStatusText" placeholder="e.g., Playing Minecraft" class="modal-input">
+                                    <small class="modal-hint">Leave empty to clear custom status</small>
+                                </div>
+                                <div class="modal-form-group">
+                                    <label class="modal-label">Emoji (single emoji only):</label>
+                                    <input type="text" id="customStatusEmoji" placeholder="🎮" maxlength="2" class="modal-input modal-input-emoji" oninput="validateEmoji(this)">
+                                    <small class="modal-hint">Enter a single emoji (e.g., 🎮, 😎, 💻)</small>
+                                </div>
+                                <div class="modal-actions">
+                                    <button class="btn btn-secondary" onclick="closeCustomStatusModal()">Cancel</button>
+                                    <button class="btn btn-primary" onclick="updateCustomStatus()">✅ Update Status</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Presence Section -->
                 <div id="presence-section" class="section hidden">
@@ -642,7 +914,7 @@
                                 <button class="btn btn-success" onclick="updateStatus('ONLINE')">🟢 ONLINE</button>
                                 <button class="btn btn-secondary" onclick="updateStatus('IDLE')">🟡 IDLE</button>
                                 <button class="btn btn-danger" onclick="updateStatus('DND')">🔴 DND</button>
-                                <button class="btn btn-secondary" onclick="updateStatus('OFFLINE')">⚪ OFFLINE</button>
+                                <button class="btn btn-secondary" onclick="updateStatus('Invisible')">⚪ Invisible</button>
                                 <button class="btn btn-primary" onclick="getStatus()">📊 Get Status</button>
                             </div>
                             <div style="margin-top: 16px; padding: 12px; background: #40444b; border-radius: 4px; border-left: 3px solid #5865f2;">
@@ -966,6 +1238,11 @@
             }
         }
 
+        function getAuthHeader() {
+            const token = document.getElementById('jwtToken').value;
+            return token ? `${token}` : '';
+        }
+
         function connect() {
             const token = document.getElementById('jwtToken').value;
             
@@ -974,9 +1251,20 @@
                 return;
             }
 
+            // Close existing connection if any
+            if (socket) {
+                socket.removeAllListeners();
+                socket.disconnect();
+                socket.close();
+                socket = null;
+            }
+
             socket = io('http://localhost:3000', {
                 auth: { token },
-                transports: ['websocket', 'polling']
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000
             });
 
             socket.on('connect', () => {
@@ -1000,12 +1288,11 @@
                 updateConnectionStatus(false);
             });
 
-            socket.on('connected', (data) => {
+            const onConnected = (data) => {
                 log(`Server confirmed connection: ${JSON.stringify(data)}`, 'connected');
-                updateStatusColor('currentStatus', 'ONLINE');
-                updateStatusColor('actualStatus', 'ONLINE');
+                // Don't set status here - wait for getStatus() to get actual status from server
                 showNotification(`Connected as user: ${data.userId}`, 'success');
-                getStatus();
+                getStatus(); // This will get the actual status (including actualStatus from Redis)
                 getUserProfile(); // Load user profile
                 // Auto-load all data
                 setTimeout(() => {
@@ -1013,50 +1300,53 @@
                     getIncomingRequests();
                     getSentRequests();
                 }, 500); // Small delay to ensure connection is fully established
-            });
+            };
+            socket.on('CONNECTED', onConnected);
+            socket.on('connected', onConnected);
 
-            socket.on('presence:updated', (data) => {
-                log(`Presence updated: ${JSON.stringify(data)}`, 'info');
-                updateStatusColor('currentStatus', data.status);
-                // Update profile status
-                const profileStatus = document.getElementById('profileStatus');
-                if (profileStatus) {
-                    profileStatus.innerHTML = `Status: ${getPresenceBadge(data.status)}`;
-                }
-            });
-
-            socket.on('status:updated', (data) => {
-                log(`Status updated: ${JSON.stringify(data)}`, 'info');
-                updateStatusColor('currentStatus', data.status);
-                // Update profile status
-                const profileStatus = document.getElementById('profileStatus');
-                if (profileStatus) {
-                    profileStatus.innerHTML = `Status: ${getPresenceBadge(data.status)}`;
-                }
-            });
-
-            // Listen for other users' presence changes
-            // This event is broadcasted to all users, but we only refresh if we have this user in our lists
-            socket.on('presence:user:updated', (data) => {
-                log(`User ${data.username || data.userId} presence updated to: ${data.status}`, 'info');
-                showNotification(`${data.username || 'A user'} is now ${data.status}`, 'info');
-                // Smart refresh: only update lists if we have this user in our lists
-                // This avoids unnecessary API calls
+            // Listen for other users' presence changes (friends)
+            // This event is broadcasted when a friend's status changes
+            const onPresenceUpdate = (payload) => {
+                const data = payload?.data || payload;
+                log(`Presence updated for user ${data.userId}${data.username ? ' ('+data.username+')' : ''}: ${data.status}`, 'info');
+                // This is a friend's status update, don't update current user's status
+                // Refresh friends list to show updated status
                 setTimeout(() => {
                     getFriends();
-                    getIncomingRequests();
-                    getSentRequests();
-                }, 100); // Small debounce to avoid multiple rapid refreshes
+                }, 300);
+            };
+            socket.on('PRESENCE_UPDATE', onPresenceUpdate);
+            socket.on('presence:updated', onPresenceUpdate);
+
+            socket.on('INITIAL_PRESENCE_SYNC', (presences) => {
+                try {
+                    log(`INITIAL_PRESENCE_SYNC: ${Array.isArray(presences) ? presences.length : 0} users`, 'info');
+                    setTimeout(() => getFriends(), 300);
+                } catch (e) {
+                    console.error('INITIAL_PRESENCE_SYNC handler error', e);
+                }
             });
 
-            socket.on('status:current', (data) => {
+            socket.on('status:updated', (payload) => {
+                const data = payload?.data || payload;
+                log(`Status updated: ${JSON.stringify(data)}`, 'info');
+                // Refresh status to get actualStatus from server
+                getStatus();
+                getUserProfile(); // Refresh profile
+                showNotification(`✅ Status updated to: ${data.status}`, 'success');
+            });
+
+            socket.on('status:current', (payload) => {
+                const data = payload?.data || payload;
                 log(`Current status received: ${JSON.stringify(data)}`, 'info');
                 
-                const displayStatus = data.displayStatus || data.actualPresence || 'OFFLINE';
+                // Get all status fields from response
+                const displayStatus = data.displayStatus || 'Invisible';
                 const connectionStatus = data.connectionStatus || 'OFFLINE';
+                const actualStatus = data.actualStatus || displayStatus; // This is the final status to show
                 
-                // Update status badges
-                updateStatusColor('currentStatus', displayStatus);
+                // Update status badges - use actualStatus for currentStatus
+                updateStatusColor('currentStatus', actualStatus);
                 updateStatusColor('actualStatus', connectionStatus);
                 
                 // Show detailed status info in statusInfo box
@@ -1066,49 +1356,59 @@
                     statusInfo.style.display = 'block';
                     statusInfoText.innerHTML = `
                         <strong>📊 Current Status Details:</strong><br>
-                        🔴 Display Status: <span class="status-badge ${getStatusClass(displayStatus)}">${displayStatus}</span><br>
-                        🔌 Connection Status: <span class="status-badge ${getStatusClass(connectionStatus)}">${connectionStatus}</span><br>
-                        ${data.actualPresence ? `📡 Actual Presence: <span class="status-badge ${getStatusClass(data.actualPresence)}">${data.actualPresence}</span>` : ''}
+                        🔴 Display Status (Your Choice): <span class="status-badge ${getStatusClass(displayStatus)}">${displayStatus}</span><br>
+                        🔌 Connection Status (WebSocket): <span class="status-badge ${getStatusClass(connectionStatus)}">${connectionStatus}</span><br>
+                        📡 Actual Status (Shown to Others): <span class="status-badge ${getStatusClass(actualStatus)}">${actualStatus}</span><br>
                         ${data.timestamp ? `<br><small style="color: #747f8d;">Updated: ${new Date(data.timestamp).toLocaleTimeString()}</small>` : ''}
                     `;
                     statusInfoText.style.color = '#b9bbbe';
                 }
                 
                 // Show notification
-                const statusSummary = `Display: ${displayStatus} | Connection: ${connectionStatus}`;
+                const statusSummary = `Actual: ${actualStatus} | Display: ${displayStatus} | Connection: ${connectionStatus}`;
                 showNotification(`📊 ${statusSummary}`, 'info');
                 
-                // Update profile status if available
-                if (displayStatus) {
+                // Update profile status with actual status
+                if (actualStatus) {
                     const profileStatus = document.getElementById('profileStatus');
                     if (profileStatus) {
-                        profileStatus.innerHTML = `<strong>Status:</strong> ${getPresenceBadge(displayStatus)}`;
+                        const isOnline = connectionStatus === 'ONLINE';
+                        const onlineBadge = isOnline ? '<span class="status-badge status-online">🟢 ONLINE</span>' : '<span class="status-badge status-offline">⚪ OFFLINE</span>';
+                        profileStatus.innerHTML = `
+                            <strong>Connection:</strong> ${onlineBadge}<br>
+                            <strong>Display Status:</strong> ${getPresenceBadge(displayStatus)}<br>
+                            <strong>Actual Status:</strong> ${getPresenceBadge(actualStatus)}
+                        `;
                     }
                 }
             });
 
             // Friend Request Events
-            socket.on('friend:request:received', (data) => {
+            socket.on('friend:request:received', (payload) => {
+                const data = payload?.data || payload;
                 log(`📥 Friend request received from ${data.fromUser.username}`, 'success');
                 showNotification(`📥 New friend request from ${data.fromUser.username}!`, 'success');
                 // Refresh incoming requests list
                 getIncomingRequests();
             });
 
-            socket.on('friend:request:accepted', (data) => {
+            socket.on('friend:request:accepted', (payload) => {
+                const data = payload?.data || payload;
                 log(`✅ Friend request accepted by ${data.newFriend.username}`, 'success');
                 showNotification(`✅ Friend request accepted! Now friends with ${data.newFriend.username}`, 'success');
                 getSentRequests();
                 getFriends();
             });
 
-            socket.on('friend:request:rejected', (data) => {
+            socket.on('friend:request:rejected', (payload) => {
+                const data = payload?.data || payload;
                 log(`❌ Friend request rejected by ${data.byUser.username}`, 'info');
                 showNotification(`❌ Friend request was rejected by ${data.byUser.username}`, 'warning');
                 getSentRequests();
             });
 
-            socket.on('friend:request:cancelled', (data) => {
+            socket.on('friend:request:cancelled', (payload) => {
+                const data = payload?.data || payload;
                 log(`🚫 Friend request cancelled by ${data.byUser.username}`, 'info');
                 showNotification(`🚫 Friend request was cancelled by ${data.byUser.username}`, 'warning');
                 // Refresh all lists to remove cancelled request
@@ -1118,13 +1418,46 @@
         }
 
         function disconnect() {
-            if (socket) {
+            if (socket && socket.connected) {
+                // Disable auto-reconnection first
+                socket.io.opts.reconnection = false;
+                
+                // Remove all event listeners to prevent any callbacks
+                socket.removeAllListeners();
+                
+                // Force disconnect - this will trigger server-side cleanup
                 socket.disconnect();
+                
+                // Close the underlying connection
+                if (socket.io && socket.io.engine) {
+                    socket.io.engine.close();
+                }
+                
+                // Clear socket reference immediately
+                socket = null;
+                
+                // Update UI
                 updateConnectionStatus(false);
-                log('Manual disconnect', 'disconnected');
-                showNotification('Disconnected', 'warning');
+                log('Manual disconnect - connection closed', 'disconnected');
+                showNotification('Disconnected successfully', 'warning');
+                
                 // Hide profile section
-                document.getElementById('profileSection').style.display = 'none';
+                const profileCard = document.getElementById('profileCard');
+                if (profileCard) {
+                    profileCard.classList.add('hidden');
+                }
+                
+                // Clear current profile data
+                currentProfileData = null;
+            } else if (socket) {
+                // Socket exists but not connected - just clear it
+                socket.removeAllListeners();
+                socket = null;
+                updateConnectionStatus(false);
+                log('Cleared socket reference', 'disconnected');
+                showNotification('Socket cleared', 'info');
+            } else {
+                showNotification('Not connected', 'error');
             }
         }
 
@@ -1135,18 +1468,18 @@
             }
             
             // Validate status
-            const validStatuses = ['ONLINE', 'OFFLINE', 'IDLE', 'DND'];
+            const validStatuses = ['ONLINE', 'Invisible', 'IDLE', 'DND'];
             if (!validStatuses.includes(status)) {
                 showNotification(`Invalid status: ${status}. Must be one of: ${validStatuses.join(', ')}`, 'error');
                 return;
             }
             
             // Update via REST API
-            fetch('http://localhost:3000/api/v1/users/profile/presence-status', {
+            fetch('http://localhost:3000/api/v1/users/@me/update/presenceStatus', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `${document.getElementById('jwtToken').value}`
+                    'Authorization': getAuthHeader()
                 },
                 body: JSON.stringify({ status })
             })
@@ -1159,15 +1492,12 @@
             })
             .then(data => {
                 log(`Status updated via REST: ${status}`, 'success');
-                showNotification(`✅ Status updated to: ${status}`, 'success');
+                showNotification(`✅ Display status updated to: ${status}`, 'success');
                 
-                // Update UI immediately
-                updateStatusColor('currentStatus', status);
-                
-                // Refresh profile to show updated status
+                // Refresh profile and status to show updated status
                 setTimeout(() => {
                     getUserProfile();
-                    getStatus(); // Request updated status from WebSocket
+                    getStatus(); // Request updated status from WebSocket (includes actualStatus)
                 }, 500);
             })
             .catch(err => {
@@ -1206,13 +1536,19 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `${document.getElementById('jwtToken').value}`
+                    'Authorization': getAuthHeader()
                 },
                 body: JSON.stringify({ username })
             })
-            .then(res => res.json())
-            .then(data => {
-                log(`Friend request sent: ${JSON.stringify(data)}`, 'success');
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || (data?.status && data.status !== 'success')) {
+                    throw new Error(data?.message || `HTTP ${res.status}`);
+                }
+                return data;
+            })
+            .then(resp => {
+                log(`Friend request sent: ${JSON.stringify(resp)}`, 'success');
                 showNotification(`Friend request sent to ${username}`, 'success');
                 document.getElementById('friendUsername').value = '';
                 // Auto-refresh sent requests list to show the new request
@@ -1229,13 +1565,19 @@
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `${document.getElementById('jwtToken').value}`
+                    'Authorization': getAuthHeader()
                 },
                 body: JSON.stringify({ friendshipId, status })
             })
-            .then(res => res.json())
-            .then(data => {
-                log(`Friend request responded: ${JSON.stringify(data)}`, 'success');
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || (data?.status && data.status !== 'success')) {
+                    throw new Error(data?.message || `HTTP ${res.status}`);
+                }
+                return data;
+            })
+            .then(resp => {
+                log(`Friend request responded: ${JSON.stringify(resp)}`, 'success');
                 showNotification(`Friend request ${status.toLowerCase()}`, 'success');
                 getIncomingRequests(); // Refresh incoming requests list
                 getSentRequests();
@@ -1251,22 +1593,18 @@
             fetch('http://localhost:3000/api/v1/users/friends', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `${document.getElementById('jwtToken').value}`
+                    'Authorization': getAuthHeader()
                 }
             })
-            .then(res => res.json())
-            .then(data => {
-                // Handle different response structures
-                let friends = [];
-                if (Array.isArray(data)) {
-                    friends = data;
-                } else if (data && Array.isArray(data.friends)) {
-                    friends = data.friends;
-                } else if (data && data.data && Array.isArray(data.data.friends)) {
-                    friends = data.data.friends;
-                } else if (data && Array.isArray(data.data)) {
-                    friends = data.data;
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || (data?.status && data.status !== 'success')) {
+                    throw new Error(data?.message || `HTTP ${res.status}`);
                 }
+                return data;
+            })
+            .then(resp => {
+                const friends = resp?.data?.friends || resp?.friends || resp?.data || [];
                 
                 log(`Friends loaded: ${friends.length || 0}`, 'info');
                 displayFriendsList(friends);
@@ -1281,20 +1619,18 @@
             fetch('http://localhost:3000/api/v1/users/friends/requests/incoming', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `${document.getElementById('jwtToken').value}`
+                    'Authorization': getAuthHeader()
                 }
             })
-            .then(res => res.json())
-            .then(data => {
-                // Handle both array and object responses
-                let requests = [];
-                if (Array.isArray(data)) {
-                    requests = data;
-                } else if (data && Array.isArray(data.requests)) {
-                    requests = data.requests;
-                } else if (data && Array.isArray(data.data)) {
-                    requests = data.data;
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || (data?.status && data.status !== 'success')) {
+                    throw new Error(data?.message || `HTTP ${res.status}`);
                 }
+                return data;
+            })
+            .then(resp => {
+                const requests = Array.isArray(resp?.data) ? resp.data : (resp?.requests || []);
                 
                 log(`Incoming requests loaded: ${requests.length || 0}`, 'info');
                 displayIncomingRequests(requests);
@@ -1309,25 +1645,18 @@
             fetch('http://localhost:3000/api/v1/users/friends/requests/outgoing', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `${document.getElementById('jwtToken').value}`
+                    'Authorization': getAuthHeader()
                 }
             })
-            .then(res => res.json())
-            .then(data => {
-                // Handle both array and object responses
-                let requests = [];
-                if (Array.isArray(data)) {
-                    requests = data;
-                } else if (data && Array.isArray(data.requests)) {
-                    requests = data.requests;
-                } else if (data && data.data && Array.isArray(data.data.requests)) {
-                    requests = data.data.requests;
-                } else if (data && Array.isArray(data.data)) {
-                    requests = data.data;
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || (data?.status && data.status !== 'success')) {
+                    throw new Error(data?.message || `HTTP ${res.status}`);
                 }
-                
-                console.log('Sent requests data:', data);
-                console.log('Sent requests parsed:', requests);
+                return data;
+            })
+            .then(resp => {
+                const requests = Array.isArray(resp?.data) ? resp.data : (resp?.requests || resp?.data?.requests || []);
                 log(`Sent requests loaded: ${requests.length || 0}`, 'info');
                 displaySentRequests(requests);
             })
@@ -1346,9 +1675,15 @@
                 },
                 body: JSON.stringify({ friendshipId })
             })
-            .then(res => res.json())
-            .then(data => {
-                log(`Friend request cancelled: ${JSON.stringify(data)}`, 'success');
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || (data?.status && data.status !== 'success')) {
+                    throw new Error(data?.message || `HTTP ${res.status}`);
+                }
+                return data;
+            })
+            .then(resp => {
+                log(`Friend request cancelled: ${JSON.stringify(resp)}`, 'success');
                 showNotification(`Friend request cancelled`, 'success');
                 // Refresh to update UI
                 getSentRequests();
@@ -1378,7 +1713,21 @@
             container.innerHTML = friends.map(friend => {
                 const friendId = friend.id?.toString() || friend.friendshipId?.toString() || 'unknown';
                 const statusClass = getStatusClass(friend.status || 'OFFLINE');
-                const customStatusDisplay = friend.customStatus ? `<p style="color: #7289da; font-style: italic; margin-top: 4px;">"${friend.customStatus}"</p>` : '<p style="color: #747f8d; font-size: 12px;">No custom status</p>';
+                
+                // Handle customStatus - can be object (text + emoji) or string (backward compatibility)
+                let customStatusDisplay = '';
+                if (friend.customStatus) {
+                    if (typeof friend.customStatus === 'object') {
+                        const emoji = friend.customStatus.emoji || '';
+                        const text = friend.customStatus.text || '';
+                        const statusText = emoji && text ? `${emoji} ${text}` : (emoji || text);
+                        customStatusDisplay = statusText ? `<p style="color: #7289da; font-style: italic; margin-top: 4px;">"${statusText}"</p>` : '<p style="color: #747f8d; font-size: 12px;">No custom status</p>';
+                    } else {
+                        customStatusDisplay = `<p style="color: #7289da; font-style: italic; margin-top: 4px;">"${friend.customStatus}"</p>`;
+                    }
+                } else {
+                    customStatusDisplay = '<p style="color: #747f8d; font-size: 12px;">No custom status</p>';
+                }
                 
                 return `
                 <div class="user-card">
@@ -1517,13 +1866,13 @@
             const token = document.getElementById('jwtToken').value;
             if (!token) {
                 showNotification('Please enter JWT token first', 'error');
-                return;
+                return Promise.reject('No token');
             }
 
-            fetch('http://localhost:3000/api/v1/users/profile', {
+            return fetch('http://localhost:3000/api/v1/users/@me', {
                 method: 'GET',
                 headers: {
-                    'Authorization': token
+                    'Authorization': getAuthHeader()
                 }
             })
             .then(async res => {
@@ -1535,60 +1884,138 @@
             })
             .then(data => {
                 const profile = data.data || data;
+                // Store profile data globally for modal use
+                currentProfileData = profile;
                 displayUserProfile(profile);
-                log(`✅ Profile loaded: ${profile.username}`, 'success');
-                showNotification(`Profile loaded for ${profile.username}`, 'success');
+                log(`✅ Profile loaded: ${profile.user?.username || 'Unknown'}`, 'success');
+                showNotification(`Profile loaded`, 'success');
+                return profile;
             })
             .catch(err => {
                 console.error('Error loading profile:', err);
                 log(`❌ Error loading profile: ${err.message}`, 'error');
                 showNotification(`Error: ${err.message}`, 'error');
+                throw err;
             });
         }
 
         function displayUserProfile(profile) {
-            const profileSection = document.getElementById('profileSection');
-            const profileAvatar = document.getElementById('profileAvatar');
-            const profileUsername = document.getElementById('profileUsername');
-            const profileglobalname = document.getElementById('profileglobalname');
-            const profileStatus = document.getElementById('profileStatus');
-            const profileCustomStatus = document.getElementById('profileCustomStatus');
+            const profileCard = document.getElementById('profileCard');
+            if (!profileCard) return;
 
-            // Set avatar
-            if (profile.avatar) {
-                profileAvatar.src = profile.avatar;
-                profileAvatar.style.display = 'block';
+            // Extract data from new structure: { user, presence, customStatus, isOnline }
+            const user = profile.user || {};
+            const presence = profile.presence || {};
+            const customStatus = profile.customStatus || null;
+            const isOnline = profile.isOnline === true;
+
+            // User Info
+            document.getElementById('profileUsername').textContent = user.username || 'Unknown';
+            const globalnameEl = document.getElementById('profileGlobalname');
+            if (user.globalname) {
+                globalnameEl.textContent = user.globalname;
+                globalnameEl.style.display = 'block';
             } else {
-                profileAvatar.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
-                profileAvatar.style.display = 'block';
+                globalnameEl.style.display = 'none';
             }
 
-            // Set username and global name
-            profileUsername.textContent = profile.username || 'Unknown';
-            if (profile.globalname) {
-                profileglobalname.textContent = `(${profile.globalname})`;
-                profileglobalname.style.display = 'block';
+            // Avatar
+            const avatarEl = document.getElementById('profileAvatar');
+            if (user.avatar) {
+                avatarEl.src = user.avatar;
+                avatarEl.alt = `${user.username}'s avatar`;
             } else {
-                profileglobalname.textContent = '';
-                profileglobalname.style.display = 'none';
+                avatarEl.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                avatarEl.alt = 'Default avatar';
             }
 
-            // Set status with badge
-            const status = profile.status || 'OFFLINE';
-            profileStatus.innerHTML = `<strong>Status:</strong> ${getPresenceBadge(status)}`;
+            // User Details
+            document.getElementById('profileUserId').textContent = user.id || '-';
+            document.getElementById('profileEmail').textContent = user.email || 'Not set';
+            document.getElementById('profilePhone').textContent = user.phone || 'Not set';
+            document.getElementById('profileBirthdate').textContent = user.birthdate 
+                ? new Date(user.birthdate).toLocaleDateString() 
+                : 'Not set';
+            document.getElementById('profileCreatedAt').textContent = user.createdAt
+                ? new Date(user.createdAt).toLocaleDateString()
+                : '-';
+
+            // Presence Status
+            const displayStatus = presence.status || 'Invisible';
+            const actualStatus = !isOnline ? 'Invisible' : (displayStatus || 'ONLINE');
             
-            // Set custom status
-            if (profile.customStatus) {
-                profileCustomStatus.textContent = profile.customStatus;
-                profileCustomStatus.style.display = 'block';
+            // Connection Badge
+            const connectionBadge = document.getElementById('profileConnectionBadge');
+            if (isOnline) {
+                connectionBadge.textContent = '🟢 ONLINE';
+                connectionBadge.className = 'status-badge status-online';
             } else {
-                profileCustomStatus.textContent = '';
-                profileCustomStatus.style.display = 'none';
+                connectionBadge.textContent = '⚪ OFFLINE';
+                connectionBadge.className = 'status-badge status-offline';
+            }
+            
+            // Display Status
+            updateStatusBadge('profileDisplayStatus', displayStatus);
+            
+            // Actual Status
+            updateStatusBadge('profileActualStatus', actualStatus);
+
+            // Status Indicator (large circle)
+            const statusIndicator = document.getElementById('profileStatusIndicator');
+            statusIndicator.className = 'status-indicator-large ' + getStatusClass(actualStatus);
+
+            // Connection Badge in Header
+            const headerConnectionBadge = document.getElementById('profileConnectionStatus');
+            headerConnectionBadge.innerHTML = isOnline 
+                ? '<span class="status-badge status-online">🟢 Connected</span>'
+                : '<span class="status-badge status-offline">⚪ Disconnected</span>';
+
+            // Custom Status
+            const customStatusSection = document.getElementById('profileCustomStatusSection');
+            const customStatusDisplay = document.getElementById('profileCustomStatusDisplay');
+            
+            if (customStatus && (customStatus.text || customStatus.emoji)) {
+                let statusText = '';
+                if (customStatus.emoji) {
+                    statusText += customStatus.emoji;
+                }
+                if (customStatus.text) {
+                    if (statusText) statusText += ' ';
+                    statusText += customStatus.text;
+                }
+                customStatusDisplay.textContent = statusText;
+                customStatusSection.classList.remove('hidden');
+            } else {
+                customStatusDisplay.textContent = '';
+                customStatusSection.classList.add('hidden');
             }
 
-            // Show profile section
-            profileSection.classList.remove('hidden');
-            profileSection.style.display = 'flex';
+            // Show profile card
+            profileCard.classList.remove('hidden');
+        }
+
+        function updateStatusBadge(elementId, status) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            element.textContent = status;
+            element.className = 'status-badge ' + getStatusClass(status);
+        }
+
+        function getStatusClass(status) {
+            const statusLower = (status || '').toLowerCase();
+            switch(statusLower) {
+                case 'online':
+                    return 'status-online';
+                case 'idle':
+                    return 'status-idle';
+                case 'dnd':
+                    return 'status-dnd';
+                case 'invisible':
+                case 'offline':
+                default:
+                    return 'status-offline';
+            }
         }
 
         // ==================== USER RELATIONS FUNCTIONS ====================
@@ -1914,7 +2341,21 @@
 
             container.innerHTML = users.map(user => {
                 const userId = user.id?.toString() || 'unknown';
-                const customStatusDisplay = user.customStatus ? `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${user.customStatus}"</p>` : '<p style="color: #747f8d; font-size: 12px; margin-top: 4px;">No custom status</p>';
+                
+                // Handle customStatus - can be object (text + emoji) or string (backward compatibility)
+                let customStatusDisplay = '';
+                if (user.customStatus) {
+                    if (typeof user.customStatus === 'object') {
+                        const emoji = user.customStatus.emoji || '';
+                        const text = user.customStatus.text || '';
+                        const statusText = emoji && text ? `${emoji} ${text}` : (emoji || text);
+                        customStatusDisplay = statusText ? `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${statusText}"</p>` : '<p style="color: #747f8d; font-size: 12px; margin-top: 4px;">No custom status</p>';
+                    } else {
+                        customStatusDisplay = `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${user.customStatus}"</p>`;
+                    }
+                } else {
+                    customStatusDisplay = '<p style="color: #747f8d; font-size: 12px; margin-top: 4px;">No custom status</p>';
+                }
                 
                 return `
                 <div class="user-card">
@@ -1997,7 +2438,7 @@
                 return;
             }
 
-            fetch('http://localhost:3000/api/v1/users/profile/global-name', {
+            fetch('http://localhost:3000/api/v1/users/@me/update/globalname', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2025,7 +2466,7 @@
                 return;
             }
 
-            fetch('http://localhost:3000/api/v1/users/profile/username', {
+            fetch('http://localhost:3000/api/v1/users/@me/update/username', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2046,47 +2487,114 @@
             });
         }
 
+        // Store current profile data globally
+        let currentProfileData = null;
+
+        function showCustomStatusModal() {
+            const modal = document.getElementById('customStatusModal');
+            const textInput = document.getElementById('customStatusText');
+            const emojiInput = document.getElementById('customStatusEmoji');
+            
+            // Load current custom status from stored profile data
+            if (currentProfileData && currentProfileData.customStatus) {
+                const customStatus = currentProfileData.customStatus;
+                textInput.value = customStatus.text || '';
+                emojiInput.value = customStatus.emoji || '';
+            } else {
+                // If not loaded, fetch profile first
+                getUserProfile().then(() => {
+                    if (currentProfileData && currentProfileData.customStatus) {
+                        const customStatus = currentProfileData.customStatus;
+                        textInput.value = customStatus.text || '';
+                        emojiInput.value = customStatus.emoji || '';
+                    }
+                    modal.classList.remove('hidden');
+                });
+                return;
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeCustomStatusModal() {
+            const modal = document.getElementById('customStatusModal');
+            modal.classList.add('hidden');
+            // Clear inputs
+            document.getElementById('customStatusText').value = '';
+            document.getElementById('customStatusEmoji').value = '';
+        }
+
+        function validateEmoji(input) {
+            // Remove non-emoji characters (keep only first emoji)
+            const value = input.value;
+            const emojiMatch = value.match(/[\p{Emoji}]/u);
+            if (emojiMatch) {
+                input.value = emojiMatch[0];
+            } else if (value.length > 0) {
+                // Clear if not emoji
+                input.value = '';
+            }
+        }
+
         function updateCustomStatus() {
-            const customStatus = prompt('Enter custom status (leave empty to clear):\n\nTip: You can use emojis like 😎, 🎮, 💻, etc.');
-            if (customStatus === null) return; // User cancelled
+            const textInput = document.getElementById('customStatusText');
+            const emojiInput = document.getElementById('customStatusEmoji');
+            
+            const text = textInput.value.trim();
+            const emoji = emojiInput.value.trim();
 
             // Validate length (Discord limit is usually 128 characters)
-            if (customStatus && customStatus.length > 128) {
-                showNotification('Custom status is too long (max 128 characters)', 'error');
+            if (text && text.length > 128) {
+                showNotification('Custom status text is too long (max 128 characters)', 'error');
                 return;
             }
 
-            fetch('http://localhost:3000/api/v1/users/profile/custom-status', {
+            // Validate emoji (should be single emoji or empty)
+            if (emoji && !emoji.match(/^[\p{Emoji}]$/u)) {
+                showNotification('Please enter a valid single emoji', 'error');
+                return;
+            }
+
+            // Build request body
+            const body = {};
+            if (text) {
+                body.text = text;
+            } else if (emoji) {
+                // If only emoji, clear text
+                body.text = null;
+            } else {
+                // Both empty - clear custom status
+                body.text = null;
+            }
+            
+            if (emoji) {
+                body.emoji = emoji;
+            } else {
+                body.emoji = null;
+            }
+
+            fetch('http://localhost:3000/api/v1/users/@me/update/customstatus', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `${document.getElementById('jwtToken').value}`
                 },
-                body: JSON.stringify({ customStatus: customStatus || null })
+                body: JSON.stringify(body)
             })
             .then(async res => {
                 const data = await res.json();
-                if (!res.ok) {
+                if (!res.ok || (data?.status && data.status !== 'success')) {
                     throw new Error(data.message || `HTTP ${res.status}: ${res.statusText}`);
                 }
                 return data;
             })
-            .then(data => {
-                const statusText = customStatus || '(cleared)';
-                log(`Custom status updated: ${statusText}`, 'success');
-                showNotification(`✅ Custom status: ${statusText}`, 'success');
+            .then(resp => {
+                const statusDisplay = emoji && text ? `${emoji} ${text}` : (emoji || text || '(cleared)');
+                log(`Custom status updated: ${statusDisplay}`, 'success');
+                showNotification(`✅ Custom status updated: ${statusDisplay}`, 'success');
                 
-                // Update UI immediately
-                const profileCustomStatus = document.getElementById('profileCustomStatus');
-                if (profileCustomStatus) {
-                    if (customStatus) {
-                        profileCustomStatus.textContent = customStatus;
-                        profileCustomStatus.style.display = 'block';
-                    } else {
-                        profileCustomStatus.textContent = '';
-                        profileCustomStatus.style.display = 'none';
-                    }
-                }
+                // Close modal
+                closeCustomStatusModal();
                 
                 // Refresh profile after a short delay
                 setTimeout(() => {
@@ -2130,9 +2638,15 @@
                     }
                 });
             })
-            .then(res => res.json())
-            .then(data => {
-                const mutualFriends = data.data || data;
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || (data?.status && data.status !== 'success')) {
+                    throw new Error(data?.message || `HTTP ${res.status}`);
+                }
+                return data;
+            })
+            .then(resp => {
+                const mutualFriends = resp?.data || resp;
                 log(`Mutual friends with ${username}: ${mutualFriends.length || 0}`, 'info');
                 displayMutualFriends(mutualFriends, username);
             })
@@ -2157,7 +2671,20 @@
             }
 
             container.innerHTML = friends.map(friend => {
-                const customStatusDisplay = friend.customStatus ? `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${friend.customStatus}"</p>` : '<p style="color: #747f8d; font-size: 12px; margin-top: 4px;">No custom status</p>';
+                // Handle customStatus - can be object (text + emoji) or string (backward compatibility)
+                let customStatusDisplay = '';
+                if (friend.customStatus) {
+                    if (typeof friend.customStatus === 'object') {
+                        const emoji = friend.customStatus.emoji || '';
+                        const text = friend.customStatus.text || '';
+                        const statusText = emoji && text ? `${emoji} ${text}` : (emoji || text);
+                        customStatusDisplay = statusText ? `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${statusText}"</p>` : '<p style="color: #747f8d; font-size: 12px; margin-top: 4px;">No custom status</p>';
+                    } else {
+                        customStatusDisplay = `<p style="color: #7289da; font-style: italic; font-size: 12px; margin-top: 4px;">"${friend.customStatus}"</p>`;
+                    }
+                } else {
+                    customStatusDisplay = '<p style="color: #747f8d; font-size: 12px; margin-top: 4px;">No custom status</p>';
+                }
                 
                 return `
                 <div class="user-card">
@@ -2554,7 +3081,7 @@
                 return;
             }
 
-            fetch('http://localhost:3000/api/v1/users/profile/password', {
+            fetch('http://localhost:3000/api/v1/users/@me/update/password', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2889,19 +3416,6 @@
             showNotification('Data exported successfully', 'success');
         }
 
-        function getStatusClass(status) {
-            switch(status?.toLowerCase()) {
-                case 'online':
-                    return 'status-online';
-                case 'idle':
-                    return 'status-idle';
-                case 'dnd':
-                    return 'status-dnd';
-                case 'offline':
-                default:
-                    return 'status-offline';
-            }
-        }
 
         // Auto-reconnect on load with saved token
         window.onload = () => {

@@ -4,31 +4,30 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { UserDto } from '../../../common/dto/shared-response.dto';
-import { User, UserStatusRecord } from '@prisma/client';
+import { User, UserStatusRecord, UserStatus, Prisma } from '@prisma/client';
 import {
-  SendFriendRequestDto,
-  RespondToFriendRequestDto,
-  RemoveFriendDto,
-  GetFriendsQueryDto,
-  GetMutualFriendsDto,
-  CancelFriendRequestDto,
-} from './dto/friendship.dto';
-import {
+  // Profile DTOs
   UpdatePasswordDto,
   UpdateglobalnameDto,
   UpdateCustomStatusDto,
   UpdateUsernameDto,
   UpdatePresenceStatusDto,
-} from './dto/profile.dto';
-import {
+  // Friendship DTOs
+  SendFriendRequestDto,
+  RespondToFriendRequestDto,
+  RemoveFriendDto,
+  GetFriendsQueryDto,
+  GetMutualFriendsDto,
+  CheckFriendshipDto,
+  CancelFriendRequestDto,
+  // User Relation DTOs
   CreateUserRelationDto,
   UpdateUserRelationDto,
   RemoveUserRelationDto,
   GetUserRelationsQueryDto,
   CheckUserRelationDto,
   UpdateRelationNoteDto,
-} from './dto/user-relation.dto';
+} from './dto/user.dto';
 import { FriendshipStatus } from '@prisma/client';
 import {
   FriendshipRepository,
@@ -46,6 +45,8 @@ import { plainToInstance } from 'class-transformer';
 import { ApiResponse } from 'src/common/shared/types';
 import { RESPONSE_MESSAGES } from 'src/common/shared/response-messages';
 import { success, fail } from 'src/common/utils/response.util';
+import { UserProfileResponseDto, PresenceDto, UserStatusRecordDto } from './dto/user-response.dto';
+import { UserDto } from './dto/user-types.dto';
 import ms from 'ms';
 
 @Injectable()
@@ -65,12 +66,53 @@ export class UsersService {
   // ==================== PROFILE MANAGEMENT ====================
   /**
    * Get current user profile
+   * - isOnline: From Redis (WebSocket connection status) only
+   * - status: From Presence.status in Database (Display Status)
+   * - customStatus: From UserStatusRecord.text in Database
    */
-  async getProfile(user: User): Promise<ApiResponse<UserDto>> {
-    return success(
-      RESPONSE_MESSAGES.USER.PROFILE_FETCHED,
-      plainToInstance(UserDto, user, { excludeExtraneousValues: true }),
-    );
+  async getProfile(
+    user: Prisma.UserGetPayload<{
+      include: {
+        presence: true;
+        statusRecord: true;
+      };
+    }>
+  ): Promise<ApiResponse<UserProfileResponseDto>> {
+    // Optimized: Get isOnline from Redis (uses MGET internally for single round-trip)
+    const presenceStatus = await this.presenceService.getPresenceStatus(user.id.toString());
+
+    // Build UserDto - use plainToInstance with excludeExtraneousValues for proper transformation
+    const userDto = plainToInstance(UserDto, user, { excludeExtraneousValues: true });
+    
+    // Build PresenceDto - calculate status once
+    const finalStatus = presenceStatus.isOnline 
+      ? (presenceStatus.displayStatus || user.presence?.status || null)
+      : UserStatus.Invisible;
+    
+    const presenceDto: PresenceDto = {
+      status: finalStatus,
+    };
+    
+    // Build UserStatusRecordDto - use user.statusRecord directly
+    const customStatusDto: UserStatusRecordDto = user.statusRecord 
+      ? {
+          text: user.statusRecord.text || null,
+        emoji: user.statusRecord.emoji || null,
+      }
+      : {
+        text: null,
+        emoji: null,
+      };
+
+    // Build UserProfileResponseDto - use plainToInstance for proper transformation and type safety
+    const profileData = plainToInstance(UserProfileResponseDto, {
+      user: userDto,
+      presence: presenceDto,
+      customStatus: presenceStatus.isOnline ? customStatusDto : null,
+      isOnline: presenceStatus.isOnline,
+    }, { excludeExtraneousValues: true });
+
+    return success(RESPONSE_MESSAGES.USER.PROFILE_FETCHED, profileData as UserProfileResponseDto);
   }
   /**
    * Update user password
@@ -97,8 +139,8 @@ export class UsersService {
     });
 
     return success(RESPONSE_MESSAGES.USER.PASSWORD_UPDATED, {
-      updatedAt: updatedUser.updatedAt,
-    } as any);
+      updatedAt: updatedUser.updatedAt?.toISOString() || null,
+    });
   }
 
   /**
@@ -125,7 +167,15 @@ export class UsersService {
    * Update custom status
    */
   async updateCustomStatus(user: User, dto: UpdateCustomStatusDto) {
-    await this.statusRecordRepository.updateStatusRecord(user.id, {
+    // Get or create status record for user
+    let statusRecord = await this.statusRecordRepository.getStatusRecordByUserId(user.id);
+    if (!statusRecord) {
+      statusRecord = await this.statusRecordRepository.createStatusRecord({
+        userId: user.id,
+      });
+    }
+    
+    await this.statusRecordRepository.updateStatusRecord(statusRecord.id, {
       text: dto.text,
       emoji: dto.emoji,
       expiresAt: dto.expiresAt
@@ -177,22 +227,28 @@ export class UsersService {
 
   /**
    * Update presence status
-   * Updates the database and broadcasts to WebSocket listeners
+   * Updates the database, Redis display status, and broadcasts to WebSocket listeners
    */
   async updatePresenceStatus(user: User, dto: UpdatePresenceStatusDto) {
-    const expiresAt = dto.expiresAt
-      ? new Date(new Date().getTime() + ms(dto.expiresAt))
-      : undefined;
-    await this.presenceRepository.updateStatus(user.id, dto.status, expiresAt);
-    // broadcast to all friends
-    const friends = await this.friendsCache.getFriends(user.id.toString());
-    friends.forEach(friend => {
-      this.websocketGatewayService.sendToUser(friend, 'user:presence:updated', {
-        userId: user.id.toString(),
-        status: dto.status,
-        timestamp: new Date(),
-      });
-    });
+    // Use UnifiedPresenceService to update both DB and Redis, and broadcast to friends
+    // This ensures display status is properly stored in Redis for real-time presence
+    await this.presenceService.updatePresenceStatus(
+      user.id.toString(),
+      user.username,
+      dto.status,
+      true, // updateDisplayStatus = true (update Redis)
+    );
+
+    // Handle expiresAt if provided (optional feature)
+    if (dto.expiresAt) {
+      const expiresAt = new Date(new Date().getTime() + ms(dto.expiresAt));
+      let presence = await this.presenceRepository.getPresenceByUserId(user.id);
+      if (!presence) {
+        presence = await this.presenceRepository.createPresence(user.id);
+      }
+      await this.presenceRepository.updateStatus(presence.id, dto.status, expiresAt);
+    }
+
     return success(RESPONSE_MESSAGES.PRESENCE.STATUS_UPDATED);
   }
 
@@ -517,18 +573,18 @@ export class UsersService {
         const friend =
           friendship.user1Id === user.id ? friendship.user2 : friendship.user1;
 
-        // Get friend's current presence status and custom status
-        const friendPresence =
-          await this.presenceRepository.getPresenceWithCurrentStatus(friend.id);
-        const friendStatusRecord =
-          await this.statusRecordRepository.getStatusRecordByUserId(friend.id);
+        // Get friend's current presence status from Redis (real-time) and custom status from DB
+        const [friendPresenceStatus, friendStatusRecord] = await Promise.all([
+          this.presenceService.getPresenceStatus(friend.id.toString()),
+          this.statusRecordRepository.getStatusRecordByUserId(friend.id),
+        ]);
 
         return {
           id: friend.id,
           username: friend.username,
           avatar: friend.avatar,
           friendshipId: friendship.id,
-          status: friendPresence?.status,
+          status: friendPresenceStatus.actualStatus,
           customStatus: friendStatusRecord?.text || undefined,
           createdAt: friendship.createdAt,
           // SECURITY: Removed email - too sensitive for friends list
@@ -614,16 +670,17 @@ export class UsersService {
     // SECURITY: Don't expose sensitive information
     const mutualFriendsList = await Promise.all(
       mutualFriends.map(async (friend) => {
-        const friendPresence =
-          await this.presenceRepository.getPresenceWithCurrentStatus(friend.id);
-        const friendStatusRecord =
-          await this.statusRecordRepository.getStatusRecordByUserId(friend.id);
+        // Get friend's presence from Redis (real-time)
+        const [friendPresenceStatus, friendStatusRecord] = await Promise.all([
+          this.presenceService.getPresenceStatus(friend.id.toString()),
+          this.statusRecordRepository.getStatusRecordByUserId(friend.id),
+        ]);
 
         return {
           id: friend.id,
           username: friend.username,
           avatar: friend.avatar,
-          status: friendPresence?.status,
+          status: friendPresenceStatus.actualStatus,
           customStatus: friendStatusRecord?.text || undefined,
           // SECURITY: Removed email - too sensitive
         };
@@ -776,15 +833,11 @@ export class UsersService {
 
     const formattedRelations = await Promise.all(
       relations.map(async (relation) => {
-        // Get target user's current presence status and custom status
-        const targetPresence =
-          await this.presenceRepository.getPresenceWithCurrentStatus(
-            relation.target.id,
-          );
-        const targetStatusRecord =
-          await this.statusRecordRepository.getStatusRecordByUserId(
-            relation.target.id,
-          );
+        // Get target user's presence from Redis (real-time)
+        const [targetPresenceStatus, targetStatusRecord] = await Promise.all([
+          this.presenceService.getPresenceStatus(relation.target.id.toString()),
+          this.statusRecordRepository.getStatusRecordByUserId(relation.target.id),
+        ]);
 
         return {
           id: relation.id,
@@ -794,7 +847,7 @@ export class UsersService {
             username: relation.target.username,
             globalname: relation.target.globalname,
             avatar: relation.target.avatar,
-            status: targetPresence?.status,
+            status: targetPresenceStatus.actualStatus,
             customStatus: targetStatusRecord?.text || undefined,
           },
           note: relation.note,
@@ -817,15 +870,11 @@ export class UsersService {
 
     const formattedBlockedUsers = await Promise.all(
       blockedUsers.map(async (relation: any) => {
-        // Get target user's current presence status and custom status
-        const targetPresence =
-          await this.presenceRepository.getPresenceWithCurrentStatus(
-            relation.target.id,
-          );
-        const targetStatusRecord =
-          await this.statusRecordRepository.getStatusRecordByUserId(
-            relation.target.id,
-          );
+        // Get target user's presence from Redis (real-time)
+        const [targetPresenceStatus, targetStatusRecord] = await Promise.all([
+          this.presenceService.getPresenceStatus(relation.target.id.toString()),
+          this.statusRecordRepository.getStatusRecordByUserId(relation.target.id),
+        ]);
 
         return {
           id: relation.id,
@@ -834,7 +883,7 @@ export class UsersService {
             username: relation.target.username,
             globalname: relation.target.globalname,
             avatar: relation.target.avatar,
-            status: targetPresence?.status,
+            status: targetPresenceStatus.actualStatus,
             customStatus: targetStatusRecord?.text || undefined,
           },
           note: relation.note,
@@ -857,15 +906,11 @@ export class UsersService {
 
     const formattedIgnoredUsers = await Promise.all(
       ignoredUsers.map(async (relation: any) => {
-        // Get target user's current presence status and custom status
-        const targetPresence =
-          await this.presenceRepository.getPresenceWithCurrentStatus(
-            relation.target.id,
-          );
-        const targetStatusRecord =
-          await this.statusRecordRepository.getStatusRecordByUserId(
-            relation.target.id,
-          );
+        // Get target user's presence from Redis (real-time)
+        const [targetPresenceStatus, targetStatusRecord] = await Promise.all([
+          this.presenceService.getPresenceStatus(relation.target.id.toString()),
+          this.statusRecordRepository.getStatusRecordByUserId(relation.target.id),
+        ]);
 
         return {
           id: relation.id,
@@ -874,7 +919,7 @@ export class UsersService {
             username: relation.target.username,
             globalname: relation.target.globalname,
             avatar: relation.target.avatar,
-            status: targetPresence?.status,
+            status: targetPresenceStatus.actualStatus,
             customStatus: targetStatusRecord?.text || undefined,
           },
           note: relation.note,
@@ -895,15 +940,11 @@ export class UsersService {
 
     const formattedMutedUsers = await Promise.all(
       mutedUsers.map(async (relation: any) => {
-        // Get target user's current presence status and custom status
-        const targetPresence =
-          await this.presenceRepository.getPresenceWithCurrentStatus(
-            relation.target.id,
-          );
-        const targetStatusRecord =
-          await this.statusRecordRepository.getStatusRecordByUserId(
-            relation.target.id,
-          );
+        // Get target user's presence from Redis (real-time)
+        const [targetPresenceStatus, targetStatusRecord] = await Promise.all([
+          this.presenceService.getPresenceStatus(relation.target.id.toString()),
+          this.statusRecordRepository.getStatusRecordByUserId(relation.target.id),
+        ]);
 
         return {
           id: relation.id,
@@ -912,7 +953,7 @@ export class UsersService {
             username: relation.target.username,
             globalname: relation.target.globalname,
             avatar: relation.target.avatar,
-            status: targetPresence?.status,
+            status: targetPresenceStatus.actualStatus,
             customStatus: targetStatusRecord?.text || undefined,
           },
           note: relation.note,

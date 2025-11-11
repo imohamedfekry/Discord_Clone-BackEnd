@@ -9,12 +9,16 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import Redis from 'ioredis';
 import { Logger } from '@nestjs/common';
 import { WSAuth } from '../../../common/decorators/websocket-auth.decorator';
 import { ConnectionHandlerService } from './auth/connection.handler';
 import { UnifiedPresenceService } from './services/unified-presence.service';
 import { BroadcasterService } from './presence/broadcaster.service';
 import { FriendsService } from './friends/friends.service';
+import { FriendsCacheService } from '../../../common/Global/cache/User/friends-cache.service';
+import { Events } from '../../../common/constants/events.constants';
+import { UserPresenceDto } from '../../../common/Types/presence.dto';
 import {
   AuthenticatedSocket,
   StatusUpdateData,
@@ -40,12 +44,14 @@ export class WebSocketGatewayService
   server: Server;
 
   private readonly logger = new Logger(WebSocketGatewayService.name);
+  private presenceSubscriber: Redis;
 
   constructor(
     private readonly connectionHandler: ConnectionHandlerService,
     private readonly presenceService: UnifiedPresenceService,
     private readonly broadcaster: BroadcasterService,
     private readonly friendsService: FriendsService,
+    private readonly friendsCache: FriendsCacheService,
   ) {}
 
   /**
@@ -55,6 +61,41 @@ export class WebSocketGatewayService
     this.logger.log('WebSocket Gateway initialized');
     // Set server instance in broadcaster service
     this.broadcaster.setServer(server);
+
+    // Subscribe to Redis presence updates for cross-instance sync
+    this.presenceSubscriber = new Redis({
+      host: process.env.CACHE_HOST || 'localhost',
+      port: parseInt(process.env.CACHE_PORT || '6379', 10),
+      password: process.env.CACHE_PASS,
+    });
+
+    this.presenceSubscriber.subscribe('presence:updates', (err) => {
+      if (err) this.logger.error('Failed to subscribe to presence:updates', err.stack);
+    });
+
+    this.presenceSubscriber.on('message', async (_channel, message) => {
+      try {
+        const { userId } = JSON.parse(message) as { userId: string };
+        if (!userId) return;
+        // Build current presence snapshot
+        const presence = await this.presenceService.getPresenceStatus(userId);
+
+        // Find all users who have this user as friend
+        const watchers = await this.friendsCache.getUsersWhoseFriend(userId);
+        if (watchers.length === 0) return;
+
+        const payload: UserPresenceDto = {
+          userId,
+          status: presence.actualStatus,
+          lastSeen: presence.isOnline ? null : new Date().toISOString(),
+        };
+
+        // Broadcast to all watchers user-rooms
+        watchers.forEach((wid) => this.broadcaster.sendToUser(wid, Events.PRESENCE_UPDATE, payload));
+      } catch (e: any) {
+        this.logger.error('presence:updates handler error', e?.stack);
+      }
+    });
   }
 
   /**
