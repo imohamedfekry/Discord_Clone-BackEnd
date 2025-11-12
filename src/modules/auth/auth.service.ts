@@ -68,7 +68,7 @@ export class AuthService {
       sub: user.id.toString(),
       type: 'refresh',
     });
-    res.cookie('accessToken', accessToken, {
+    res.cookie('Authorization', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production' ? true : false,
       sameSite: 'lax',
@@ -105,7 +105,7 @@ export class AuthService {
       sub: user.id.toString(),
       type: 'refresh',
     });
-    res.cookie('accessToken', accessToken, {
+    res.cookie('Authorization', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production' ? true : false,
       sameSite: 'lax',

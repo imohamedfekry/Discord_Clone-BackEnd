@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import CatchAllFilter from '../filters/catchAll.filter';
 import CustomHttpException from '../filters/customHttpException.filter';
 import { BigIntInterceptor } from '../Global/Interceptors/BigInt.interceptors';
+import cookieParser from 'cookie-parser';
 
 export class BootstrapConfig {
   static async configureApp(app: NestApplication, configService: ConfigService) {
@@ -26,6 +27,9 @@ export class BootstrapConfig {
 
     // Enable versioning
     this.configureVersioning(app);
+
+    // Use cookie parser middleware
+    this.configureCookieParser(app);
   }
 
   private static configureValidationPipes(app: NestApplication) {
@@ -53,6 +57,10 @@ export class BootstrapConfig {
     app.enableVersioning({
       type: VersioningType.URI,
     });
+  }
+  // configure cookie parser middleware
+    private static configureCookieParser(app: NestApplication) {
+    app.use(cookieParser());
   }
 
   static getServerInfo(configService: ConfigService) {

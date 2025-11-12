@@ -2,7 +2,6 @@ import { NestApplication } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { BootstrapConfig } from '../config/bootstrap.config';
 import { SwaggerConfig } from '../config/swagger.config';
-import { VersioningType } from '@nestjs/common';
 
 export class AppBootstrap {
   static async bootstrap(app: NestApplication) {
