@@ -39,18 +39,11 @@ export class BroadcasterService {
     this.server.to(`user:${userId}`).emit(event, data);
   }
 
-
-          // this.broadcaster.sendToUserStd(
-          //   friendId,
-          //   WebSocketEvents.PRESENCE_UPDATED,
-          //   'Presence updated',
-          //   { userId, username, status },
-          // );
-
   /**
    * Standardized send: wraps payload with code/message/data/timestamp
    */
   sendToUserStd(userId: string, code: string, message: string, data?: any): void {
+    console.log(" socket: ",userId,code)
     this.sendToUser(userId, code, {
       code,
       message,

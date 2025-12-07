@@ -45,7 +45,7 @@ import { plainToInstance } from 'class-transformer';
 import { ApiResponse } from 'src/common/shared/types';
 import { RESPONSE_MESSAGES } from 'src/common/shared/response-messages';
 import { success, fail } from 'src/common/utils/response.util';
-import { UserProfileResponseDto, PresenceDto, UserStatusRecordDto } from './dto/user-response.dto';
+import { UserProfileResponseDto, PresenceDto, UserStatusRecordDto, FriendRequestItemDto } from './dto/user-response.dto';
 import { UserDto } from './dto/user-types.dto';
 import ms from 'ms';
 
@@ -546,6 +546,13 @@ export class UsersService {
       BigInt(dto.userId),
     );
 
+    this.friendshipNotifier.notifyFreindRemoved(
+     dto.userId,
+     user.id.toString(),
+      {
+        friendshipId: friendship.id,
+      },
+    );
     // Update Redis cache - remove from each other's friends list
     await this.friendsCache.removeFriend(user.id.toString(), dto.userId);
 
@@ -606,46 +613,38 @@ export class UsersService {
   /**
    * Get friend requests (incoming)
    */
-  async getIncomingRequests(user: User) {
-    const requests = await this.friendshipRepository.findIncomingRequests(
-      user.id,
-    );
+async getFriendRequests(user: User) {
+  const all = await this.friendshipRepository.findAllPendingRequests(user.id);
 
-    return success(RESPONSE_MESSAGES.FRIEND.INCOMING_FETCHED, 
-      requests.map((request: any) => ({
-        id: request.id,
-        user: {
-          id: request.user1.id,
-          username: request.user1.username,
-          avatar: request.user1.avatar,
-          // SECURITY: Removed email - too sensitive
-        },
-        status: request.status,
-        createdAt: request.createdAt,
-      })));
+
+  const incoming: FriendRequestItemDto[] = [];
+  const outgoing: FriendRequestItemDto[] = [];
+
+  for (const request of all) {
+    const isIncoming = request.user2Id === user.id;
+
+    const formatted = plainToInstance(FriendRequestItemDto, {
+      id: request.id,
+      user: {
+        id: (isIncoming ? request.user1.id : request.user2.id),
+        username: isIncoming ? request.user1.username : request.user2.username,
+        avatar: isIncoming ? request.user1.avatar : request.user2.avatar,
+      },
+      status: request.status,
+      createdAt: request.createdAt,
+    });
+    
+
+    if (isIncoming) incoming.push(formatted);
+    else outgoing.push(formatted);
   }
 
-  /**
-   * Get outgoing friend requests
-   */
-  async getOutgoingRequests(user: User) {
-    const requests = await this.friendshipRepository.findOutgoingRequests(
-      user.id,
-    );
+  return success(RESPONSE_MESSAGES.FRIEND.REQUESTS_FETCHED, {
+    incoming,
+    outgoing,
+  });
+}
 
-    return success(RESPONSE_MESSAGES.FRIEND.OUTGOING_FETCHED,
-      requests.map((request: any) => ({
-        id: request.id,
-        user: {
-          id: request.user2.id,
-          username: request.user2.username,
-          avatar: request.user2.avatar,
-          // SECURITY: Removed email - too sensitive
-        },
-        status: request.status,
-        createdAt: request.createdAt,
-      })));
-  }
 
   /**
    * Get mutual friends

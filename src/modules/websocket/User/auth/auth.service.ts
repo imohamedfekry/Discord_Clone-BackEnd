@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtHelper } from '../../../../common/Global/security/jwt.helper';
 import { AuthenticatedSocket } from '../../../../common/Types/websocket.types';
+import * as cookie from 'cookie';
 
 /**
  * Authentication Service for WebSocket connections
@@ -18,14 +19,18 @@ export class AuthService {
    * @returns User object if authenticated, null otherwise
    */
   async authenticateClient(client: AuthenticatedSocket): Promise<any | null> {
-    const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
-    
-    if (!token) {
-      this.logger.warn(`Missing token for client ${client.id}`);
+    const cookiesHeader = client.handshake.headers.cookie;
+    if (!cookiesHeader) {
       client.disconnect();
-      return null;
+      return;
     }
-
+    const cookies = cookie.parse(cookiesHeader);
+    const token = cookies['Authorization']; // اسم الكوكيز
+    if (!token) {
+      client.disconnect();
+      return;
+    }
+    
     const user = await this.jwtHelper.VerifyAndGetUser(token);
 
     if (!user) {

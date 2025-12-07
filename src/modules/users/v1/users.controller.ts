@@ -78,6 +78,8 @@ export class UsersController {
   // End Profile Cruds Endpoints
   
   // Friendship endpoints
+  // ==================== FRIENDSHIP ====================
+  // Send friend request
   @Post('friends/request')
   @UsePipes(new ValidationPipe({ transform: true }))
   async sendFriendRequest(@Request() request: any, @Body() dto: SendFriendRequestDto) {
@@ -104,15 +106,20 @@ export class UsersController {
     return this.usersService.getFriends(request.user, query);
   }
 
-  @Get('friends/requests/incoming')
-  async getIncomingRequests(@Request() request: any) {
-    return this.usersService.getIncomingRequests(request.user);
-  }
+  @Get('friends/requests')
+  async getFriendRequests(@Request() request: any) {
+    return this.usersService.getFriendRequests(request.user);
+  } 
 
-  @Get('friends/requests/outgoing')
-  async getOutgoingRequests(@Request() request: any) {
-    return this.usersService.getOutgoingRequests(request.user);
-  }
+  // @Get('friends/requests/incoming')
+  // async getIncomingRequests(@Request() request: any) {
+  //   return this.usersService.getIncomingRequests(request.user);
+  // }
+
+  // @Get('friends/requests/outgoing')
+  // async getOutgoingRequests(@Request() request: any) {
+  //   return this.usersService.getOutgoingRequests(request.user);
+  // }
 
   @Get('friends/mutual/:userId')
   async getMutualFriends(@Request() request: any, @Param() params: GetMutualFriendsDto) {
@@ -124,6 +131,7 @@ export class UsersController {
     return this.usersService.checkFriendship(request.user, params.userId);
   }
 
+  
   // ==================== USER RELATIONS ====================
 
   @Post('relations')

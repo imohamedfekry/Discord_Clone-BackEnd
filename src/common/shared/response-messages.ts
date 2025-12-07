@@ -23,8 +23,7 @@ export const RESPONSE_MESSAGES = {
     REQUEST_CANCELLED: { code: 'FRIEND_REQUEST_CANCELLED', message: 'Friend request cancelled successfully' },
     REMOVED: { code: 'FRIEND_REMOVED', message: 'Friend removed successfully' },
     LIST_FETCHED: { code: 'FRIENDS_FETCHED', message: 'Friends list fetched successfully' },
-    INCOMING_FETCHED: { code: 'INCOMING_REQUESTS_FETCHED', message: 'Incoming requests fetched successfully' },
-    OUTGOING_FETCHED: { code: 'OUTGOING_REQUESTS_FETCHED', message: 'Outgoing requests fetched successfully' },
+    REQUESTS_FETCHED: { code: 'REQUESTS_FETCHED', message: 'Friends requests fetched successfully' },
     MUTUAL_FETCHED: { code: 'MUTUAL_FRIENDS_FETCHED', message: 'Mutual friends fetched successfully' },
   },
   RELATION: {

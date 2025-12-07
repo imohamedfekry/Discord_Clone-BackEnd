@@ -31,12 +31,13 @@ import {
  */
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: 'http://localhost:3001', // domain الفرونت إند بالظبط
     credentials: true,
   },
   namespace: '/',
   transports: ['websocket', 'polling'],
 })
+
 export class WebSocketGatewayService
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {

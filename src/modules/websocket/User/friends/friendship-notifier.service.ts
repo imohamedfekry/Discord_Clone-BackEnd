@@ -18,8 +18,10 @@ export class FriendshipNotifierService {
    * @param data - Friend request data
    */
   notifyFriendRequestReceived(recipientId: string, data: any): void {
-    this.logger.log(`Notifying ${recipientId} about friend request from ${data.fromUser.username}`);
-    
+    this.logger.log(
+      `Notifying ${recipientId} about friend request from ${data.fromUser.username}`,
+    );
+
     this.broadcaster.sendToUserStd(
       recipientId,
       WebSocketEvents.FRIEND_REQUEST_RECEIVED,
@@ -34,8 +36,10 @@ export class FriendshipNotifierService {
    * @param data - Accepted friendship data
    */
   notifyFriendRequestAccepted(userId: string, data: any): void {
-    this.logger.log(`Notifying ${userId} that friend request was accepted by ${data.newFriend.username}`);
-    
+    this.logger.log(
+      `Notifying ${userId} that friend request was accepted by ${data.newFriend.username}`,
+    );
+
     this.broadcaster.sendToUserStd(
       userId,
       WebSocketEvents.FRIEND_REQUEST_ACCEPTED,
@@ -50,8 +54,10 @@ export class FriendshipNotifierService {
    * @param data - Rejection data
    */
   notifyFriendRequestRejected(userId: string, data: any): void {
-    this.logger.log(`Notifying ${userId} that friend request was rejected by ${data.byUser.username}`);
-    
+    this.logger.log(
+      `Notifying ${userId} that friend request was rejected by ${data.byUser.username}`,
+    );
+
     this.broadcaster.sendToUserStd(
       userId,
       WebSocketEvents.FRIEND_REQUEST_REJECTED,
@@ -66,8 +72,10 @@ export class FriendshipNotifierService {
    * @param data - Cancellation data
    */
   notifyFriendRequestCancelled(recipientId: string, data: any): void {
-    this.logger.log(`Notifying ${recipientId} that friend request was cancelled by ${data.byUser.username}`);
-    
+    this.logger.log(
+      `Notifying ${recipientId} that friend request was cancelled by ${data.byUser.username}`,
+    );
+
     this.broadcaster.sendToUserStd(
       recipientId,
       WebSocketEvents.FRIEND_REQUEST_CANCELLED,
@@ -75,5 +83,19 @@ export class FriendshipNotifierService {
       data,
     );
   }
+  notifyFreindRemoved(recipientId: string, userid:string, data: any) {
+    this.logger.log(`Notfying ${1} that freind ship was removed by `);
+    this.broadcaster.sendToUserStd(
+      recipientId,
+      WebSocketEvents.FRIEND_REMOVED,
+      'Friend ship removed',
+      data,
+    );
+    this.broadcaster.sendToUserStd(
+      userid,
+      WebSocketEvents.FRIEND_REMOVED,
+      'Friend ship removed',
+      data,
+    );
+  }
 }
-

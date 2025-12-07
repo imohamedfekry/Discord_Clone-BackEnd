@@ -95,54 +95,25 @@ export class FriendshipRepository {
   }
 
   // Find incoming friend requests for a user
-  async findIncomingRequests(
-    userId: bigint,
-    select?: Prisma.FriendshipSelect,
-  ) {
-    const options: any = select
-      ? { select }
-      : {
-          include: {
-            user1: true,
-          },
-        };
-    
-    return this.prisma.friendship.findMany({
-      where: {
-        user2Id: userId,
-        status: FriendshipStatus.PENDING,
-      },
-      ...options,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-  }
+  async findAllPendingRequests(userId: string | bigint) {
+  return this.prisma.friendship.findMany({
+    where: {
+      status: FriendshipStatus.PENDING,
+      OR: [
+        { user1Id: BigInt(userId) }, // outgoing
+        { user2Id: BigInt(userId) }, // incoming
+      ],
+    },
+    include: {
+      user1: true,
+      user2: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+}
 
-  // Find outgoing friend requests for a user
-  async findOutgoingRequests(
-    userId: bigint,
-    select?: Prisma.FriendshipSelect,
-  ) {
-    const options: any = select
-      ? { select }
-      : {
-          include: {
-            user2: true,
-          },
-        };
-    
-    return this.prisma.friendship.findMany({
-      where: {
-        user1Id: userId,
-        status: FriendshipStatus.PENDING,
-      },
-      ...options,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-  }
 
   // Check if two users are friends
   async areFriends(user1Id: bigint, user2Id: bigint) {

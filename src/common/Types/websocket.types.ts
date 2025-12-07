@@ -60,6 +60,7 @@ export enum WebSocketEvents {
   FRIEND_REQUEST_ACCEPTED = 'friend:request:accepted',
   FRIEND_REQUEST_REJECTED = 'friend:request:rejected',
   FRIEND_REQUEST_CANCELLED = 'friend:request:cancelled',
+  FRIEND_REMOVED="friend:removed"
 }
 
 /**

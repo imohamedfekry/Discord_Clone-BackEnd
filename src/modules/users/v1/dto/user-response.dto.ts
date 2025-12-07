@@ -1,7 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Expose, Transform, Type } from 'class-transformer';
 import { DateTransform } from '../../../../common/decorators/date-transform.decorator';
-import { UserStatus } from '@prisma/client';
+import { FriendshipStatus, UserStatus } from '@prisma/client';
 import { UserDto } from './user-types.dto';
 
 /**
@@ -86,3 +86,49 @@ export class UserProfileResponseDto {
   isOnline: boolean;
 }
 
+
+
+export class FriendRequestUserDto extends OmitType(UserDto, [
+  'email',
+  'phone',
+  'birthdate',
+  'isBot',
+  'createdAt',
+  'globalname',
+] as const) {}
+
+export class FriendRequestItemDto {
+  @Expose()
+  @ApiProperty({ description: 'Friend request ID' })
+  id: string;
+
+  @Expose()
+  @Type(() => FriendRequestUserDto)
+  @ApiProperty({
+    description: 'User involved in this request',
+    type: FriendRequestUserDto
+  })
+  user: FriendRequestUserDto;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Friendship status',
+    enum: FriendshipStatus
+  })
+  status: FriendshipStatus;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Date when request was created'
+  })
+  createdAt: Date;
+}
+export class FriendRequestsResponseDto {
+  @Expose()
+  @Type(() => FriendRequestItemDto)
+  incoming: FriendRequestItemDto[];
+
+  @Expose()
+  @Type(() => FriendRequestItemDto)
+  outgoing: FriendRequestItemDto[];
+}
