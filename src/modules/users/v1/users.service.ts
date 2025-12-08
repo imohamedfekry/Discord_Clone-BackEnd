@@ -3,8 +3,9 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
-import { User, UserStatusRecord, UserStatus, Prisma } from '@prisma/client';
+import { User, UserStatusRecord, UserStatus, Prisma, RelationType } from '@prisma/client';
 import {
   // Profile DTOs
   UpdatePasswordDto,
@@ -39,6 +40,7 @@ import {
 import { verifyHash } from 'src/common/Global/security/hash.helper';
 import { WebSocketGatewayService } from '../../websocket/User/websocket.gateway';
 import { FriendshipNotifierService } from '../../websocket/User/friends/friendship-notifier.service';
+import { UnifiedNotifierService } from '../../websocket/User/services/unified-notifier.service';
 import { UnifiedPresenceService } from '../../websocket/User/services/unified-presence.service';
 import { FriendsCacheService } from '../../../common/Global/cache/User/friends-cache.service';
 import { plainToInstance } from 'class-transformer';
@@ -48,9 +50,20 @@ import { success, fail } from 'src/common/utils/response.util';
 import { UserProfileResponseDto, PresenceDto, UserStatusRecordDto, FriendRequestItemDto } from './dto/user-response.dto';
 import { UserDto } from './dto/user-types.dto';
 import ms from 'ms';
+import {
+  NotificationEvent,
+  UserBlockedData,
+  UserUnblockedData,
+  UserMutedData,
+  UserUnmutedData,
+  UserIgnoredData,
+  UserUnignoredData,
+} from '../../../common/Types/notification.types';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     private readonly userRepository: UserRepository,
     private readonly friendshipRepository: FriendshipRepository,
@@ -59,9 +72,10 @@ export class UsersService {
     private readonly statusRecordRepository: UserStatusRecordRepository,
     private readonly websocketGatewayService: WebSocketGatewayService,
     private readonly friendshipNotifier: FriendshipNotifierService,
+    private readonly unifiedNotifier: UnifiedNotifierService,
     private readonly presenceService: UnifiedPresenceService,
     private readonly friendsCache: FriendsCacheService,
-  ) {}
+  ) { }
 
   // ==================== PROFILE MANAGEMENT ====================
   /**
@@ -83,20 +97,20 @@ export class UsersService {
 
     // Build UserDto - use plainToInstance with excludeExtraneousValues for proper transformation
     const userDto = plainToInstance(UserDto, user, { excludeExtraneousValues: true });
-    
+
     // Build PresenceDto - calculate status once
-    const finalStatus = presenceStatus.isOnline 
+    const finalStatus = presenceStatus.isOnline
       ? (presenceStatus.displayStatus || user.presence?.status || null)
       : UserStatus.Invisible;
-    
+
     const presenceDto: PresenceDto = {
       status: finalStatus,
     };
-    
+
     // Build UserStatusRecordDto - use user.statusRecord directly
-    const customStatusDto: UserStatusRecordDto = user.statusRecord 
+    const customStatusDto: UserStatusRecordDto = user.statusRecord
       ? {
-          text: user.statusRecord.text || null,
+        text: user.statusRecord.text || null,
         emoji: user.statusRecord.emoji || null,
       }
       : {
@@ -156,13 +170,13 @@ export class UsersService {
     friends.forEach(friend => {
       this.websocketGatewayService.sendToUser(friend, 'user:globalname:updated', {
         userId: user.id.toString(),
-        globalname: dto.globalname ,
+        globalname: dto.globalname,
         timestamp: new Date(),
       });
     });
     return success(RESPONSE_MESSAGES.USER.GLOBALNAME_UPDATED);
   }
-  
+
   /**
    * Update custom status
    */
@@ -174,13 +188,13 @@ export class UsersService {
         userId: user.id,
       });
     }
-    
+
     await this.statusRecordRepository.updateStatusRecord(statusRecord.id, {
       text: dto.text,
       emoji: dto.emoji,
       expiresAt: dto.expiresAt
-      ? new Date(new Date().getTime() + ms(dto.expiresAt))
-      : undefined,
+        ? new Date(new Date().getTime() + ms(dto.expiresAt))
+        : undefined,
     });
 
     // broadcast to all friends
@@ -546,9 +560,9 @@ export class UsersService {
       BigInt(dto.userId),
     );
 
-    this.friendshipNotifier.notifyFreindRemoved(
-     dto.userId,
-     user.id.toString(),
+    this.friendshipNotifier.notifyFriendRemoved(
+      dto.userId,
+      user.id.toString(),
       {
         friendshipId: friendship.id,
       },
@@ -613,37 +627,37 @@ export class UsersService {
   /**
    * Get friend requests (incoming)
    */
-async getFriendRequests(user: User) {
-  const all = await this.friendshipRepository.findAllPendingRequests(user.id);
+  async getFriendRequests(user: User) {
+    const all = await this.friendshipRepository.findAllPendingRequests(user.id);
 
 
-  const incoming: FriendRequestItemDto[] = [];
-  const outgoing: FriendRequestItemDto[] = [];
+    const incoming: FriendRequestItemDto[] = [];
+    const outgoing: FriendRequestItemDto[] = [];
 
-  for (const request of all) {
-    const isIncoming = request.user2Id === user.id;
+    for (const request of all) {
+      const isIncoming = request.user2Id === user.id;
 
-    const formatted = plainToInstance(FriendRequestItemDto, {
-      id: request.id,
-      user: {
-        id: (isIncoming ? request.user1.id : request.user2.id),
-        username: isIncoming ? request.user1.username : request.user2.username,
-        avatar: isIncoming ? request.user1.avatar : request.user2.avatar,
-      },
-      status: request.status,
-      createdAt: request.createdAt,
+      const formatted = plainToInstance(FriendRequestItemDto, {
+        id: request.id,
+        user: {
+          id: (isIncoming ? request.user1.id : request.user2.id),
+          username: isIncoming ? request.user1.username : request.user2.username,
+          avatar: isIncoming ? request.user1.avatar : request.user2.avatar,
+        },
+        status: request.status,
+        createdAt: request.createdAt,
+      });
+
+
+      if (isIncoming) incoming.push(formatted);
+      else outgoing.push(formatted);
+    }
+
+    return success(RESPONSE_MESSAGES.FRIEND.REQUESTS_FETCHED, {
+      incoming,
+      outgoing,
     });
-    
-
-    if (isIncoming) incoming.push(formatted);
-    else outgoing.push(formatted);
   }
-
-  return success(RESPONSE_MESSAGES.FRIEND.REQUESTS_FETCHED, {
-    incoming,
-    outgoing,
-  });
-}
 
 
   /**
@@ -737,6 +751,9 @@ async getFriendRequests(user: User) {
       note: dto.note,
     })) as any;
 
+    // Send notifications based on relation type
+    this.notifyUserRelationCreated(user, targetUser, relation, dto.type);
+
     return {
       id: relation.id,
       type: relation.type,
@@ -805,12 +822,21 @@ async getFriendRequests(user: User) {
       throw new NotFoundException('Relation not found');
     }
 
+    // Get target user info for notification
+    const targetUser = await this.userRepository.findById(dto.targetUserId);
+    if (!targetUser) {
+      throw new NotFoundException('Target user not found');
+    }
+
     // Remove the relation
     await this.userRelationRepository.removeRelation(
       user.id,
       BigInt(dto.targetUserId),
       dto.type,
     );
+
+    // Send notifications based on relation type
+    this.notifyUserRelationRemoved(user, targetUser, dto.type);
 
     return { message: 'Relation removed successfully' };
   }
@@ -1025,5 +1051,153 @@ async getFriendRequests(user: User) {
       muted: stats.muted,
       total: stats.total,
     };
+  }
+
+  // ==================== NOTIFICATION HELPERS ====================
+
+  /**
+   * Send notifications when a user relation is created
+   */
+  private notifyUserRelationCreated(
+    sourceUser: User,
+    targetUser: User,
+    relation: any,
+    relationType: RelationType,
+  ): void {
+    const sourceUserInfo = {
+      id: sourceUser.id,
+      username: sourceUser.username,
+      avatar: sourceUser.avatar,
+    };
+
+    const targetUserInfo = {
+      id: targetUser.id,
+      username: targetUser.username,
+      avatar: targetUser.avatar,
+    };
+
+    switch (relationType) {
+      case RelationType.BLOCKED:
+        // When blocking, notify source user (BOTH pattern to support multi-device)
+        const blockData: UserBlockedData = {
+          relationId: relation.id,
+          blockedUser: targetUserInfo,
+          blockedByUser: sourceUserInfo,
+        };
+        this.unifiedNotifier.notifySource(
+          NotificationEvent.USER_BLOCKED,
+          sourceUser.id.toString(),
+          targetUser.id.toString(),
+          blockData,
+          'User blocked',
+        );
+        this.logger.log(`User ${sourceUser.id} blocked ${targetUser.id}`);
+        break;
+
+      case RelationType.MUTED:
+        // When muting, notify source user (multi-device support)
+        const muteData: UserMutedData = {
+          relationId: relation.id,
+          mutedUser: targetUserInfo,
+          mutedByUser: sourceUserInfo,
+        };
+        this.unifiedNotifier.notifySource(
+          NotificationEvent.USER_MUTED,
+          sourceUser.id.toString(),
+          targetUser.id.toString(),
+          muteData,
+          'User muted',
+        );
+        this.logger.log(`User ${sourceUser.id} muted ${targetUser.id}`);
+        break;
+
+      case RelationType.IGNORED:
+        // When ignoring, notify source user (multi-device support)
+        const ignoreData: UserIgnoredData = {
+          relationId: relation.id,
+          ignoredUser: targetUserInfo,
+          ignoredByUser: sourceUserInfo,
+        };
+        this.unifiedNotifier.notifySource(
+          NotificationEvent.USER_IGNORED,
+          sourceUser.id.toString(),
+          targetUser.id.toString(),
+          ignoreData,
+          'User ignored',
+        );
+        this.logger.log(`User ${sourceUser.id} ignored ${targetUser.id}`);
+        break;
+    }
+  }
+
+  /**
+   * Send notifications when a user relation is removed
+   */
+  private notifyUserRelationRemoved(
+    sourceUser: User,
+    targetUser: User,
+    relationType: RelationType,
+  ): void {
+    const sourceUserInfo = {
+      id: sourceUser.id,
+      username: sourceUser.username,
+      avatar: sourceUser.avatar,
+    };
+
+    const targetUserInfo = {
+      id: targetUser.id,
+      username: targetUser.username,
+      avatar: targetUser.avatar,
+    };
+
+    switch (relationType) {
+      case RelationType.BLOCKED:
+        // When unblocking, notify source user (multi-device support)
+        const unblockData: UserUnblockedData = {
+          targetUser: targetUserInfo,
+          unblockedByUser: sourceUserInfo,
+        };
+        this.unifiedNotifier.notifySource(
+          NotificationEvent.USER_UNBLOCKED,
+          sourceUser.id.toString(),
+          targetUser.id.toString(),
+          unblockData,
+          'User unblocked',
+        );
+        this.logger.log(`User ${sourceUser.id} unblocked ${targetUser.id}`);
+        break;
+
+      case RelationType.MUTED:
+        // When unmuting, notify source user (multi-device support)
+        const unmuteData: UserUnmutedData = {
+          targetUser: targetUserInfo,
+          unmutedByUser: sourceUserInfo,
+        };
+        this.unifiedNotifier.notifySource(
+          NotificationEvent.USER_UNMUTED,
+          sourceUser.id.toString(),
+          targetUser.id.toString(),
+          unmuteData,
+          'User unmuted',
+        );
+        this.logger.log(`User ${sourceUser.id} unmuted ${targetUser.id}`);
+        break;
+
+      case RelationType.IGNORED:
+        // When unignoring, notify source user (multi-device support)
+        const unignoreData: UserUnignoredData = {
+          targetUser: targetUserInfo,
+          unignoredByUser: sourceUserInfo,
+        };
+        this.unifiedNotifier.notifySource(
+          NotificationEvent.USER_UNIGNORED,
+          sourceUser.id.toString(),
+          targetUser.id.toString(),
+          unignoreData,
+          'User unignored',
+        );
+        this.logger.log(`User ${sourceUser.id} unignored ${targetUser.id}`);
+        break;
+    }
   }
 }

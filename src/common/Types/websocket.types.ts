@@ -46,21 +46,29 @@ export enum WebSocketEvents {
   // Connection events
   CONNECTED = 'connected',
   DISCONNECT = 'disconnect',
+  READY = 'ready',
 
-  READY= 'ready',
   // Presence events
   PRESENCE_UPDATED = 'presence:updated',
-  
+
   // Status events
   STATUS_UPDATED = 'status:updated',
   STATUS_CURRENT = 'status:current',
-  
+
   // Friend request events
   FRIEND_REQUEST_RECEIVED = 'friend:request:received',
   FRIEND_REQUEST_ACCEPTED = 'friend:request:accepted',
   FRIEND_REQUEST_REJECTED = 'friend:request:rejected',
   FRIEND_REQUEST_CANCELLED = 'friend:request:cancelled',
-  FRIEND_REMOVED="friend:removed"
+  FRIEND_REMOVED = 'friend:removed',
+
+  // User relation events
+  USER_BLOCKED = 'user:relation:blocked',
+  USER_UNBLOCKED = 'user:relation:unblocked',
+  USER_MUTED = 'user:relation:muted',
+  USER_UNMUTED = 'user:relation:unmuted',
+  USER_IGNORED = 'user:relation:ignored',
+  USER_UNIGNORED = 'user:relation:unignored',
 }
 
 /**
@@ -71,8 +79,7 @@ export enum WebSocketMessages {
   PING = 'ping',
   STATUS_UPDATE = 'status:update',
   STATUS_GET = 'status:get',
-  
+
   // Deprecated (for backward compatibility)
   PRESENCE_UPDATE = 'presence:update',
 }
-

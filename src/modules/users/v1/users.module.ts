@@ -2,20 +2,20 @@ import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { WebSocketModule } from '../../websocket/websocket.module';
-import { 
-  FriendshipRepository, 
-  PresenceRepository, 
+import {
+  FriendshipRepository,
+  PresenceRepository,
   UserRepository,
   UserStatusRecordRepository,
-  UserRelationRepository 
+  UserRelationRepository
 } from 'src/common/database/repositories';
 
 @Module({
   imports: [WebSocketModule],
   controllers: [UsersController],
   providers: [
-    UsersService, 
-    UserRepository, 
+    UsersService,
+    UserRepository,
     FriendshipRepository,
     PresenceRepository,
     UserStatusRecordRepository,
@@ -23,4 +23,4 @@ import {
   ],
   exports: [UsersService],
 })
-export class UsersModule {}
+export class UsersModule { }

@@ -4,32 +4,44 @@ import { ConnectionHandlerService } from './User/auth/connection.handler';
 import { AuthService } from './User/auth/auth.service';
 import { BroadcasterService } from './User/presence/broadcaster.service';
 import { UnifiedPresenceService } from './User/services/unified-presence.service';
+import { UnifiedNotifierService } from './User/services/unified-notifier.service';
+import { PresenceNotifierService } from './User/services/presence-notifier.service';
 import { FriendsCacheService } from '../../common/Global/cache/User/friends-cache.service';
 import { FriendshipNotifierService } from './User/friends/friendship-notifier.service';
 import { FriendsService } from './User/friends/friends.service';
-import { 
-  UserRepository, 
-  PresenceRepository, 
+import {
+  UserRepository,
+  PresenceRepository,
   UserStatusRecordRepository,
   FriendshipRepository,
-  UserRelationRepository 
+  UserRelationRepository
 } from '../../common/database/repositories';
 
 /**
  * WebSocket Module
- * Modular architecture with separate handlers
+ * Modular architecture with layered services
  */
 @Module({
   providers: [
+    // Gateway
     WebSocketGatewayService,
     ConnectionHandlerService,
     AuthService,
+
+    // Core Services (Layer 1 - Socket.IO)
     BroadcasterService,
+
+    // Unified Services (Layer 2 - Standardized messaging)
+    UnifiedNotifierService,
+
+    // Domain Services (Layer 3 - Business logic)
     UnifiedPresenceService,
-    FriendsCacheService,
+    PresenceNotifierService,
     FriendshipNotifierService,
     FriendsService,
-    // Database Repositories
+
+    // Cache & Database
+    FriendsCacheService,
     UserRepository,
     PresenceRepository,
     UserStatusRecordRepository,
@@ -38,9 +50,11 @@ import {
   ],
   exports: [
     WebSocketGatewayService,
+    UnifiedNotifierService,
     FriendshipNotifierService,
+    PresenceNotifierService,
     UnifiedPresenceService,
     FriendsCacheService,
   ],
 })
-export class WebSocketModule {}
+export class WebSocketModule { }
