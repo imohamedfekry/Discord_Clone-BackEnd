@@ -58,12 +58,10 @@ export interface FriendRequestAcceptedData {
 
 export interface FriendRequestRejectedData {
     friendshipId: string | bigint;
-    byUser: NotificationUserInfo;
 }
 
 export interface FriendRequestCancelledData {
     friendshipId: string | bigint;
-    byUser: NotificationUserInfo;
 }
 
 export interface FriendRemovedData {

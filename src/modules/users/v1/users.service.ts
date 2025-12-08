@@ -422,13 +422,9 @@ export class UsersService {
       // Notify the sender that request was rejected
       this.friendshipNotifier.notifyFriendRequestRejected(
         friendship.user1Id.toString(),
+        user.id.toString(),
         {
           friendshipId: dto.friendshipId,
-          byUser: {
-            id: user.id,
-            username: user.username,
-            avatar: user.avatar,
-          },
         },
       );
 
@@ -518,14 +514,10 @@ export class UsersService {
 
     // Notify the recipient that request was cancelled
     this.friendshipNotifier.notifyFriendRequestCancelled(
+      user.id.toString(),
       recipientInfo.id.toString(),
       {
         friendshipId: dto.friendshipId,
-        byUser: {
-          id: user.id,
-          username: user.username,
-          avatar: user.avatar,
-        },
       },
     );
 

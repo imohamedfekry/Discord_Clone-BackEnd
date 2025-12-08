@@ -66,15 +66,15 @@ export class FriendshipNotifierService {
    * @param userId - User who sent the request
    * @param data - Rejection data
    */
-  notifyFriendRequestRejected(userId: string, data: FriendRequestRejectedData): void {
+  notifyFriendRequestRejected(userId: string, recipientId: string, data: FriendRequestRejectedData): void {
     this.logger.log(
-      `Notifying ${userId} that friend request was rejected by ${data.byUser.username}`,
+      `Notifying ${userId} that friend request was rejected by ${recipientId}`,
     );
 
-    this.unifiedNotifier.notifyBoth(
+    this.unifiedNotifier.notifySource(
       NotificationEvent.FRIEND_REQUEST_REJECTED,
-      data.byUser.id.toString(),
       userId,
+      recipientId,
       data,
       'Friend request rejected',
     );
@@ -85,14 +85,14 @@ export class FriendshipNotifierService {
    * @param recipientId - User who was receiving the request
    * @param data - Cancellation data
    */
-  notifyFriendRequestCancelled(recipientId: string, data: FriendRequestCancelledData): void {
+  notifyFriendRequestCancelled(senderId: string, recipientId: string, data: FriendRequestCancelledData): void {
     this.logger.log(
-      `Notifying ${recipientId} that friend request was cancelled by ${data.byUser.username}`,
+      `Notifying ${recipientId} that friend request from ${senderId} was cancelled`,
     );
 
     this.unifiedNotifier.notifyBoth(
       NotificationEvent.FRIEND_REQUEST_CANCELLED,
-      data.byUser.id.toString(),
+      senderId,
       recipientId,
       data,
       'Friend request cancelled',
