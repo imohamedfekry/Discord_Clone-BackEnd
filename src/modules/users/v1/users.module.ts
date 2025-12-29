@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { WebSocketModule } from '../../websocket/websocket.module';
@@ -11,7 +11,7 @@ import {
 } from 'src/common/database/repositories';
 
 @Module({
-  imports: [WebSocketModule],
+  imports: [forwardRef(() => WebSocketModule)],
   controllers: [UsersController],
   providers: [
     UsersService,

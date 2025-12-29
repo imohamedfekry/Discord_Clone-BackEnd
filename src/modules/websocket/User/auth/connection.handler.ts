@@ -6,6 +6,7 @@ import { WebSocketEvents } from '../../../../common/Types/websocket.types';
 import { UnifiedPresenceService } from '../services/unified-presence.service';
 import { FriendsCacheService } from '../../../../common/Global/cache/User/friends-cache.service';
 import { Events } from '../../../../common/constants/events.constants';
+import { ReadyService } from '../../Ready/ready.service';
 
 /**
  * Connection Handler Service
@@ -20,7 +21,8 @@ export class ConnectionHandlerService {
     private readonly userRepository: UserRepository,
     private readonly presenceService: UnifiedPresenceService,
     private readonly friendsCache: FriendsCacheService,
-  ) {}
+    private readonly readyService: ReadyService,
+  ) { }
 
   /**
    * Handle new WebSocket connection
@@ -36,12 +38,6 @@ export class ConnectionHandlerService {
       // Setup session
       this.authService.setupSession(client, user);
 
-      // Join user-specific room (allows sending to all user's devices)
-      await client.join(`user:${user.id}`);
-
-      // Join presence room for real-time updates
-      await client.join('presence:updates');
-
       // Mark user as online in Redis
       const metadata = this.authService.createConnectionMetadata(client);
       await this.presenceService.markOnline(user.id, client.id, metadata);
@@ -52,9 +48,8 @@ export class ConnectionHandlerService {
         userId: user.id,
         socketId: client.id,
       });
-
       // Initial presence sync for friends (single pipeline/batch)
-      const friends = await this.friendsCache.getFriends(user.id);
+      const friends = await this.friendsCache.getFriends(user);
       if (friends.length > 0) {
         const presences = await this.presenceService.getBatchPresence(friends);
         client.emit(Events.INITIAL_PRESENCE_SYNC, presences);
@@ -62,9 +57,10 @@ export class ConnectionHandlerService {
 
       // Handle user online status and notify friends
       await this.presenceService.handleUserOnline(user.id, user.username);
-
+      // handle Ready Service
+      client.emit(Events.READY, await this.readyService.prepareUserData(user));
       this.logger.log(`User ${user.id} connected via socket ${client.id}`);
-      
+
     } catch (error) {
       this.logger.error(`Connection error: ${error.message}`, error.stack);
       client.disconnect();

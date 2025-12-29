@@ -4,9 +4,11 @@ import {
   NotificationEvent,
   NotificationTarget,
   FriendRequestReceivedData,
+  FriendRequestSentData,
   FriendRequestAcceptedData,
   FriendRequestRejectedData,
   FriendRequestCancelledData,
+  FriendRequestCancelledBySenderData,
   FriendRemovedData,
 } from '../../../../common/Types/notification.types';
 
@@ -25,20 +27,52 @@ export class FriendshipNotifierService {
 
   /**
    * Notify user that they received a friend request
+   * Also notifies sender that their request was sent
    * @param recipientId - User who received the request
-   * @param data - Friend request data
+   * @param senderId - User who sent the request
+   * @param recipientInfo - Recipient user info
+   * @param senderInfo - Sender user info
+   * @param friendshipId - Friendship ID
+   * @param status - Friendship status
    */
-  notifyFriendRequestReceived(recipientId: string, data: FriendRequestReceivedData): void {
+  notifyFriendRequestReceived(
+    recipientId: string,
+    senderId: string,
+    recipientInfo: { id: string | bigint; username: string; avatar: string | null },
+    senderInfo: { id: string | bigint; username: string; avatar: string | null },
+    friendshipId: string | bigint,
+    status: any
+  ): void {
     this.logger.log(
-      `Notifying ${recipientId} about friend request from ${data.fromUser.username}`,
+      `Notifying ${recipientId} about friend request from ${senderInfo.username}`,
     );
 
-    this.unifiedNotifier.notifyBoth(
+    // Notify TARGET (recipient) - they received a friend request
+    const receivedData: FriendRequestReceivedData = {
+      friendshipId,
+      fromUser: senderInfo,
+      status,
+    };
+    this.unifiedNotifier.notifyTarget(
       NotificationEvent.FRIEND_REQUEST_RECEIVED,
-      data.fromUser.id.toString(),
+      senderId,
       recipientId,
-      data,
+      receivedData,
       'Friend request received',
+    );
+
+    // Notify SOURCE (sender) - they sent a friend request
+    const sentData: FriendRequestSentData = {
+      friendshipId,
+      toUser: recipientInfo,
+      status,
+    };
+    this.unifiedNotifier.notifySource(
+      NotificationEvent.FRIEND_REQUEST_SENT,
+      senderId,
+      recipientId,
+      sentData,
+      'Friend request sent',
     );
   }
 
@@ -70,7 +104,6 @@ export class FriendshipNotifierService {
     this.logger.log(
       `Notifying ${userId} that friend request was rejected by ${recipientId}`,
     );
-
     this.unifiedNotifier.notifySource(
       NotificationEvent.FRIEND_REQUEST_REJECTED,
       userId,
@@ -81,21 +114,47 @@ export class FriendshipNotifierService {
   }
 
   /**
-   * Notify user that their friend request was cancelled
+   * Notify that a friend request was cancelled
+   * Notifies the recipient that request was cancelled
+   * Notifies the sender as confirmation
+   * @param senderId - User who cancelled the request
    * @param recipientId - User who was receiving the request
-   * @param data - Cancellation data
+   * @param senderInfo - Sender user info
+   * @param friendshipId - Friendship ID
    */
-  notifyFriendRequestCancelled(senderId: string, recipientId: string, data: FriendRequestCancelledData): void {
+  notifyFriendRequestCancelled(
+    senderId: string,
+    recipientId: string,
+    senderInfo: { id: string | bigint; username: string; avatar: string | null },
+    friendshipId: string | bigint
+  ): void {
     this.logger.log(
-      `Notifying ${recipientId} that friend request from ${senderId} was cancelled`,
+      `Notifying ${recipientId} that friend request from ${senderInfo.username} was cancelled`,
     );
 
-    this.unifiedNotifier.notifyBoth(
+    // Notify TARGET (recipient) - request from sender was cancelled
+    const cancelledData: FriendRequestCancelledData = {
+      friendshipId,
+      fromUser: senderInfo,
+    };
+    this.unifiedNotifier.notifyTarget(
       NotificationEvent.FRIEND_REQUEST_CANCELLED,
       senderId,
       recipientId,
-      data,
+      cancelledData,
       'Friend request cancelled',
+    );
+
+    // Notify SOURCE (sender) - confirmation that they cancelled
+    const cancelledBySenderData: FriendRequestCancelledBySenderData = {
+      friendshipId,
+    };
+    this.unifiedNotifier.notifySource(
+      NotificationEvent.FRIEND_REQUEST_CANCELLED_BY_SENDER,
+      senderId,
+      recipientId,
+      cancelledBySenderData,
+      'You cancelled a friend request',
     );
   }
 

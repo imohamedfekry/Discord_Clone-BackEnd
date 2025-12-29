@@ -3,6 +3,8 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Inject,
+  forwardRef,
   Logger,
 } from '@nestjs/common';
 import { User, UserStatusRecord, UserStatus, Prisma, RelationType } from '@prisma/client';
@@ -28,6 +30,7 @@ import {
   GetUserRelationsQueryDto,
   CheckUserRelationDto,
   UpdateRelationNoteDto,
+  CreateDMDto,
 } from './dto/user.dto';
 import { FriendshipStatus } from '@prisma/client';
 import {
@@ -54,8 +57,6 @@ import {
   NotificationEvent,
   UserBlockedData,
   UserUnblockedData,
-  UserMutedData,
-  UserUnmutedData,
   UserIgnoredData,
   UserUnignoredData,
 } from '../../../common/Types/notification.types';
@@ -70,11 +71,11 @@ export class UsersService {
     private readonly userRelationRepository: UserRelationRepository,
     private readonly presenceRepository: PresenceRepository,
     private readonly statusRecordRepository: UserStatusRecordRepository,
-    private readonly websocketGatewayService: WebSocketGatewayService,
-    private readonly friendshipNotifier: FriendshipNotifierService,
-    private readonly unifiedNotifier: UnifiedNotifierService,
-    private readonly presenceService: UnifiedPresenceService,
-    private readonly friendsCache: FriendsCacheService,
+    @Inject(forwardRef(() => WebSocketGatewayService)) private readonly websocketGatewayService: WebSocketGatewayService,
+    @Inject(forwardRef(() => FriendshipNotifierService)) private readonly friendshipNotifier: FriendshipNotifierService,
+    @Inject(forwardRef(() => UnifiedNotifierService)) private readonly unifiedNotifier: UnifiedNotifierService,
+    @Inject(forwardRef(() => UnifiedPresenceService)) private readonly presenceService: UnifiedPresenceService,
+    @Inject(forwardRef(() => FriendsCacheService)) private readonly friendsCache: FriendsCacheService,
   ) { }
 
   // ==================== PROFILE MANAGEMENT ====================
@@ -101,7 +102,7 @@ export class UsersService {
     // Build PresenceDto - calculate status once
     const finalStatus = presenceStatus.isOnline
       ? (presenceStatus.displayStatus || user.presence?.status || null)
-      : UserStatus.Invisible;
+      : UserStatus.INVISIBLE;
 
     const presenceDto: PresenceDto = {
       status: finalStatus,
@@ -367,15 +368,22 @@ export class UsersService {
     });
 
     // Notify target user via WebSocket
-    this.friendshipNotifier.notifyFriendRequestReceived(targetUser.id, {
-      friendshipId: friendship.id,
-      fromUser: {
+    this.friendshipNotifier.notifyFriendRequestReceived(
+      targetUser.id,
+      user.id.toString(),
+      {
+        id: targetUser.id,
+        username: targetUser.username,
+        avatar: targetUser.avatar,
+      },
+      {
         id: user.id,
         username: user.username,
         avatar: user.avatar,
       },
-      status: friendship.status,
-    });
+      friendship.id,
+      friendship.status,
+    );
 
     return success(RESPONSE_MESSAGES.FRIEND.REQUEST_SENT, {
       id: friendship.id,
@@ -517,8 +525,11 @@ export class UsersService {
       user.id.toString(),
       recipientInfo.id.toString(),
       {
-        friendshipId: dto.friendshipId,
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
       },
+      dto.friendshipId,
     );
 
     return success(RESPONSE_MESSAGES.FRIEND.REQUEST_CANCELLED, {
@@ -848,33 +859,7 @@ export class UsersService {
       relations = await this.userRelationRepository.getSourceRelations(user.id);
     }
 
-    const formattedRelations = await Promise.all(
-      relations.map(async (relation) => {
-        // Get target user's presence from Redis (real-time)
-        const [targetPresenceStatus, targetStatusRecord] = await Promise.all([
-          this.presenceService.getPresenceStatus(relation.target.id.toString()),
-          this.statusRecordRepository.getStatusRecordByUserId(relation.target.id),
-        ]);
-
-        return {
-          id: relation.id,
-          type: relation.type,
-          targetUser: {
-            id: relation.target.id,
-            username: relation.target.username,
-            globalname: relation.target.globalname,
-            avatar: relation.target.avatar,
-            status: targetPresenceStatus.actualStatus,
-            customStatus: targetStatusRecord?.text || undefined,
-          },
-          note: relation.note,
-          createdAt: relation.createdAt,
-          updatedAt: relation.updatedAt,
-        };
-      }),
-    );
-
-    return formattedRelations;
+    return relations;
   }
 
   /**
@@ -950,40 +935,6 @@ export class UsersService {
   }
 
   /**
-   * Get muted users
-   */
-  async getMutedUsers(user: User) {
-    const mutedUsers = await this.userRelationRepository.getMutedUsers(user.id);
-
-    const formattedMutedUsers = await Promise.all(
-      mutedUsers.map(async (relation: any) => {
-        // Get target user's presence from Redis (real-time)
-        const [targetPresenceStatus, targetStatusRecord] = await Promise.all([
-          this.presenceService.getPresenceStatus(relation.target.id.toString()),
-          this.statusRecordRepository.getStatusRecordByUserId(relation.target.id),
-        ]);
-
-        return {
-          id: relation.id,
-          targetUser: {
-            id: relation.target.id,
-            username: relation.target.username,
-            globalname: relation.target.globalname,
-            avatar: relation.target.avatar,
-            status: targetPresenceStatus.actualStatus,
-            customStatus: targetStatusRecord?.text || undefined,
-          },
-          note: relation.note,
-          createdAt: relation.createdAt,
-          updatedAt: relation.updatedAt,
-        };
-      }),
-    );
-
-    return formattedMutedUsers;
-  }
-
-  /**
    * Check if user has a specific relation with another user
    */
   async checkUserRelation(user: User, dto: CheckUserRelationDto) {
@@ -1040,11 +991,14 @@ export class UsersService {
     return {
       blocked: stats.blocked,
       ignored: stats.ignored,
-      muted: stats.muted,
       total: stats.total,
     };
   }
-
+  // ==================== USER DMS ====================
+  async createDM(user: User, dto: CreateDMDto) {
+    const dm = await this.dmRepository.createDM(user.id, dto.targetUserId);
+    return dm;
+  }
   // ==================== NOTIFICATION HELPERS ====================
 
   /**
@@ -1085,24 +1039,6 @@ export class UsersService {
         );
         this.logger.log(`User ${sourceUser.id} blocked ${targetUser.id}`);
         break;
-
-      case RelationType.MUTED:
-        // When muting, notify source user (multi-device support)
-        const muteData: UserMutedData = {
-          relationId: relation.id,
-          mutedUser: targetUserInfo,
-          mutedByUser: sourceUserInfo,
-        };
-        this.unifiedNotifier.notifySource(
-          NotificationEvent.USER_MUTED,
-          sourceUser.id.toString(),
-          targetUser.id.toString(),
-          muteData,
-          'User muted',
-        );
-        this.logger.log(`User ${sourceUser.id} muted ${targetUser.id}`);
-        break;
-
       case RelationType.IGNORED:
         // When ignoring, notify source user (multi-device support)
         const ignoreData: UserIgnoredData = {
@@ -1121,6 +1057,7 @@ export class UsersService {
         break;
     }
   }
+
 
   /**
    * Send notifications when a user relation is removed
@@ -1157,22 +1094,6 @@ export class UsersService {
           'User unblocked',
         );
         this.logger.log(`User ${sourceUser.id} unblocked ${targetUser.id}`);
-        break;
-
-      case RelationType.MUTED:
-        // When unmuting, notify source user (multi-device support)
-        const unmuteData: UserUnmutedData = {
-          targetUser: targetUserInfo,
-          unmutedByUser: sourceUserInfo,
-        };
-        this.unifiedNotifier.notifySource(
-          NotificationEvent.USER_UNMUTED,
-          sourceUser.id.toString(),
-          targetUser.id.toString(),
-          unmuteData,
-          'User unmuted',
-        );
-        this.logger.log(`User ${sourceUser.id} unmuted ${targetUser.id}`);
         break;
 
       case RelationType.IGNORED:

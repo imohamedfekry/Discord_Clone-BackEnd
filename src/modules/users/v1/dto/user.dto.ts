@@ -123,7 +123,7 @@ export class UpdatePresenceStatusDto {
 // ==================== FRIENDSHIP DTOs ====================
 
 export class SendFriendRequestDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The username of the user to send friend request to (optional if userId is provided)',
     example: 'john_doe',
     required: false
@@ -133,7 +133,7 @@ export class SendFriendRequestDto {
   @IsUsername()
   username?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the user to send friend request to (optional if username is provided)',
     example: '123456789012345678',
     required: false
@@ -145,7 +145,7 @@ export class SendFriendRequestDto {
 }
 
 export class RespondToFriendRequestDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the friendship request',
     example: '123456789012345678'
   })
@@ -154,7 +154,7 @@ export class RespondToFriendRequestDto {
   @IsId()
   friendshipId: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The response to the friend request - ACCEPTED or REJECTED',
     enum: FriendRequestResponseStatus,
     example: FriendRequestResponseStatus.ACCEPTED
@@ -166,7 +166,7 @@ export class RespondToFriendRequestDto {
 }
 
 export class RemoveFriendDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the user to remove from friends',
     example: '123456789012345678'
   })
@@ -177,7 +177,7 @@ export class RemoveFriendDto {
 }
 
 export class GetFriendsQueryDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Filter friends by status',
     enum: FriendshipStatus,
     required: false,
@@ -187,7 +187,7 @@ export class GetFriendsQueryDto {
   @IsEnum(FriendshipStatus)
   status?: FriendshipStatus;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Page number for pagination',
     required: false,
     example: 1
@@ -196,7 +196,7 @@ export class GetFriendsQueryDto {
   @IsString()
   page?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Number of items per page',
     required: false,
     example: 20
@@ -207,7 +207,7 @@ export class GetFriendsQueryDto {
 }
 
 export class GetMutualFriendsDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the user to get mutual friends with',
     example: '123456789012345678'
   })
@@ -218,7 +218,7 @@ export class GetMutualFriendsDto {
 }
 
 export class CheckFriendshipDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the user to check friendship with',
     example: '123456789012345678'
   })
@@ -229,7 +229,7 @@ export class CheckFriendshipDto {
 }
 
 export class CancelFriendRequestDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the friendship request to cancel',
     example: '123456789012345678'
   })
@@ -242,7 +242,7 @@ export class CancelFriendRequestDto {
 // ==================== USER RELATION DTOs ====================
 
 export class CreateUserRelationDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the target user',
     example: '123456789012345678'
   })
@@ -251,7 +251,7 @@ export class CreateUserRelationDto {
   @IsId()
   targetUserId: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The type of relation to create',
     enum: RelationType,
     example: RelationType.BLOCKED
@@ -259,7 +259,7 @@ export class CreateUserRelationDto {
   @IsEnum(RelationType)
   type: RelationType;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Optional note for the relation',
     example: 'Spam user',
     required: false
@@ -271,7 +271,7 @@ export class CreateUserRelationDto {
 }
 
 export class UpdateUserRelationDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the target user',
     example: '123456789012345678'
   })
@@ -280,7 +280,7 @@ export class UpdateUserRelationDto {
   @IsId()
   targetUserId: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The type of relation to update',
     enum: RelationType,
     example: RelationType.BLOCKED
@@ -288,7 +288,7 @@ export class UpdateUserRelationDto {
   @IsEnum(RelationType)
   type: RelationType;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Updated note for the relation',
     example: 'Updated reason for blocking',
     required: false
@@ -300,7 +300,7 @@ export class UpdateUserRelationDto {
 }
 
 export class RemoveUserRelationDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the target user',
     example: '123456789012345678'
   })
@@ -309,7 +309,7 @@ export class RemoveUserRelationDto {
   @IsId()
   targetUserId: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The type of relation to remove',
     enum: RelationType,
     example: RelationType.BLOCKED
@@ -319,7 +319,7 @@ export class RemoveUserRelationDto {
 }
 
 export class GetUserRelationsQueryDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Filter by relation type',
     enum: RelationType,
     required: false,
@@ -331,7 +331,7 @@ export class GetUserRelationsQueryDto {
 }
 
 export class CheckUserRelationDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the target user to check relation with',
     example: '123456789012345678'
   })
@@ -340,7 +340,7 @@ export class CheckUserRelationDto {
   @IsId()
   targetUserId: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The type of relation to check',
     enum: RelationType,
     example: RelationType.BLOCKED
@@ -350,7 +350,7 @@ export class CheckUserRelationDto {
 }
 
 export class UpdateRelationNoteDto {
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The ID of the target user',
     example: '123456789012345678'
   })
@@ -359,7 +359,7 @@ export class UpdateRelationNoteDto {
   @IsId()
   targetUserId: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'The type of relation',
     enum: RelationType,
     example: RelationType.BLOCKED
@@ -367,7 +367,7 @@ export class UpdateRelationNoteDto {
   @IsEnum(RelationType)
   type: RelationType;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'New note for the relation',
     example: 'Updated reason for blocking'
   })
@@ -377,3 +377,15 @@ export class UpdateRelationNoteDto {
   note: string;
 }
 
+
+// Crate DM want user id only in body
+export class CreateDMDto {
+  @ApiProperty({
+    description: 'The ID of the target user',
+    example: '123456789012345678'
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsId()
+  targetUserId: string;
+}

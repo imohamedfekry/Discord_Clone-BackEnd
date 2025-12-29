@@ -7,16 +7,16 @@ import { FriendshipStatus, RelationType, UserStatus } from '@prisma/client';
 export enum NotificationEvent {
     // Friend Request Events
     FRIEND_REQUEST_RECEIVED = 'friend:request:received',
+    FRIEND_REQUEST_SENT = 'friend:request:sent',
     FRIEND_REQUEST_ACCEPTED = 'friend:request:accepted',
     FRIEND_REQUEST_REJECTED = 'friend:request:rejected',
     FRIEND_REQUEST_CANCELLED = 'friend:request:cancelled',
+    FRIEND_REQUEST_CANCELLED_BY_SENDER = 'friend:request:cancelled:sender',
     FRIEND_REMOVED = 'friend:removed',
 
     // User Relation Events
     USER_BLOCKED = 'user:relation:blocked',
     USER_UNBLOCKED = 'user:relation:unblocked',
-    USER_MUTED = 'user:relation:muted',
-    USER_UNMUTED = 'user:relation:unmuted',
     USER_IGNORED = 'user:relation:ignored',
     USER_UNIGNORED = 'user:relation:unignored',
 }
@@ -50,6 +50,12 @@ export interface FriendRequestReceivedData {
     status: FriendshipStatus;
 }
 
+export interface FriendRequestSentData {
+    friendshipId: string | bigint;
+    toUser: NotificationUserInfo;
+    status: FriendshipStatus;
+}
+
 export interface FriendRequestAcceptedData {
     friendshipId: string | bigint;
     newFriend: NotificationUserInfo;
@@ -61,6 +67,11 @@ export interface FriendRequestRejectedData {
 }
 
 export interface FriendRequestCancelledData {
+    friendshipId: string | bigint;
+    fromUser: NotificationUserInfo;
+}
+
+export interface FriendRequestCancelledBySenderData {
     friendshipId: string | bigint;
 }
 
@@ -82,17 +93,6 @@ export interface UserUnblockedData {
     unblockedByUser: NotificationUserInfo;
 }
 
-export interface UserMutedData {
-    relationId: string | bigint;
-    mutedUser: NotificationUserInfo;
-    mutedByUser: NotificationUserInfo;
-}
-
-export interface UserUnmutedData {
-    targetUser: NotificationUserInfo;
-    unmutedByUser: NotificationUserInfo;
-}
-
 export interface UserIgnoredData {
     relationId: string | bigint;
     ignoredUser: NotificationUserInfo;
@@ -109,14 +109,14 @@ export interface UserUnignoredData {
 
 export type NotificationData =
     | FriendRequestReceivedData
+    | FriendRequestSentData
     | FriendRequestAcceptedData
     | FriendRequestRejectedData
     | FriendRequestCancelledData
+    | FriendRequestCancelledBySenderData
     | FriendRemovedData
     | UserBlockedData
     | UserUnblockedData
-    | UserMutedData
-    | UserUnmutedData
     | UserIgnoredData
     | UserUnignoredData;
 

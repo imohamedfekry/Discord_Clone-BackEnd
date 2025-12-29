@@ -6,7 +6,7 @@ export const Events = {
   // User connection lifecycle
   CONNECTED: 'CONNECTED',
   DISCONNECTED: 'DISCONNECTED',
-
+  READY: 'READY',
   // Guild / DM bootstrap
   GUILD_INIT: 'GUILD_INIT',
   DM_INIT: 'DM_INIT',

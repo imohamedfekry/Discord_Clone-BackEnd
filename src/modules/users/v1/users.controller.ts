@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Body, Request, Query, Param, ValidationPipe, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { 
+import {
   GetProfileApiDocs,
 } from './decorators/user-api.decorators';
 import { Auth } from '../../../common/decorators/auth-user.decorator';
@@ -27,6 +27,7 @@ import {
   GetUserRelationsQueryDto,
   CheckUserRelationDto,
   UpdateRelationNoteDto,
+  CreateDMDto,
 } from './dto/user.dto';
 
 @ApiTags('User Profile')
@@ -36,7 +37,7 @@ import {
 })
 @Auth()
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
   // Start Profile Cruds Endpoints
   @Get('@me')
   @GetProfileApiDocs()
@@ -76,7 +77,7 @@ export class UsersController {
     return this.usersService.updatePresenceStatus(request.user, dto);
   }
   // End Profile Cruds Endpoints
-  
+
   // Friendship endpoints
   // ==================== FRIENDSHIP ====================
   // Send friend request
@@ -109,7 +110,7 @@ export class UsersController {
   @Get('friends/requests')
   async getFriendRequests(@Request() request: any) {
     return this.usersService.getFriendRequests(request.user);
-  } 
+  }
 
   // @Get('friends/requests/incoming')
   // async getIncomingRequests(@Request() request: any) {
@@ -131,7 +132,7 @@ export class UsersController {
     return this.usersService.checkFriendship(request.user, params.userId);
   }
 
-  
+
   // ==================== USER RELATIONS ====================
 
   @Post('relations')
@@ -168,11 +169,6 @@ export class UsersController {
     return this.usersService.getIgnoredUsers(request.user);
   }
 
-  @Get('relations/muted')
-  async getMutedUsers(@Request() request: any) {
-    return this.usersService.getMutedUsers(request.user);
-  }
-
   @Get('relations/check')
   @UsePipes(new ValidationPipe({ transform: true }))
   async checkUserRelation(@Request() request: any, @Query() query: CheckUserRelationDto) {
@@ -189,4 +185,18 @@ export class UsersController {
   async getRelationStats(@Request() request: any) {
     return this.usersService.getRelationStats(request.user);
   }
+
+
+  // ==================== USER DMS ====================
+
+  @Post('dms')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async createDM(@Request() request: any, @Body() dto: CreateDMDto) {
+    return this.usersService.createDM(request.user, dto);
+  }
+
+  // @Get('dms')
+  // async getDMs(@Request() request: any) {
+  //   return this.usersService.getDMs(request.user);
+  // }
 }

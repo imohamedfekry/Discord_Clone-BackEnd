@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { WebSocketGatewayService } from './User/websocket.gateway';
 import { ConnectionHandlerService } from './User/auth/connection.handler';
 import { AuthService } from './User/auth/auth.service';
@@ -8,20 +8,23 @@ import { UnifiedNotifierService } from './User/services/unified-notifier.service
 import { PresenceNotifierService } from './User/services/presence-notifier.service';
 import { FriendsCacheService } from '../../common/Global/cache/User/friends-cache.service';
 import { FriendshipNotifierService } from './User/friends/friendship-notifier.service';
-import { FriendsService } from './User/friends/friends.service';
 import {
   UserRepository,
   PresenceRepository,
   UserStatusRecordRepository,
   FriendshipRepository,
-  UserRelationRepository
+  UserRelationRepository,
 } from '../../common/database/repositories';
+import { ReadyService } from './Ready/ready.service';
+import { UsersModule } from '../users/v1/users.module';
+import { ReadyLoader } from './Ready/loaders/loader.service';
 
 /**
  * WebSocket Module
  * Modular architecture with layered services
  */
 @Module({
+  imports: [forwardRef(() => UsersModule)],
   providers: [
     // Gateway
     WebSocketGatewayService,
@@ -38,7 +41,6 @@ import {
     UnifiedPresenceService,
     PresenceNotifierService,
     FriendshipNotifierService,
-    FriendsService,
 
     // Cache & Database
     FriendsCacheService,
@@ -47,12 +49,16 @@ import {
     UserStatusRecordRepository,
     FriendshipRepository,
     UserRelationRepository,
+    ReadyService,
+    ReadyLoader
   ],
   exports: [
     WebSocketGatewayService,
     UnifiedNotifierService,
     FriendshipNotifierService,
     PresenceNotifierService,
+    ReadyService,
+    ReadyLoader,
     UnifiedPresenceService,
     FriendsCacheService,
   ],

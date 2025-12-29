@@ -147,9 +147,11 @@ export class UnifiedNotifierService {
     private getDefaultMessage(event: NotificationEvent): string {
         const messages: Record<NotificationEvent, string> = {
             [NotificationEvent.FRIEND_REQUEST_RECEIVED]: 'Friend request received',
+            [NotificationEvent.FRIEND_REQUEST_SENT]: 'Friend request sent',
             [NotificationEvent.FRIEND_REQUEST_ACCEPTED]: 'Friend request accepted',
             [NotificationEvent.FRIEND_REQUEST_REJECTED]: 'Friend request rejected',
             [NotificationEvent.FRIEND_REQUEST_CANCELLED]: 'Friend request cancelled',
+            [NotificationEvent.FRIEND_REQUEST_CANCELLED_BY_SENDER]: 'You cancelled a friend request',
             [NotificationEvent.FRIEND_REMOVED]: 'Friend removed',
             [NotificationEvent.USER_BLOCKED]: 'User blocked',
             [NotificationEvent.USER_UNBLOCKED]: 'User unblocked',

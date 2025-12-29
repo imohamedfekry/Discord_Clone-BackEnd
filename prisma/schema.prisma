@@ -9,61 +9,60 @@ generator client {
 
 enum UserStatus {
   ONLINE
-  Invisible
+  INVISIBLE
   IDLE
   DND
 }
 
 model User {
-  id             BigInt             @id
-  username       String             @unique
-  globalname     String?
-  email          String?            @unique
-  phone          String?            @unique
-  password       String
-  avatar         String?
-  birthdate      DateTime?
-  isBot          Boolean            @default(false)
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  id         BigInt    @id
+  username   String    @unique
+  globalname String?
+  email      String?   @unique
+  phone      String?   @unique
+  password   String
+  avatar     String?
+  birthdate  DateTime?
+  isBot      Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   // relations
-  presence       Presence?
-  statusRecord   UserStatusRecord?
+  presence     Presence?
+  statusRecord UserStatusRecord?
 
-  sentMessages     Message[]          @relation("SentMessages")
-  receivedMessages Message[]          @relation("ReceivedMessages")
-  friendships1     Friendship[]       @relation("UserFriend1")
-  friendships2     Friendship[]       @relation("UserFriend2")
-  conversations    ConversationUser[]
-  messageReceipts  MessageReceipt[]
-  sourceRelations  UserRelation[]     @relation("SourceUser")
-  targetRelations  UserRelation[]     @relation("TargetUser")
+  friendships1 Friendship[] @relation("UserFriend1")
+  friendships2 Friendship[] @relation("UserFriend2")
+
+  sourceRelations     UserRelation[]        @relation("SourceUser")
+  targetRelations     UserRelation[]        @relation("TargetUser")
+  channelRecipients   ChannelRecipient[]
+  userSettings        UserSettings?
+  channelUserSettings ChannelUserSettings[]
 
   @@index([username])
 }
 
 model Presence {
-  id          BigInt      @id
-  userId      BigInt      @unique
-  user        User        @relation(fields: [userId], references: [id])
-  status      UserStatus?
-  expiresAt   DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        BigInt      @id
+  userId    BigInt      @unique
+  user      User        @relation(fields: [userId], references: [id])
+  status    UserStatus?
+  expiresAt DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 model UserStatusRecord {
-  id           BigInt      @id
-  userId       BigInt      @unique
-  user         User        @relation(fields: [userId], references: [id])
-  text   String?
-  emoji  String?
-  expiresAt    DateTime?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id        BigInt    @id
+  userId    BigInt    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  text      String?
+  emoji     String?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
-
 
 model Friendship {
   id        BigInt           @id
@@ -85,97 +84,6 @@ enum FriendshipStatus {
   ACCEPTED
 }
 
-model Conversation {
-  id        BigInt   @id
-  isGroup   Boolean  @default(false)
-  title     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  messages     Message[]
-  participants ConversationUser[]
-
-  @@index([isGroup])
-}
-
-model ConversationUser {
-  id                BigInt       @id
-  user              User         @relation(fields: [userId], references: [id])
-  userId            BigInt
-  conversation      Conversation @relation(fields: [conversationId], references: [id])
-  conversationId    BigInt
-  joinedAt          DateTime     @default(now())
-  nickname          String?
-  // last_read points to last message id read by this user in this convo (for unread count)
-  lastReadMessageId BigInt?
-
-  @@unique([userId, conversationId])
-  @@index([conversationId])
-  @@index([userId])
-}
-
-enum MessageType {
-  TEXT
-  IMAGE
-  FILE
-  SYSTEM
-  REPLY
-  VOICE
-}
-
-model Message {
-  id             BigInt        @id @default(autoincrement())
-  conversation   Conversation? @relation(fields: [conversationId], references: [id])
-  conversationId BigInt?
-  sender         User          @relation("SentMessages", fields: [senderId], references: [id])
-  senderId       BigInt
-  receiver       User?         @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  receiverId     BigInt?
-
-  // محتوى الرسالة الأساسي
-  content String?
-  type    MessageType @default(TEXT)
-
-  // mentions system
-  mentionEveryone Boolean @default(false)
-  mentions        Json? // array of Mention objects
-  mentionRoles    Json? // array of MentionRole objects
-
-  // metadata
-  pinned      Boolean @default(false)
-  reactions   Json? // array of Reaction objects
-  attachments Json? // array of Attachment objects
-
-  // reply system
-  replyTo        BigInt?
-  repliedMessage Message?  @relation("MessageReplies", fields: [replyTo], references: [id])
-  replies        Message[] @relation("MessageReplies")
-
-  // timestamps
-  editedAt  DateTime?
-  deletedAt DateTime?
-  createdAt DateTime  @default(now())
-
-  receipts MessageReceipt[]
-
-  @@index([conversationId])
-  @@index([senderId])
-  @@index([receiverId])
-  @@index([createdAt])
-}
-
-model MessageReceipt {
-  id        BigInt   @id
-  message   Message  @relation(fields: [messageId], references: [id])
-  messageId BigInt
-  user      User     @relation(fields: [userId], references: [id])
-  userId    BigInt
-  readAt    DateTime @default(now())
-
-  @@unique([messageId, userId])
-  @@index([userId])
-}
-
 model UserRelation {
   id        BigInt       @id
   source    User         @relation("SourceUser", fields: [sourceId], references: [id])
@@ -195,5 +103,102 @@ model UserRelation {
 enum RelationType {
   BLOCKED
   IGNORED
-  MUTED
+}
+
+model Channel {
+  id        BigInt      @id @default(autoincrement())
+  type      ChannelType
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  recipients          ChannelRecipient[]
+  lastMessageAt       DateTime?
+  channelUserSettings ChannelUserSettings[]
+
+  @@index([type])
+  @@index([lastMessageAt])
+}
+
+enum ChannelType {
+  DM
+}
+
+model ChannelRecipient {
+  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelId BigInt
+  show      Boolean @default(true)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    BigInt
+
+  lastReadMessageId BigInt?
+  unreadCount       Int     @default(0)
+
+  @@id([channelId, userId])
+  @@index([userId])
+}
+
+model UserSettings {
+  userId BigInt @id
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  uiSettingsId BigInt
+  uiSettings   UiSettings @relation(fields: [uiSettingsId], references: [id])
+
+  locale String @default("ar")
+
+  channelUserSettings ChannelUserSettings[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UiSettings {
+  id           BigInt         @id @default(autoincrement())
+  themeId      BigInt
+  theme        Theme          @relation(fields: [themeId], references: [id])
+  languageId   BigInt
+  language     Language       @relation(fields: [languageId], references: [id])
+  userSettings UserSettings[]
+}
+
+model Theme {
+  id    BigInt    @id @default(autoincrement())
+  theme ThemeType @default(DARK)
+
+  uiSettings UiSettings[]
+}
+
+enum ThemeType {
+  DARK
+  LIGHT
+}
+
+model Language {
+  id         BigInt       @id @default(autoincrement())
+  language   LanguageType @default(EN)
+  uiSettings UiSettings[]
+}
+
+enum LanguageType {
+  AR
+  EN
+}
+
+model ChannelUserSettings {
+  channelId BigInt
+  userId    BigInt
+
+  muted     Boolean   @default(false)
+  pinned    Boolean   @default(false)
+  muteUntil DateTime?
+
+  userSettings UserSettings @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  channel      Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@id([channelId, userId])
+  @@index([userId])
 }

@@ -15,7 +15,6 @@ import { WSAuth } from '../../../common/decorators/websocket-auth.decorator';
 import { ConnectionHandlerService } from './auth/connection.handler';
 import { UnifiedPresenceService } from './services/unified-presence.service';
 import { BroadcasterService } from './presence/broadcaster.service';
-import { FriendsService } from './friends/friends.service';
 import { FriendsCacheService } from '../../../common/Global/cache/User/friends-cache.service';
 import { Events } from '../../../common/constants/events.constants';
 import { UserPresenceDto } from '../../../common/Types/presence.dto';
@@ -39,8 +38,7 @@ import {
 })
 
 export class WebSocketGatewayService
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -51,9 +49,8 @@ export class WebSocketGatewayService
     private readonly connectionHandler: ConnectionHandlerService,
     private readonly presenceService: UnifiedPresenceService,
     private readonly broadcaster: BroadcasterService,
-    private readonly friendsService: FriendsService,
     private readonly friendsCache: FriendsCacheService,
-  ) {}
+  ) { }
 
   /**
    * Initialize gateway

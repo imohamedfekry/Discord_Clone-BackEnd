@@ -7,8 +7,6 @@ import {
     NotificationUserInfo,
     UserBlockedData,
     UserUnblockedData,
-    UserMutedData,
-    UserUnmutedData,
     UserIgnoredData,
     UserUnignoredData,
 } from '../../../../common/Types/notification.types';
@@ -60,22 +58,6 @@ export class RelationNotifierService {
                     'User blocked',
                 );
                 this.logger.log(`User ${sourceUser.id} blocked ${targetUser.id}`);
-                break;
-
-            case RelationType.MUTED:
-                const muteData: UserMutedData = {
-                    relationId: relation.id,
-                    mutedUser: targetUserInfo,
-                    mutedByUser: sourceUserInfo,
-                };
-                this.unifiedNotifier.notifySource(
-                    NotificationEvent.USER_MUTED,
-                    sourceUser.id.toString(),
-                    targetUser.id.toString(),
-                    muteData,
-                    'User muted',
-                );
-                this.logger.log(`User ${sourceUser.id} muted ${targetUser.id}`);
                 break;
 
             case RelationType.IGNORED:
@@ -130,21 +112,6 @@ export class RelationNotifierService {
                     'User unblocked',
                 );
                 this.logger.log(`User ${sourceUser.id} unblocked ${targetUser.id}`);
-                break;
-
-            case RelationType.MUTED:
-                const unmuteData: UserUnmutedData = {
-                    targetUser: targetUserInfo,
-                    unmutedByUser: sourceUserInfo,
-                };
-                this.unifiedNotifier.notifySource(
-                    NotificationEvent.USER_UNMUTED,
-                    sourceUser.id.toString(),
-                    targetUser.id.toString(),
-                    unmuteData,
-                    'User unmuted',
-                );
-                this.logger.log(`User ${sourceUser.id} unmuted ${targetUser.id}`);
                 break;
 
             case RelationType.IGNORED:
