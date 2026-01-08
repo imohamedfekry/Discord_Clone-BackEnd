@@ -92,6 +92,7 @@ export class UpdateUsernameDto {
   @IsNotEmpty()
   @MinLength(3, { message: 'Username must be at least 3 characters long' })
   @MaxLength(32, { message: 'Username must not exceed 32 characters' })
+  @IsUsername()
   username: string;
 }
 

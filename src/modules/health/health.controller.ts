@@ -5,17 +5,18 @@ import { HealthService } from './health.service';
 @ApiTags('Health Check')
 @Controller({
   path: 'health',
+  version: '1',
 })
 export class HealthController {
-  constructor(private readonly healthService: HealthService) {}
+  constructor(private readonly healthService: HealthService) { }
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Health check endpoint',
     description: 'Check if the API is running and database is connected'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'API is healthy',
     schema: {
       example: {
@@ -32,8 +33,8 @@ export class HealthController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 503, 
+  @ApiResponse({
+    status: 503,
     description: 'API is unhealthy',
     schema: {
       example: {
@@ -55,12 +56,12 @@ export class HealthController {
   }
 
   @Get('ready')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Readiness check endpoint',
     description: 'Check if the API is ready to accept requests'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'API is ready',
     schema: {
       example: {
@@ -80,12 +81,12 @@ export class HealthController {
   }
 
   @Get('live')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Liveness check endpoint',
     description: 'Check if the API is alive (basic health check)'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'API is alive',
     schema: {
       example: {

@@ -8,7 +8,7 @@ import { Prisma, UserStatus } from '@prisma/client';
  */
 @Injectable()
 export class UserRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * Find user by ID
@@ -21,30 +21,30 @@ export class UserRepository {
     },
   ) {
     const { select, include } = options || {};
-  
+
     const user = await this.prisma.user.findUnique({
       where: { id: BigInt(id) },
       ...(select && { select }),
       ...(include && { include }),
     });
-  
+
     return user;
   }
-  
+
 
   /**
    * Find user by email
    */
   async findByEmail(
     email: string,
-    select?: Prisma.UserSelect,
+    // select?: Prisma.UserSelect,
   ) {
-    const user = await this.prisma.user.findUnique({ 
+    const user = await this.prisma.user.findUnique({
       where: { email },
-      ...(select && { select }),
     });
     return user;
   }
+  // ...(select && { select }),
 
   /**
    * Find user by username
@@ -53,7 +53,7 @@ export class UserRepository {
     username: string,
     select?: Prisma.UserSelect,
   ) {
-    const user = await this.prisma.user.findUnique({ 
+    const user = await this.prisma.user.findUnique({
       where: { username },
       ...(select && { select }),
     });
@@ -68,7 +68,7 @@ export class UserRepository {
     data: Omit<Prisma.UserUncheckedCreateInput, 'id'>,
     select?: Prisma.UserSelect,
   ) {
-    const user = await this.prisma.user.create({ 
+    const user = await this.prisma.user.create({
       data: data as Prisma.UserUncheckedCreateInput,
       ...(select && { select }),
     });
@@ -83,8 +83,8 @@ export class UserRepository {
     data: Prisma.UserUpdateInput,
     select?: Prisma.UserSelect,
   ) {
-    const user = await this.prisma.user.update({ 
-      where: { id: BigInt(id) }, 
+    const user = await this.prisma.user.update({
+      where: { id: BigInt(id) },
       data,
       ...(select && { select }),
     });
@@ -98,7 +98,7 @@ export class UserRepository {
     id: string | bigint,
     select?: Prisma.UserSelect,
   ) {
-    const user = await this.prisma.user.delete({ 
+    const user = await this.prisma.user.delete({
       where: { id: BigInt(id) },
       ...(select && { select }),
     });
@@ -146,7 +146,7 @@ export class UserRepository {
   async getUserStats() {
     const [totalUsers, onlineUsers] = await Promise.all([
       this.prisma.user.count(),
-      this.prisma.user.count({ where: { presence: { status: { not: UserStatus.Invisible } } } }),
+      this.prisma.user.count({ where: { presence: { status: { not: UserStatus.INVISIBLE } } } }),
     ]);
 
     return {
@@ -184,14 +184,14 @@ export class UserRepository {
       ...(select
         ? { select }
         : {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
-              isBot: true,
-            },
-          }),
+          select: {
+            id: true,
+            username: true,
+            globalname: true,
+            avatar: true,
+            isBot: true,
+          },
+        }),
       take: limit,
       orderBy: {
         username: 'asc',

@@ -1,204 +1,202 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 enum UserStatus {
-  ONLINE
-  INVISIBLE
-  IDLE
-  DND
+    ONLINE
+    INVISIBLE
+    IDLE
+    DND
 }
 
 model User {
-  id         BigInt    @id
-  username   String    @unique
-  globalname String?
-  email      String?   @unique
-  phone      String?   @unique
-  password   String
-  avatar     String?
-  birthdate  DateTime?
-  isBot      Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+    id         BigInt    @id
+    username   String    @unique
+    globalname String?
+    email      String?   @unique
+    phone      String?   @unique
+    password   String
+    avatar     String?
+    birthdate  DateTime?
+    isBot      Boolean   @default(false)
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
 
-  // relations
-  presence     Presence?
-  statusRecord UserStatusRecord?
+    // relations
+    presence     Presence?
+    statusRecord UserStatusRecord?
 
-  friendships1 Friendship[] @relation("UserFriend1")
-  friendships2 Friendship[] @relation("UserFriend2")
+    friendships1 Friendship[] @relation("UserFriend1")
+    friendships2 Friendship[] @relation("UserFriend2")
 
-  sourceRelations     UserRelation[]        @relation("SourceUser")
-  targetRelations     UserRelation[]        @relation("TargetUser")
-  channelRecipients   ChannelRecipient[]
-  userSettings        UserSettings?
-  channelUserSettings ChannelUserSettings[]
+    sourceRelations    UserRelation[]     @relation("SourceUser")
+    targetRelations    UserRelation[]     @relation("TargetUser")
+    channelRecipients  ChannelRecipient[]
+    userSettings       UserSettings?      @relation(fields: [userSettingsUserId], references: [userId])
+    userSettingsUserId BigInt?
 
-  @@index([username])
+    @@index([username])
 }
 
 model Presence {
-  id        BigInt      @id
-  userId    BigInt      @unique
-  user      User        @relation(fields: [userId], references: [id])
-  status    UserStatus?
-  expiresAt DateTime?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+    id        BigInt      @id
+    userId    BigInt      @unique
+    user      User        @relation(fields: [userId], references: [id])
+    status    UserStatus?
+    expiresAt DateTime?
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
 }
 
 model UserStatusRecord {
-  id        BigInt    @id
-  userId    BigInt    @unique
-  user      User      @relation(fields: [userId], references: [id])
-  text      String?
-  emoji     String?
-  expiresAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+    id        BigInt    @id
+    userId    BigInt    @unique
+    user      User      @relation(fields: [userId], references: [id])
+    text      String?
+    emoji     String?
+    expiresAt DateTime?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
 }
 
 model Friendship {
-  id        BigInt           @id
-  user1     User             @relation("UserFriend1", fields: [user1Id], references: [id])
-  user1Id   BigInt
-  user2     User             @relation("UserFriend2", fields: [user2Id], references: [id])
-  user2Id   BigInt
-  status    FriendshipStatus @default(PENDING)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+    id        BigInt           @id
+    user1     User             @relation("UserFriend1", fields: [user1Id], references: [id])
+    user1Id   BigInt
+    user2     User             @relation("UserFriend2", fields: [user2Id], references: [id])
+    user2Id   BigInt
+    status    FriendshipStatus @default(PENDING)
+    createdAt DateTime         @default(now())
+    updatedAt DateTime         @updatedAt
 
-  @@unique([user1Id, user2Id])
-  @@index([user1Id])
-  @@index([user2Id])
+    @@unique([user1Id, user2Id])
+    @@index([user1Id])
+    @@index([user2Id])
 }
 
 enum FriendshipStatus {
-  PENDING
-  ACCEPTED
+    PENDING
+    ACCEPTED
 }
 
 model UserRelation {
-  id        BigInt       @id
-  source    User         @relation("SourceUser", fields: [sourceId], references: [id])
-  sourceId  BigInt
-  target    User         @relation("TargetUser", fields: [targetId], references: [id])
-  targetId  BigInt
-  type      RelationType
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  note      String?
+    id        BigInt       @id
+    source    User         @relation("SourceUser", fields: [sourceId], references: [id])
+    sourceId  BigInt
+    target    User         @relation("TargetUser", fields: [targetId], references: [id])
+    targetId  BigInt
+    type      RelationType
+    createdAt DateTime     @default(now())
+    updatedAt DateTime     @updatedAt
+    note      String?
 
-  @@unique([sourceId, targetId, type])
-  @@index([sourceId])
-  @@index([targetId])
+    @@unique([sourceId, targetId, type])
+    @@index([sourceId])
+    @@index([targetId])
 }
 
 enum RelationType {
-  BLOCKED
-  IGNORED
+    BLOCKED
+    IGNORED
 }
 
 model Channel {
-  id        BigInt      @id @default(autoincrement())
-  type      ChannelType
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+    id        BigInt      @id @default(autoincrement())
+    type      ChannelType @default(DM)
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
 
-  recipients          ChannelRecipient[]
-  lastMessageAt       DateTime?
-  channelUserSettings ChannelUserSettings[]
+    recipients          ChannelRecipient[]
+    lastMessageAt       DateTime?
+    channelUserSettings ChannelUserSettings[]
 
-  @@index([type])
-  @@index([lastMessageAt])
+    @@index([type])
+    @@index([lastMessageAt])
 }
 
 enum ChannelType {
-  DM
+    DM
 }
 
 model ChannelRecipient {
-  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  channelId BigInt
-  show      Boolean @default(true)
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    BigInt
+    channelId BigInt
+    channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 
-  lastReadMessageId BigInt?
-  unreadCount       Int     @default(0)
+    userId BigInt
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([channelId, userId])
-  @@index([userId])
+    show Boolean @default(true)
+
+    lastReadMessageId BigInt?
+    unreadCount       Int     @default(0)
+
+    @@id([channelId, userId])
+    @@index([userId])
 }
 
 model UserSettings {
-  userId BigInt @id
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId       BigInt     @id
+    uiSettingsId BigInt
+    uiSettings   UiSettings @relation(fields: [uiSettingsId], references: [id])
 
-  uiSettingsId BigInt
-  uiSettings   UiSettings @relation(fields: [uiSettingsId], references: [id])
+    channelUserSettings ChannelUserSettings[]
 
-  locale String @default("ar")
-
-  channelUserSettings ChannelUserSettings[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    users     User[]
 }
 
 model UiSettings {
-  id           BigInt         @id @default(autoincrement())
-  themeId      BigInt
-  theme        Theme          @relation(fields: [themeId], references: [id])
-  languageId   BigInt
-  language     Language       @relation(fields: [languageId], references: [id])
-  userSettings UserSettings[]
+    id           BigInt         @id @default(autoincrement())
+    themeId      BigInt
+    theme        Theme          @relation(fields: [themeId], references: [id])
+    languageId   BigInt
+    language     Language       @relation(fields: [languageId], references: [id])
+    userSettings UserSettings[]
 }
 
 model Theme {
-  id    BigInt    @id @default(autoincrement())
-  theme ThemeType @default(DARK)
+    id    BigInt    @id @default(autoincrement())
+    theme ThemeType @default(DARK)
 
-  uiSettings UiSettings[]
+    uiSettings UiSettings[]
 }
 
 enum ThemeType {
-  DARK
-  LIGHT
+    DARK
+    LIGHT
 }
 
 model Language {
-  id         BigInt       @id @default(autoincrement())
-  language   LanguageType @default(EN)
-  uiSettings UiSettings[]
+    id         BigInt       @id @default(autoincrement())
+    language   LanguageType @default(EN)
+    uiSettings UiSettings[]
 }
 
 enum LanguageType {
-  AR
-  EN
+    AR
+    EN
 }
 
 model ChannelUserSettings {
-  channelId BigInt
-  userId    BigInt
+    channelId      BigInt
+    UserSettingsId BigInt
 
-  muted     Boolean   @default(false)
-  pinned    Boolean   @default(false)
-  muteUntil DateTime?
+    muted     Boolean   @default(false)
+    pinned    Boolean   @default(false)
+    muteUntil DateTime?
 
-  userSettings UserSettings @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  channel      Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+    channel      Channel      @relation(fields: [channelId], references: [id], onDelete: Cascade)
+    UserSettings UserSettings @relation(fields: [UserSettingsId], references: [userId], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  @@id([channelId, userId])
-  @@index([userId])
+    @@id([channelId, UserSettingsId])
+    @@index([UserSettingsId])
 }

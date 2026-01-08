@@ -44,7 +44,6 @@ export interface StatusUpdateData {
  */
 export enum WebSocketEvents {
   // Connection events
-  CONNECTED = 'connected',
   DISCONNECT = 'disconnect',
   READY = 'ready',
 

@@ -42,12 +42,6 @@ export class ConnectionHandlerService {
       const metadata = this.authService.createConnectionMetadata(client);
       await this.presenceService.markOnline(user.id, client.id, metadata);
 
-      // Send connection confirmation
-      client.emit(WebSocketEvents.CONNECTED, {
-        message: 'Connected successfully',
-        userId: user.id,
-        socketId: client.id,
-      });
       // Initial presence sync for friends (single pipeline/batch)
       const friends = await this.friendsCache.getFriends(user);
       if (friends.length > 0) {

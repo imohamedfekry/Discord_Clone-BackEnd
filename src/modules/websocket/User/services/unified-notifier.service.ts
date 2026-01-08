@@ -155,8 +155,6 @@ export class UnifiedNotifierService {
             [NotificationEvent.FRIEND_REMOVED]: 'Friend removed',
             [NotificationEvent.USER_BLOCKED]: 'User blocked',
             [NotificationEvent.USER_UNBLOCKED]: 'User unblocked',
-            [NotificationEvent.USER_MUTED]: 'User muted',
-            [NotificationEvent.USER_UNMUTED]: 'User unmuted',
             [NotificationEvent.USER_IGNORED]: 'User ignored',
             [NotificationEvent.USER_UNIGNORED]: 'User unignored',
         };

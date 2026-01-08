@@ -23,7 +23,7 @@ import { UserPresenceDto } from '../../../../common/Types/presence.dto';
 export class UnifiedPresenceService implements OnModuleDestroy {
   private redis: Redis;
   private readonly logger = new Logger(UnifiedPresenceService.name);
-  
+
   // Redis TTL settings
   private readonly PRESENCE_TTL = 90; // 90 seconds for connection tracking
   private readonly DISPLAY_STATUS_TTL = 86400; // 24 hours for display status
@@ -84,7 +84,7 @@ export class UnifiedPresenceService implements OnModuleDestroy {
     if (socketCount === 1) {
       await this.redis.setex(onlineKey, this.PRESENCE_TTL, 'true');
       // Publish to Redis Stream for other instances
-      await this.redis.xadd('presence:stream', '*', 
+      await this.redis.xadd('presence:stream', '*',
         'userId', userId,
         'status', UserStatus.ONLINE,
         'socketId', socketId,
@@ -113,7 +113,7 @@ export class UnifiedPresenceService implements OnModuleDestroy {
       // Publish to Redis Stream for other instances
       await this.redis.xadd('presence:stream', '*',
         'userId', userId,
-        'status', UserStatus.Invisible,
+        'status', UserStatus.INVISIBLE,
         'socketId', socketId,
         'timestamp', new Date().toISOString()
       );
@@ -146,10 +146,10 @@ export class UnifiedPresenceService implements OnModuleDestroy {
     // Get all keys matching presence:online:*
     const pattern = 'presence:online:*';
     const keys = await this.redis.keys(pattern);
-    
+
     // Count how many are actually set to 'true'
     if (keys.length === 0) return 0;
-    
+
     const values = await this.redis.mget(...keys);
     return values.filter(v => v === 'true').length;
   }
@@ -193,13 +193,13 @@ export class UnifiedPresenceService implements OnModuleDestroy {
     // Determine actual status
     // If offline → status is OFFLINE
     // If online → use display status or default to ONLINE
-    const actualStatus = !isOnline 
-      ? UserStatus.Invisible 
+    const actualStatus = !isOnline
+      ? UserStatus.INVISIBLE
       : (displayStatus || UserStatus.ONLINE);
 
     return {
       isOnline,
-      displayStatus: displayStatus || UserStatus.Invisible,
+      displayStatus: displayStatus || UserStatus.INVISIBLE,
       actualStatus,
     };
   }
@@ -225,8 +225,8 @@ export class UnifiedPresenceService implements OnModuleDestroy {
       const isOnlineVal = execResults?.[onlineIdx]?.[1] as string | null;
       const displayVal = execResults?.[displayIdx]?.[1] as string | null;
       const isOnline = isOnlineVal === 'true';
-      const displayStatus = (displayVal as UserStatus | null) || UserStatus.Invisible;
-      const status: UserStatus = isOnline ? (displayStatus || UserStatus.ONLINE) : UserStatus.Invisible;
+      const displayStatus = (displayVal as UserStatus | null) || UserStatus.INVISIBLE;
+      const status: UserStatus = isOnline ? (displayStatus || UserStatus.ONLINE) : UserStatus.INVISIBLE;
       presences.push({ userId: userIds[i], status, lastSeen: null });
     }
     return presences;
@@ -236,7 +236,7 @@ export class UnifiedPresenceService implements OnModuleDestroy {
   private async publishPresenceUpdate(userId: string, payload: any) {
     try {
       await this.redis.publish('presence:updates', JSON.stringify({ userId, ...payload }));
-    } catch {}
+    } catch { }
   }
 
   // (Removed duplicate alternative markOnline/markOffline implementation)
@@ -286,7 +286,7 @@ export class UnifiedPresenceService implements OnModuleDestroy {
 
       // Get friends list from cache and broadcast to them
       const friendsIds = await this.friendsCache.getFriends(userId);
-      
+
       friendsIds.forEach(friendId => {
         this.broadcaster.sendToUserStd(
           friendId,
@@ -355,7 +355,7 @@ export class UnifiedPresenceService implements OnModuleDestroy {
     const presence = await this.getPresenceStatus(user.id);
 
     client.emit(WebSocketEvents.STATUS_CURRENT, {
-      connectionStatus: presence.isOnline ? UserStatus.ONLINE : UserStatus.Invisible, // Based on socket connection
+      connectionStatus: presence.isOnline ? UserStatus.ONLINE : UserStatus.INVISIBLE, // Based on socket connection
       displayStatus: presence.displayStatus, // User's chosen display status
       actualStatus: presence.actualStatus, // Final status to display (OFFLINE if disconnected, else display status)
     });

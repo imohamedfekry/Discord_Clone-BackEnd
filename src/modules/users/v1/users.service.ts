@@ -162,6 +162,10 @@ export class UsersService {
    * Update global name
    */
   async updateglobalname(user: User, dto: UpdateglobalnameDto) {
+    if (user.globalname === dto.globalname) {
+      // camouflage the response  
+      return success(RESPONSE_MESSAGES.USER.GLOBALNAME_UPDATED);
+    }
     await this.userRepository.update(user.id.toString(), {
       globalname: dto.globalname || null,
     });
@@ -218,6 +222,10 @@ export class UsersService {
    * Update username
    */
   async updateUsername(user: User, dto: UpdateUsernameDto) {
+    if (user.username === dto.username) {
+      // camouflage the response
+      return success(RESPONSE_MESSAGES.USER.USERNAME_UPDATED);
+    }
     // Check if username is already taken
     const existingUser = await this.userRepository.findByUsername(dto.username);
     if (existingUser && existingUser.id !== user.id) {
@@ -245,8 +253,6 @@ export class UsersService {
    * Updates the database, Redis display status, and broadcasts to WebSocket listeners
    */
   async updatePresenceStatus(user: User, dto: UpdatePresenceStatusDto) {
-    // Use UnifiedPresenceService to update both DB and Redis, and broadcast to friends
-    // This ensures display status is properly stored in Redis for real-time presence
     await this.presenceService.updatePresenceStatus(
       user.id.toString(),
       user.username,
@@ -996,8 +1002,8 @@ export class UsersService {
   }
   // ==================== USER DMS ====================
   async createDM(user: User, dto: CreateDMDto) {
-    const dm = await this.dmRepository.createDM(user.id, dto.targetUserId);
-    return dm;
+    // const dm = await this.dmRepository.createDM(user.id, dto.targetUserId);
+    // return dm;
   }
   // ==================== NOTIFICATION HELPERS ====================
 

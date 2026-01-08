@@ -14,14 +14,13 @@ export class ChannelRecipientRepository {
             data: {
                 channelId: BigInt(channelId),
                 userId: BigInt(userId),
-                flags: flags ?? 0,
             },
         });
     }
     async updateChannelRecipient(
         channelId: bigint | string,
         userId: bigint | string,
-        data: { flags?: number }
+        data: { show?: boolean }
     ) {
         return this.prisma.channelRecipient.update({
             where: {
@@ -67,9 +66,6 @@ export class ChannelRecipientRepository {
         return this.prisma.channelRecipient.findMany({
             where: {
                 userId: BigInt(userId),
-                flags: {
-                    not: 2,
-                }
             },
         });
     }

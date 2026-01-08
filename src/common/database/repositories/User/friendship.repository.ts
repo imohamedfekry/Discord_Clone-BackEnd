@@ -5,7 +5,7 @@ import { snowflake } from 'src/common/utils/snowflake';
 
 @Injectable()
 export class FriendshipRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Find friendship between two users
   async findBetweenUsers(
@@ -16,12 +16,12 @@ export class FriendshipRepository {
     const options: any = select
       ? { select }
       : {
-          include: {
-            user1: true,
-            user2: true,
-          },
-        };
-    
+        include: {
+          user1: true,
+          user2: true,
+        },
+      };
+
     return this.prisma.friendship.findFirst({
       where: {
         OR: [
@@ -41,12 +41,12 @@ export class FriendshipRepository {
     const options: any = select
       ? { select }
       : {
-          include: {
-            user1: true,
-            user2: true,
-          },
-        };
-    
+        include: {
+          user1: true,
+          user2: true,
+        },
+      };
+
     return this.prisma.friendship.findUnique({
       where: { id: BigInt(id) },
       ...options,
@@ -62,12 +62,12 @@ export class FriendshipRepository {
     const options: any = select
       ? { select }
       : {
-          include: {
-            user1: true,
-            user2: true,
-          },
-        };
-    
+        include: {
+          user1: true,
+          user2: true,
+        },
+      };
+
     return this.prisma.friendship.findMany({
       where: {
         OR: [
@@ -96,23 +96,23 @@ export class FriendshipRepository {
 
   // Find incoming friend requests for a user
   async findAllPendingRequests(userId: string | bigint) {
-  return this.prisma.friendship.findMany({
-    where: {
-      status: FriendshipStatus.PENDING,
-      OR: [
-        { user1Id: BigInt(userId) }, // outgoing
-        { user2Id: BigInt(userId) }, // incoming
-      ],
-    },
-    include: {
-      user1: true,
-      user2: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-}
+    return this.prisma.friendship.findMany({
+      where: {
+        status: FriendshipStatus.PENDING,
+        OR: [
+          { user1Id: BigInt(userId) }, // outgoing
+          { user2Id: BigInt(userId) }, // incoming
+        ],
+      },
+      include: {
+        user1: true,
+        user2: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 
 
   // Check if two users are friends
