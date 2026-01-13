@@ -1,26 +1,32 @@
 import { Injectable } from "@nestjs/common";
-import { ChannelType, PrismaClient } from "@prisma/client";
+import { ChannelType, Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma.service";
 import { snowflake } from "src/common/utils/snowflake";
 
 @Injectable()
 export class ChannelRecipientRepository {
     constructor(
-        private readonly prisma: PrismaClient,
+        private readonly prisma: PrismaService,
     ) {
 
     }
-    async createChannelRecipient(channelId: bigint | string, userId: bigint | string, flags?: number) {
-        return this.prisma.channelRecipient.create({
-            data: {
+    async createChannelRecipients(
+        channelId: bigint | string,
+        recipients: Array<{ userId: bigint | string; show?: boolean }>
+    ) {
+        return this.prisma.channelRecipient.createMany({
+            data: recipients.map(r => ({
                 channelId: BigInt(channelId),
-                userId: BigInt(userId),
-            },
+                userId: BigInt(r.userId),
+                show: r.show ?? true,
+            })),
+            skipDuplicates: true, // أمان زيادة
         });
     }
     async updateChannelRecipient(
         channelId: bigint | string,
         userId: bigint | string,
-        data: { show?: boolean }
+        show?: boolean
     ) {
         return this.prisma.channelRecipient.update({
             where: {
@@ -29,8 +35,9 @@ export class ChannelRecipientRepository {
                     userId: BigInt(userId),
                 },
             },
-            data, // عشان لو مبعتش ال flags 
-            // ميتعملهاش ريسيت لل 0
+            data: {
+                show,
+            },
         });
     }
 
@@ -44,21 +51,39 @@ export class ChannelRecipientRepository {
             },
         });
     }
-    async getChannelRecipientsByChannelId(channelId: bigint | string) {
+    async getChannelRecipients(options: {
+        where: Prisma.ChannelRecipientWhereInput;
+        userFields?: Array<'id' | 'username' | 'avatar' | 'global_name'>;
+    }) {
+        const { where, userFields = ['id', 'username', 'avatar'] } = options;
+
+        // بناء select object بأمان
+        const selectUser = userFields.reduce((acc, key) => {
+            acc[key] = true;
+            return acc;
+        }, {} as Record<string, boolean>);
+
         return this.prisma.channelRecipient.findMany({
-            where: {
-                channelId: BigInt(channelId),
+            where,
+            include: {
+                user: {
+                    select: selectUser,
+                },
             },
         });
     }
 
-    async getChannelRecipient(channelId: bigint | string, userId: bigint | string) {
-        return this.prisma.channelRecipient.findUnique({
+
+
+
+    async findChannelRecipient(
+        channelId: bigint | string,
+        userId: bigint | string,
+    ) {
+        return this.prisma.channelRecipient.findFirst({
             where: {
-                channelId_userId: {
-                    channelId: BigInt(channelId),
-                    userId: BigInt(userId),
-                },
+                userId: BigInt(userId),
+                channelId: BigInt(channelId),
             },
         });
     }

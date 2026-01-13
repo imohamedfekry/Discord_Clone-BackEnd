@@ -7,7 +7,7 @@ import {
   forwardRef,
   Logger,
 } from '@nestjs/common';
-import { User, UserStatusRecord, UserStatus, Prisma, RelationType } from '@prisma/client';
+import { User, UserStatusRecord, UserStatus, Prisma, RelationType, ChannelType } from '@prisma/client';
 import {
   // Profile DTOs
   UpdatePasswordDto,
@@ -21,15 +21,12 @@ import {
   RemoveFriendDto,
   GetFriendsQueryDto,
   GetMutualFriendsDto,
-  CheckFriendshipDto,
   CancelFriendRequestDto,
   // User Relation DTOs
-  CreateUserRelationDto,
-  UpdateUserRelationDto,
+  UserRelationDto,
   RemoveUserRelationDto,
   GetUserRelationsQueryDto,
-  CheckUserRelationDto,
-  UpdateRelationNoteDto,
+  CreateUserNoteDto,
   CreateDMDto,
 } from './dto/user.dto';
 import { FriendshipStatus } from '@prisma/client';
@@ -60,6 +57,9 @@ import {
   UserIgnoredData,
   UserUnignoredData,
 } from '../../../common/Types/notification.types';
+import { UserNoteRepository } from 'src/common/database/repositories/User/UserNote.repository';
+import { ChannelRepository } from 'src/common/database/repositories/User/Channel.repository';
+import { ChannelRecipientRepository } from 'src/common/database/repositories/User/ChannelRecipient.repository';
 
 @Injectable()
 export class UsersService {
@@ -71,6 +71,9 @@ export class UsersService {
     private readonly userRelationRepository: UserRelationRepository,
     private readonly presenceRepository: PresenceRepository,
     private readonly statusRecordRepository: UserStatusRecordRepository,
+    private readonly UserNoteRepository: UserNoteRepository,
+    private readonly ChannelRepository: ChannelRepository,
+    private readonly ChannelRecipientRepository: ChannelRecipientRepository,
     @Inject(forwardRef(() => WebSocketGatewayService)) private readonly websocketGatewayService: WebSocketGatewayService,
     @Inject(forwardRef(() => FriendshipNotifierService)) private readonly friendshipNotifier: FriendshipNotifierService,
     @Inject(forwardRef(() => UnifiedNotifierService)) private readonly unifiedNotifier: UnifiedNotifierService,
@@ -78,13 +81,15 @@ export class UsersService {
     @Inject(forwardRef(() => FriendsCacheService)) private readonly friendsCache: FriendsCacheService,
   ) { }
 
-  // ==================== PROFILE MANAGEMENT ====================
+  // ==================== START PROFILE MANAGEMENT ====================
   /**
    * Get current user profile
    * - isOnline: From Redis (WebSocket connection status) only
    * - status: From Presence.status in Database (Display Status)
    * - customStatus: From UserStatusRecord.text in Database
    */
+
+  // === [ getProfile ] ===
   async getProfile(
     user: Prisma.UserGetPayload<{
       include: {
@@ -129,9 +134,8 @@ export class UsersService {
 
     return success(RESPONSE_MESSAGES.USER.PROFILE_FETCHED, profileData as UserProfileResponseDto);
   }
-  /**
-   * Update user password
-   */
+
+  // === [ update Password] ===
   async updatePassword(user: User, dto: UpdatePasswordDto) {
     // Get current user with password
     const currentUser = await this.userRepository.findById(user.id.toString());
@@ -158,9 +162,7 @@ export class UsersService {
     });
   }
 
-  /**
-   * Update global name
-   */
+  // === [ update global name ] ===
   async updateglobalname(user: User, dto: UpdateglobalnameDto) {
     if (user.globalname === dto.globalname) {
       // camouflage the response  
@@ -182,9 +184,7 @@ export class UsersService {
     return success(RESPONSE_MESSAGES.USER.GLOBALNAME_UPDATED);
   }
 
-  /**
-   * Update custom status
-   */
+  // === [ update custom status ] ===
   async updateCustomStatus(user: User, dto: UpdateCustomStatusDto) {
     // Get or create status record for user
     let statusRecord = await this.statusRecordRepository.getStatusRecordByUserId(user.id);
@@ -218,9 +218,7 @@ export class UsersService {
     return success(RESPONSE_MESSAGES.USER.CUSTOM_STATUS_UPDATED);
   }
 
-  /**
-   * Update username
-   */
+  // === [ update username ] ===
   async updateUsername(user: User, dto: UpdateUsernameDto) {
     if (user.username === dto.username) {
       // camouflage the response
@@ -252,6 +250,7 @@ export class UsersService {
    * Update presence status
    * Updates the database, Redis display status, and broadcasts to WebSocket listeners
    */
+  // === [ update presence status ] ===
   async updatePresenceStatus(user: User, dto: UpdatePresenceStatusDto) {
     await this.presenceService.updatePresenceStatus(
       user.id.toString(),
@@ -273,6 +272,7 @@ export class UsersService {
     return success(RESPONSE_MESSAGES.PRESENCE.STATUS_UPDATED);
   }
 
+  // ==================== END PROFILE MANAGEMENT ====================
 
 
 
@@ -280,10 +280,7 @@ export class UsersService {
 
 
 
-
-
-
-  // ==================== FRIENDSHIP MANAGEMENT ====================
+  // ==================== START FRIENDSHIP MANAGEMENT ====================
   /**
    * Send friend request by username or user ID
    * @param user - Current authenticated user
@@ -398,9 +395,7 @@ export class UsersService {
     });
   }
 
-  /**
-   * Respond to friend request
-   */
+  // === [ respond to friend request ] ===
   async respondToFriendRequest(user: User, dto: RespondToFriendRequestDto) {
     // Find the friendship
     const friendship = await this.friendshipRepository.findById(
@@ -488,10 +483,7 @@ export class UsersService {
     });
   }
 
-  /**
-   * Cancel friend request (before it's responded to)
-   * Only the sender can cancel their outgoing friend request
-   */
+  // === [ cancel friend request ] ===
   async cancelFriendRequest(user: User, dto: CancelFriendRequestDto) {
     // Find the friendship
     const friendship = await this.friendshipRepository.findById(
@@ -543,9 +535,7 @@ export class UsersService {
     });
   }
 
-  /**
-   * Remove friend
-   */
+  // === [ remove friend ] ===
   async removeFriend(user: User, dto: RemoveFriendDto) {
     // Check if friendship exists
     const friendship = await this.friendshipRepository.findBetweenUsers(
@@ -586,6 +576,7 @@ export class UsersService {
    * Get friends list
    * Uses cache-first strategy: check Redis cache first, then database
    */
+  // === [ get friends list ] ===
   async getFriends(user: User, query: GetFriendsQueryDto) {
     const status = query.status || FriendshipStatus.ACCEPTED;
     const page = parseInt(query.page || '1');
@@ -633,9 +624,7 @@ export class UsersService {
     });
   }
 
-  /**
-   * Get friend requests (incoming)
-   */
+  // === [ get friend requests (incoming and outgoing) ] ===
   async getFriendRequests(user: User) {
     const all = await this.friendshipRepository.findAllPendingRequests(user.id);
 
@@ -668,10 +657,7 @@ export class UsersService {
     });
   }
 
-
-  /**
-   * Get mutual friends
-   */
+  // === [ get mutual friends ] ===
   async getMutualFriends(user: User, dto: GetMutualFriendsDto) {
     // SECURITY: Check if users are friends first (privacy: only friends can see mutual friends)
     const friendship = await this.friendshipRepository.findBetweenUsers(
@@ -711,95 +697,26 @@ export class UsersService {
 
     return success(RESPONSE_MESSAGES.FRIEND.MUTUAL_FETCHED, mutualFriendsList);
   }
+  // ==================== END FRIENDSHIP MANAGEMENT ====================
 
-  /**
-   * Check if two users are friends
-   */
-  async checkFriendship(user: User, targetUserId: string) {
-    // SECURITY: Don't check if user exists to prevent enumeration
-    // Only check friendship status between current user and target ID
+  // ==================== START USER RELATIONS ====================
 
-    const areFriends = await this.friendshipRepository.areFriends(
-      user.id,
-      BigInt(targetUserId),
-    );
-    const hasPendingRequest = await this.friendshipRepository.hasPendingRequest(
-      user.id,
-      BigInt(targetUserId),
-    );
-
-    // SECURITY: Always return same structure regardless of user existence
-    return {
-      areFriends: areFriends || false,
-      hasPendingRequest: hasPendingRequest || false,
-    };
-  }
-
-  // ==================== USER RELATIONS ====================
-
-  /**
-   * Create or update a user relation (block, ignore, mute)
-   */
-  async createUserRelation(user: User, dto: CreateUserRelationDto) {
-    // Check if target user exists
-    const targetUser = await this.userRepository.findById(dto.targetUserId);
+  // === Crate & Update a user relation ===
+  async UpsertUserRelation(user: User, dto: UserRelationDto) {
+    if (user.id === BigInt(dto.targetUserId)) {
+      throw new BadRequestException('Bad Request');
+    }
+    const targetUser = await this.userRepository.findById(dto.targetUserId)
     if (!targetUser) {
-      throw new NotFoundException('User not found');
+      throw new BadRequestException("target user not found")
     }
-
-    // Prevent self-relation
-    if (user.id.toString() === dto.targetUserId) {
-      throw new BadRequestException('Cannot create relation with yourself');
-    }
-
-    // Create or update the relation
-    const relation = (await this.userRelationRepository.createOrUpdateRelation({
-      sourceId: user.id,
-      targetId: BigInt(dto.targetUserId),
-      type: dto.type,
-      note: dto.note,
-    })) as any;
-
-    // Send notifications based on relation type
-    this.notifyUserRelationCreated(user, targetUser, relation, dto.type);
-
-    return {
-      id: relation.id,
-      type: relation.type,
-      targetUser: {
-        id: relation.target.id,
-        username: relation.target.username,
-        globalname: relation.target.globalname,
-        avatar: relation.target.avatar,
-      },
-      note: relation.note,
-      createdAt: relation.createdAt,
-      updatedAt: relation.updatedAt,
-    };
-  }
-
-  /**
-   * Update a user relation
-   */
-  async updateUserRelation(user: User, dto: UpdateUserRelationDto) {
-    // Check if relation exists
-    const existingRelation = await this.userRelationRepository.getRelation(
-      user.id,
-      BigInt(dto.targetUserId),
-      dto.type,
-    );
-
-    if (!existingRelation) {
-      throw new NotFoundException('Relation not found');
-    }
-
     // Update the relation
     const relation = (await this.userRelationRepository.createOrUpdateRelation({
       sourceId: user.id,
       targetId: BigInt(dto.targetUserId),
       type: dto.type,
-      note: dto.note,
     })) as any;
+    this.notifyUserRelationUpdates(user, targetUser, relation, dto.type);
 
     return {
       id: relation.id,
@@ -815,11 +732,13 @@ export class UsersService {
       updatedAt: relation.updatedAt,
     };
   }
-
   /**
    * Remove a user relation
    */
   async removeUserRelation(user: User, dto: RemoveUserRelationDto) {
+    if (user.id === BigInt(dto.targetUserId)) {
+      throw new BadRequestException('Bad Request');
+    }
     // Check if relation exists
     const existingRelation = await this.userRelationRepository.getRelation(
       user.id,
@@ -940,77 +859,131 @@ export class UsersService {
     return formattedIgnoredUsers;
   }
 
-  /**
-   * Check if user has a specific relation with another user
-   */
-  async checkUserRelation(user: User, dto: CheckUserRelationDto) {
-    const hasRelation = await this.userRelationRepository.hasRelation(
-      user.id,
-      BigInt(dto.targetUserId),
-      dto.type,
-    );
 
-    return {
-      hasRelation,
-      type: dto.type,
-      targetUserId: dto.targetUserId,
-    };
-  }
 
-  /**
-   * Update relation note
-   */
-  async updateRelationNote(user: User, dto: UpdateRelationNoteDto) {
-    // Check if relation exists
-    const existingRelation = await this.userRelationRepository.getRelation(
-      user.id,
-      BigInt(dto.targetUserId),
-      dto.type,
-    );
-
-    if (!existingRelation) {
-      throw new NotFoundException('Relation not found');
+  // ==================== START NOTE ====================
+  // === [ create & update (upsert) ] ===
+  async updateUserNote(user: User, dto: CreateUserNoteDto) {
+    if (user.id.toString() === dto.targetUserId) {
+      throw new BadRequestException('Bad Request');
+    }
+    const targetUser = await this.userRepository.findById(dto.targetUserId);
+    if (!targetUser) {
+      throw new NotFoundException('Target user not found');
     }
 
-    // Update the note
-    const relation = await this.userRelationRepository.updateRelationNote(
+    const note = await this.UserNoteRepository.upsert(user.id, dto.targetUserId, dto.note!);
+    return note;
+  }
+  // === [ delete ] ===
+  async deleteUserNote(user: User, dto: CreateUserNoteDto) {
+    // if (user.id.toString() === dto.targetUserId) {
+    //   throw new BadRequestException('Bad Request');
+    // }
+    const deletenote = await this.UserNoteRepository.getByTargetId(user.id, dto.targetUserId);
+    if (!deletenote) {
+      throw new NotFoundException('Note not found');
+    }
+    const note = await this.UserNoteRepository.delete(user.id, dto.targetUserId);
+    return note;
+  }
+  // ==================== END NOTE ====================
+
+
+
+
+  // ==================== START DMS ====================
+  // === [ create ] ===
+  async createDM(user: User, dto: CreateDMDto) {
+    if (user.id.toString() === dto.recipient) {
+      throw new BadRequestException('Bad Request');
+    }
+
+    const targetUser = await this.userRepository.findById(dto.recipient);
+    if (!targetUser) {
+      throw new NotFoundException('Target user not found');
+    }
+
+    // check if existing DM channel between users
+    let channel = await this.ChannelRepository.findDMChannelBetweenUsers(
       user.id,
-      BigInt(dto.targetUserId),
-      dto.type,
-      dto.note,
+      dto.recipient
     );
 
-    return {
-      id: relation.id,
-      type: relation.type,
-      note: relation.note,
-      updatedAt: relation.updatedAt,
-    };
+    if (channel) {
+      const updateChannelRecipient = await this.ChannelRecipientRepository.updateChannelRecipient(
+        channel.id,
+        user.id,
+        true
+      );
+      console.log(updateChannelRecipient);
+
+    } else {
+      channel = await this.ChannelRepository.createChannel(ChannelType.DM);
+
+      await this.ChannelRecipientRepository.createChannelRecipients(
+        channel.id,
+        [
+          { userId: user.id, show: true },
+          { userId: dto.recipient, show: false },
+        ]
+      );
+    }
+
+    // جلب الطرف الآخر فقط
+    const recipient = await this.ChannelRecipientRepository.getChannelRecipients({
+      where: {
+        channelId: BigInt(channel.id),
+        userId: BigInt(dto.recipient),
+      },
+      userFields: ['id', 'username', 'avatar'],
+    });
+
+    const recipientData = recipient.map(r => r.user);
+
+    // return clean channel object + recipient
+    return success(RESPONSE_MESSAGES.DM.CREATED, {
+      channel: {
+        id: channel.id,
+        type: channel.type,
+        lastMessageAt: channel.lastMessageId ?? null,
+      },
+      recipient: recipientData,
+    });
   }
 
-  /**
-   * Get relation statistics
-   */
-  async getRelationStats(user: User) {
-    const stats = await this.userRelationRepository.getRelationStats(user.id);
+  async getDMs(user: User) {
+    const dmData = await this.ChannelRepository.getDMChannelsByUserId(user.id);
+    const dmChannels = dmData.map(channel => {
+      const visibleRecipients = channel.recipients
+        .filter(r => r.show)
+        .map(r => r.user);
 
-    return {
-      blocked: stats.blocked,
-      ignored: stats.ignored,
-      total: stats.total,
-    };
+      // لو مفيش recipients، ما نعرضش القناة
+      if (visibleRecipients.length === 0) return null;
+
+      return {
+        channel: {
+          id: channel.id,
+          type: channel.type,
+          lastMessageAt: channel.lastMessageId ?? null,
+          recipient: visibleRecipients,
+        },
+      };
+    }).filter(Boolean); // remove channels back notHave recipien
+
+    return success(RESPONSE_MESSAGES.DM.FETCHED, dmChannels);
   }
-  // ==================== USER DMS ====================
-  async createDM(user: User, dto: CreateDMDto) {
-    // const dm = await this.dmRepository.createDM(user.id, dto.targetUserId);
-    // return dm;
-  }
-  // ==================== NOTIFICATION HELPERS ====================
+
+
+
+
+  // ==================== END DMS ====================
 
   /**
    * Send notifications when a user relation is created
    */
-  private notifyUserRelationCreated(
+  private notifyUserRelationUpdates(
     sourceUser: User,
     targetUser: User,
     relation: any,

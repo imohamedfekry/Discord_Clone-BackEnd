@@ -9,6 +9,9 @@ import {
   UserStatusRecordRepository,
   UserRelationRepository
 } from 'src/common/database/repositories';
+import { UserNoteRepository } from 'src/common/database/repositories/User/UserNote.repository';
+import { ChannelRepository } from 'src/common/database/repositories/User/Channel.repository';
+import { ChannelRecipientRepository } from 'src/common/database/repositories/User/ChannelRecipient.repository';
 
 @Module({
   imports: [forwardRef(() => WebSocketModule)],
@@ -19,7 +22,10 @@ import {
     FriendshipRepository,
     PresenceRepository,
     UserStatusRecordRepository,
-    UserRelationRepository
+    UserRelationRepository,
+    UserNoteRepository,
+    ChannelRepository,
+    ChannelRecipientRepository
   ],
   exports: [UsersService],
 })

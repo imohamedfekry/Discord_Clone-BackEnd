@@ -37,8 +37,12 @@ model User {
     sourceRelations    UserRelation[]     @relation("SourceUser")
     targetRelations    UserRelation[]     @relation("TargetUser")
     channelRecipients  ChannelRecipient[]
+
     userSettings       UserSettings?      @relation(fields: [userSettingsUserId], references: [userId])
     userSettingsUserId BigInt?
+
+    notesWritten       UserNote[]         @relation("UserSource")
+    notesAboutMe       UserNote[]         @relation("UserTarget")
 
     @@index([username])
 }
@@ -93,10 +97,27 @@ model UserRelation {
     type      RelationType
     createdAt DateTime     @default(now())
     updatedAt DateTime     @updatedAt
-    note      String?
 
     @@unique([sourceId, targetId, type])
     @@index([sourceId])
+    @@index([targetId])
+}
+
+model UserNote {
+    id        BigInt   @id @default(autoincrement())
+
+    sourceId   BigInt
+    source     User     @relation("UserSource", fields: [sourceId], references: [id], onDelete: Cascade)
+
+    targetId   BigInt
+    target    User     @relation("UserTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+    note      String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([sourceId, targetId])
     @@index([targetId])
 }
 
@@ -112,11 +133,11 @@ model Channel {
     updatedAt DateTime    @updatedAt
 
     recipients          ChannelRecipient[]
-    lastMessageAt       DateTime?
+    lastMessageId       BigInt?
     channelUserSettings ChannelUserSettings[]
 
     @@index([type])
-    @@index([lastMessageAt])
+    @@index([lastMessageId])
 }
 
 enum ChannelType {

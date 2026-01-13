@@ -18,15 +18,12 @@ import {
   RemoveFriendDto,
   GetFriendsQueryDto,
   GetMutualFriendsDto,
-  CheckFriendshipDto,
   CancelFriendRequestDto,
   // User Relation DTOs
-  CreateUserRelationDto,
-  UpdateUserRelationDto,
+  UserRelationDto,
   RemoveUserRelationDto,
   GetUserRelationsQueryDto,
-  CheckUserRelationDto,
-  UpdateRelationNoteDto,
+  CreateUserNoteDto,
   CreateDMDto,
 } from './dto/user.dto';
 
@@ -112,39 +109,26 @@ export class UsersController {
     return this.usersService.getFriendRequests(request.user);
   }
 
-  // @Get('friends/requests/incoming')
-  // async getIncomingRequests(@Request() request: any) {
-  //   return this.usersService.getIncomingRequests(request.user);
-  // }
-
-  // @Get('friends/requests/outgoing')
-  // async getOutgoingRequests(@Request() request: any) {
-  //   return this.usersService.getOutgoingRequests(request.user);
-  // }
-
   @Get('friends/mutual/:userId')
   async getMutualFriends(@Request() request: any, @Param() params: GetMutualFriendsDto) {
     return this.usersService.getMutualFriends(request.user, params);
   }
 
-  @Get('friends/check/:userId')
-  async checkFriendship(@Request() request: any, @Param() params: CheckFriendshipDto) {
-    return this.usersService.checkFriendship(request.user, params.userId);
-  }
-
-
-  // ==================== USER RELATIONS ====================
-
-  @Post('relations')
+  @Put('@me/notes')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async createUserRelation(@Request() request: any, @Body() dto: CreateUserRelationDto) {
-    return this.usersService.createUserRelation(request.user, dto);
+  async updateUserRelationNote(@Request() request: any, @Body() dto: CreateUserNoteDto) {
+    return this.usersService.updateUserNote(request.user, dto);
   }
+  @Delete('@me/notes')
+  async deleteUserRelationNote(@Request() request: any, @Body() dto: CreateUserNoteDto) {
+    return this.usersService.deleteUserNote(request.user, dto);
+  }
+  // ==================== USER RELATIONS ====================
 
   @Put('relations')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async updateUserRelation(@Request() request: any, @Body() dto: UpdateUserRelationDto) {
-    return this.usersService.updateUserRelation(request.user, dto);
+  async userRelation(@Request() request: any, @Body() dto: UserRelationDto) {
+    return this.usersService.UpsertUserRelation(request.user, dto);
   }
 
   @Delete('relations')
@@ -169,34 +153,17 @@ export class UsersController {
     return this.usersService.getIgnoredUsers(request.user);
   }
 
-  @Get('relations/check')
-  @UsePipes(new ValidationPipe({ transform: true }))
-  async checkUserRelation(@Request() request: any, @Query() query: CheckUserRelationDto) {
-    return this.usersService.checkUserRelation(request.user, query);
-  }
-
-  @Put('relations/note')
-  @UsePipes(new ValidationPipe({ transform: true }))
-  async updateRelationNote(@Request() request: any, @Body() dto: UpdateRelationNoteDto) {
-    return this.usersService.updateRelationNote(request.user, dto);
-  }
-
-  @Get('relations/stats')
-  async getRelationStats(@Request() request: any) {
-    return this.usersService.getRelationStats(request.user);
-  }
 
 
   // ==================== USER DMS ====================
 
-  @Post('dms')
+  @Post('@me/channels')
   @UsePipes(new ValidationPipe({ transform: true }))
   async createDM(@Request() request: any, @Body() dto: CreateDMDto) {
     return this.usersService.createDM(request.user, dto);
   }
-
-  // @Get('dms')
-  // async getDMs(@Request() request: any) {
-  //   return this.usersService.getDMs(request.user);
-  // }
+  @Get('@me/channels')
+  async getDMs(@Request() request: any) {
+    return this.usersService.getDMs(request.user);
+  }
 }

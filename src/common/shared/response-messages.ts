@@ -36,9 +36,14 @@ export const RESPONSE_MESSAGES = {
     NOTE_UPDATED: { code: 'RELATION_NOTE_UPDATED', message: 'Relation note updated successfully' },
     STATS_FETCHED: { code: 'RELATION_STATS_FETCHED', message: 'Relation stats fetched successfully' },
   },
+  DM: {
+    CREATED: { code: 'DM_CREATED', message: 'DM created successfully' },
+    FETCHED: { code: 'DM_FETCHED', message: 'DM fetched successfully' },
+  },
   SERVER: {
     ERROR: { code: 'SERVER_ERROR', message: 'Internal server error' },
   },
+
 } as const;
 
 

@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsStrongPassword,
   IsEnum,
+  isNotEmpty,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserStatus, FriendshipStatus, RelationType } from '@prisma/client';
@@ -242,7 +243,7 @@ export class CancelFriendRequestDto {
 
 // ==================== USER RELATION DTOs ====================
 
-export class CreateUserRelationDto {
+export class UserRelationDto {
   @ApiProperty({
     description: 'The ID of the target user',
     example: '123456789012345678'
@@ -258,47 +259,10 @@ export class CreateUserRelationDto {
     example: RelationType.BLOCKED
   })
   @IsEnum(RelationType)
-  type: RelationType;
-
-  @ApiProperty({
-    description: 'Optional note for the relation',
-    example: 'Spam user',
-    required: false
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  note?: string;
-}
-
-export class UpdateUserRelationDto {
-  @ApiProperty({
-    description: 'The ID of the target user',
-    example: '123456789012345678'
-  })
-  @IsString()
   @IsNotEmpty()
-  @IsId()
-  targetUserId: string;
-
-  @ApiProperty({
-    description: 'The type of relation to update',
-    enum: RelationType,
-    example: RelationType.BLOCKED
-  })
-  @IsEnum(RelationType)
   type: RelationType;
-
-  @ApiProperty({
-    description: 'Updated note for the relation',
-    example: 'Updated reason for blocking',
-    required: false
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  note?: string;
 }
+
 
 export class RemoveUserRelationDto {
   @ApiProperty({
@@ -316,8 +280,45 @@ export class RemoveUserRelationDto {
     example: RelationType.BLOCKED
   })
   @IsEnum(RelationType)
+  @IsNotEmpty()
   type: RelationType;
 }
+
+
+export class CreateUserNoteDto {
+  @ApiProperty({
+    description: 'The ID of the target user',
+    example: '123456789012345678'
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsId()
+  targetUserId: string;
+
+  @ApiProperty({
+    description: 'Optional note for the relation',
+    example: 'Spam user',
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  @IsNotEmpty()
+  note?: string;
+}
+
+export class DeleteUserNoteDto {
+  @ApiProperty({
+    description: 'The ID of the target user',
+    example: '123456789012345678'
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsId()
+  targetUserId: string;
+}
+
+
 
 export class GetUserRelationsQueryDto {
   @ApiProperty({
@@ -331,53 +332,6 @@ export class GetUserRelationsQueryDto {
   type?: RelationType;
 }
 
-export class CheckUserRelationDto {
-  @ApiProperty({
-    description: 'The ID of the target user to check relation with',
-    example: '123456789012345678'
-  })
-  @IsString()
-  @IsNotEmpty()
-  @IsId()
-  targetUserId: string;
-
-  @ApiProperty({
-    description: 'The type of relation to check',
-    enum: RelationType,
-    example: RelationType.BLOCKED
-  })
-  @IsEnum(RelationType)
-  type: RelationType;
-}
-
-export class UpdateRelationNoteDto {
-  @ApiProperty({
-    description: 'The ID of the target user',
-    example: '123456789012345678'
-  })
-  @IsString()
-  @IsNotEmpty()
-  @IsId()
-  targetUserId: string;
-
-  @ApiProperty({
-    description: 'The type of relation',
-    enum: RelationType,
-    example: RelationType.BLOCKED
-  })
-  @IsEnum(RelationType)
-  type: RelationType;
-
-  @ApiProperty({
-    description: 'New note for the relation',
-    example: 'Updated reason for blocking'
-  })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(500)
-  note: string;
-}
-
 
 // Crate DM want user id only in body
 export class CreateDMDto {
@@ -388,5 +342,5 @@ export class CreateDMDto {
   @IsString()
   @IsNotEmpty()
   @IsId()
-  targetUserId: string;
+  recipient: string;
 }
