@@ -25,6 +25,7 @@ import {
   GetUserRelationsQueryDto,
   CreateUserNoteDto,
   CreateDMDto,
+  DeleteDMDto,
 } from './dto/user.dto';
 
 @ApiTags('User Profile')
@@ -165,5 +166,9 @@ export class UsersController {
   @Get('@me/channels')
   async getDMs(@Request() request: any) {
     return this.usersService.getDMs(request.user);
+  }
+  @Delete('@me/channels/:channelId')
+  async deleteDM(@Request() request: any, @Param() params: DeleteDMDto) {
+    return this.usersService.deleteDM(request.user, params);
   }
 }

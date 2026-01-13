@@ -28,6 +28,7 @@ import {
   GetUserRelationsQueryDto,
   CreateUserNoteDto,
   CreateDMDto,
+  DeleteDMDto,
 } from './dto/user.dto';
 import { FriendshipStatus } from '@prisma/client';
 import {
@@ -975,6 +976,14 @@ export class UsersService {
     return success(RESPONSE_MESSAGES.DM.FETCHED, dmChannels);
   }
 
+  async deleteDM(user: User, dto: DeleteDMDto) {
+    const channel = await this.ChannelRepository.findChannelById(dto.channelId, user.id, true);
+    if (!channel) {
+      throw new NotFoundException('Channel not found');
+    }
+    await this.ChannelRecipientRepository.updateChannelRecipient(channel.id, user.id, false)
+    return success(RESPONSE_MESSAGES.DM.DELETED);
+  }
 
 
 

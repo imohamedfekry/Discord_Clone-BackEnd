@@ -10,13 +10,22 @@ export class ChannelRepository {
     ) {
 
     }
-    async findChannelById(channelId: bigint | string) {
+
+    async findChannelById(channelId: bigint | string, userId: bigint | string, show?: boolean) {
         return this.prisma.channel.findUnique({
             where: {
                 id: BigInt(channelId),
+                type: ChannelType.DM,
+                recipients: {
+                    some: {
+                        userId: BigInt(userId),
+                        show: show ?? true,
+                    },
+                },
             },
         });
     }
+
     async createChannel(type: ChannelType) {
         return this.prisma.channel.create({
             data: {
@@ -25,7 +34,6 @@ export class ChannelRepository {
             },
         });
     }
-
 
     async findDMChannelBetweenUsers(
         userId: bigint | string,
@@ -53,6 +61,8 @@ export class ChannelRepository {
             },
         });
     }
+
+
     async getDMChannelsByUserId(userId: bigint | string) {
         return await this.prisma.channel.findMany({
             where: {

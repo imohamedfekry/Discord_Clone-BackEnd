@@ -344,3 +344,13 @@ export class CreateDMDto {
   @IsId()
   recipient: string;
 }
+export class DeleteDMDto {
+  @ApiProperty({
+    description: 'The ID of the DM',
+    example: '123456789012345678'
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsId()
+  channelId: string;
+}

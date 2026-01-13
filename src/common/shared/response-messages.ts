@@ -39,6 +39,7 @@ export const RESPONSE_MESSAGES = {
   DM: {
     CREATED: { code: 'DM_CREATED', message: 'DM created successfully' },
     FETCHED: { code: 'DM_FETCHED', message: 'DM fetched successfully' },
+    DELETED: { code: 'DM_DELETED', message: 'DM deleted successfully' },
   },
   SERVER: {
     ERROR: { code: 'SERVER_ERROR', message: 'Internal server error' },
