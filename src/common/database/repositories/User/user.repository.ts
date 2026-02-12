@@ -8,7 +8,7 @@ import { Prisma, UserStatus } from '@prisma/client';
  */
 @Injectable()
 export class UserRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Find user by ID
@@ -31,7 +31,6 @@ export class UserRepository {
     return user;
   }
 
-
   /**
    * Find user by email
    */
@@ -49,10 +48,7 @@ export class UserRepository {
   /**
    * Find user by username
    */
-  async findByUsername(
-    username: string,
-    select?: Prisma.UserSelect,
-  ) {
+  async findByUsername(username: string, select?: Prisma.UserSelect) {
     const user = await this.prisma.user.findUnique({
       where: { username },
       ...(select && { select }),
@@ -94,10 +90,7 @@ export class UserRepository {
   /**
    * Delete user
    */
-  async delete(
-    id: string | bigint,
-    select?: Prisma.UserSelect,
-  ) {
+  async delete(id: string | bigint, select?: Prisma.UserSelect) {
     const user = await this.prisma.user.delete({
       where: { id: BigInt(id) },
       ...(select && { select }),
@@ -146,7 +139,9 @@ export class UserRepository {
   async getUserStats() {
     const [totalUsers, onlineUsers] = await Promise.all([
       this.prisma.user.count(),
-      this.prisma.user.count({ where: { presence: { status: { not: UserStatus.INVISIBLE } } } }),
+      this.prisma.user.count({
+        where: { presence: { status: { not: UserStatus.INVISIBLE } } },
+      }),
     ]);
 
     return {
@@ -184,14 +179,14 @@ export class UserRepository {
       ...(select
         ? { select }
         : {
-          select: {
-            id: true,
-            username: true,
-            globalname: true,
-            avatar: true,
-            isBot: true,
-          },
-        }),
+            select: {
+              id: true,
+              username: true,
+              globalname: true,
+              avatar: true,
+              isBot: true,
+            },
+          }),
       take: limit,
       orderBy: {
         username: 'asc',

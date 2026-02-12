@@ -42,8 +42,13 @@ export class BroadcasterService {
   /**
    * Standardized send: wraps payload with code/message/data/timestamp
    */
-  sendToUserStd(userId: string, code: string, message: string, data?: any): void {
-    console.log(" socket: ",userId,code)
+  sendToUserStd(
+    userId: string,
+    code: string,
+    message: string,
+    data?: any,
+  ): void {
+    console.log(' socket: ', userId, code);
     this.sendToUser(userId, code, {
       code,
       message,
@@ -52,7 +57,12 @@ export class BroadcasterService {
     });
   }
 
-  broadcastToRoomStd(room: string, code: string, message: string, data?: any): void {
+  broadcastToRoomStd(
+    room: string,
+    code: string,
+    message: string,
+    data?: any,
+  ): void {
     this.broadcastToRoom(room, code, {
       code,
       message,
@@ -61,4 +71,3 @@ export class BroadcasterService {
     });
   }
 }
-

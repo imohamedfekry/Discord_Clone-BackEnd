@@ -1,4 +1,9 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResponse } from '../shared/types';
@@ -28,5 +33,3 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
     );
   }
 }
-
-

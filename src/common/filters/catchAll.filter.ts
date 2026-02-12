@@ -16,25 +16,24 @@ export default class CatchAllFilter implements ExceptionFilter {
   }
 
   errorDev(res: Response, exception: Error & { code?: string | undefined }) {
-    res
-      .status(500)
-      .json(
-        ApiResponseHelper.error(
-          { code: RESPONSE_CODES.SERVER_ERROR, message: exception.message },
-          {
-            timestamp: new Date().toISOString(),
-            // @ts-expect-error allow meta in dev
-            meta: { exception },
-          },
-        ),
-      );
+    res.status(500).json(
+      ApiResponseHelper.error(
+        { code: RESPONSE_CODES.SERVER_ERROR, message: exception.message },
+        {
+          timestamp: new Date().toISOString(),
+          // @ts-expect-error allow meta in dev
+          meta: { exception },
+        },
+      ),
+    );
   }
 
   errorProd(res: Response) {
-    res
-      .status(500)
-      .json(
-        ApiResponseHelper.error({ code: RESPONSE_CODES.SERVER_ERROR, message: 'Internal Server Error' }),
-      );
+    res.status(500).json(
+      ApiResponseHelper.error({
+        code: RESPONSE_CODES.SERVER_ERROR,
+        message: 'Internal Server Error',
+      }),
+    );
   }
 }

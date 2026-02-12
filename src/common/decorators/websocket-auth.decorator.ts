@@ -6,8 +6,5 @@ import { AuthGuard } from '../guards/auth.guards';
  * Applies authentication guard to WebSocket events
  */
 export function WSAuth() {
-  return applyDecorators(
-    UseGuards(AuthGuard),
-  );
+  return applyDecorators(UseGuards(AuthGuard));
 }
-

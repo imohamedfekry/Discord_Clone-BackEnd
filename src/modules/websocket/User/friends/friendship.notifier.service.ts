@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UnifiedNotifierService } from '../services/unified-notifier.service';
 import {
-  NotificationEvent,
-  NotificationTarget,
+  NOTIFICATION_EVENTS,
   FriendRequestReceivedData,
   FriendRequestSentData,
   FriendRequestAcceptedData,
@@ -15,15 +14,12 @@ import {
 /**
  * Friendship Notifier Service
  * Handles sending WebSocket notifications for friend requests
- * 
- * @deprecated Direct usage deprecated. Use UnifiedNotifierService instead.
- * This service now acts as a wrapper for backward compatibility.
  */
 @Injectable()
 export class FriendshipNotifierService {
   private readonly logger = new Logger(FriendshipNotifierService.name);
 
-  constructor(private readonly unifiedNotifier: UnifiedNotifierService) { }
+  constructor(private readonly unifiedNotifier: UnifiedNotifierService) {}
 
   /**
    * Notify user that they received a friend request
@@ -38,10 +34,18 @@ export class FriendshipNotifierService {
   notifyFriendRequestReceived(
     recipientId: string,
     senderId: string,
-    recipientInfo: { id: string | bigint; username: string; avatar: string | null },
-    senderInfo: { id: string | bigint; username: string; avatar: string | null },
+    recipientInfo: {
+      id: string | bigint;
+      username: string;
+      avatar: string | null;
+    },
+    senderInfo: {
+      id: string | bigint;
+      username: string;
+      avatar: string | null;
+    },
     friendshipId: string | bigint,
-    status: any
+    status: any,
   ): void {
     this.logger.log(
       `Notifying ${recipientId} about friend request from ${senderInfo.username}`,
@@ -54,7 +58,7 @@ export class FriendshipNotifierService {
       status,
     };
     this.unifiedNotifier.notifyTarget(
-      NotificationEvent.FRIEND_REQUEST_RECEIVED,
+      NOTIFICATION_EVENTS.FRIEND.REQUEST.RECEIVED,
       senderId,
       recipientId,
       receivedData,
@@ -68,7 +72,7 @@ export class FriendshipNotifierService {
       status,
     };
     this.unifiedNotifier.notifySource(
-      NotificationEvent.FRIEND_REQUEST_SENT,
+      NOTIFICATION_EVENTS.FRIEND.REQUEST.SENT,
       senderId,
       recipientId,
       sentData,
@@ -76,20 +80,18 @@ export class FriendshipNotifierService {
     );
   }
 
-  /**
-   * Notify user that their friend request was accepted
-   * @param userId - User who sent the request
-   * @param data - Accepted friendship data
-   */
-  notifyFriendRequestAccepted(userId: string, data: FriendRequestAcceptedData): void {
+  notifyFriendRequestAccepted(
+    userId: string,
+    data: FriendRequestAcceptedData,
+  ): void {
     this.logger.log(
       `Notifying ${userId} that friend request was accepted by ${data.newFriend.username}`,
     );
 
-    this.unifiedNotifier.notifyBoth(
-      NotificationEvent.FRIEND_REQUEST_ACCEPTED,
-      data.newFriend.id.toString(),
+    this.unifiedNotifier.notifySource(
+      NOTIFICATION_EVENTS.FRIEND.REQUEST.ACCEPTED,
       userId,
+      data.newFriend.id.toString(),
       data,
       'Friend request accepted',
     );
@@ -100,12 +102,16 @@ export class FriendshipNotifierService {
    * @param userId - User who sent the request
    * @param data - Rejection data
    */
-  notifyFriendRequestRejected(userId: string, recipientId: string, data: FriendRequestRejectedData): void {
+  notifyFriendRequestRejected(
+    userId: string,
+    recipientId: string,
+    data: FriendRequestRejectedData,
+  ): void {
     this.logger.log(
       `Notifying ${userId} that friend request was rejected by ${recipientId}`,
     );
     this.unifiedNotifier.notifySource(
-      NotificationEvent.FRIEND_REQUEST_REJECTED,
+      NOTIFICATION_EVENTS.FRIEND.REQUEST.REJECTED,
       userId,
       recipientId,
       data,
@@ -125,8 +131,12 @@ export class FriendshipNotifierService {
   notifyFriendRequestCancelled(
     senderId: string,
     recipientId: string,
-    senderInfo: { id: string | bigint; username: string; avatar: string | null },
-    friendshipId: string | bigint
+    senderInfo: {
+      id: string | bigint;
+      username: string;
+      avatar: string | null;
+    },
+    friendshipId: string | bigint,
   ): void {
     this.logger.log(
       `Notifying ${recipientId} that friend request from ${senderInfo.username} was cancelled`,
@@ -138,7 +148,7 @@ export class FriendshipNotifierService {
       fromUser: senderInfo,
     };
     this.unifiedNotifier.notifyTarget(
-      NotificationEvent.FRIEND_REQUEST_CANCELLED,
+      NOTIFICATION_EVENTS.FRIEND.REQUEST.CANCELLED,
       senderId,
       recipientId,
       cancelledData,
@@ -150,7 +160,7 @@ export class FriendshipNotifierService {
       friendshipId,
     };
     this.unifiedNotifier.notifySource(
-      NotificationEvent.FRIEND_REQUEST_CANCELLED_BY_SENDER,
+      NOTIFICATION_EVENTS.FRIEND.REQUEST.CANCELLED_BY_SENDER,
       senderId,
       recipientId,
       cancelledBySenderData,
@@ -164,12 +174,16 @@ export class FriendshipNotifierService {
    * @param user2Id - Second user ID
    * @param data - Friend removal data
    */
-  notifyFriendRemoved(user1Id: string, user2Id: string, data: FriendRemovedData): void {
+  notifyFriendRemoved(
+    user1Id: string,
+    user2Id: string,
+    data: FriendRemovedData,
+  ): void {
     this.logger.log(`Notifying both users that friendship was removed`);
 
     // Notify BOTH parties - all their devices will receive updates in real-time
     this.unifiedNotifier.notifyBoth(
-      NotificationEvent.FRIEND_REMOVED,
+      NOTIFICATION_EVENTS.FRIEND.REMOVED,
       user1Id,
       user2Id,
       data,

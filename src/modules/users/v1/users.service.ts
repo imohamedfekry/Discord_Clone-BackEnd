@@ -5,9 +5,16 @@ import {
   BadRequestException,
   Inject,
   forwardRef,
-  Logger,
 } from '@nestjs/common';
-import { User, UserStatusRecord, UserStatus, Prisma, RelationType, ChannelType } from '@prisma/client';
+import {
+  User,
+  UserStatusRecord,
+  UserStatus,
+  Prisma,
+  RelationType,
+  ChannelType,
+  UserRelation,
+} from '@prisma/client';
 import {
   // Profile DTOs
   UpdatePasswordDto,
@@ -39,33 +46,29 @@ import {
   UserStatusRecordRepository,
 } from 'src/common/database/repositories/User';
 import { verifyHash } from 'src/common/Global/security/hash.helper';
-import { WebSocketGatewayService } from '../../websocket/User/websocket.gateway';
-import { FriendshipNotifierService } from '../../websocket/User/friends/friendship-notifier.service';
-import { UnifiedNotifierService } from '../../websocket/User/services/unified-notifier.service';
+import { FriendshipNotifierService } from '../../websocket/User/friends/friendship.notifier.service';
 import { UnifiedPresenceService } from '../../websocket/User/services/unified-presence.service';
 import { FriendsCacheService } from '../../../common/Global/cache/User/friends-cache.service';
 import { plainToInstance } from 'class-transformer';
 import { ApiResponse } from 'src/common/shared/types';
 import { RESPONSE_MESSAGES } from 'src/common/shared/response-messages';
-import { success, fail } from 'src/common/utils/response.util';
-import { UserProfileResponseDto, PresenceDto, UserStatusRecordDto, FriendRequestItemDto } from './dto/user-response.dto';
+import { success } from 'src/common/utils/response.util';
+import {
+  UserProfileResponseDto,
+  PresenceDto,
+  UserStatusRecordDto,
+  FriendRequestItemDto,
+} from './dto/user-response.dto';
 import { UserDto } from './dto/user-types.dto';
 import ms from 'ms';
-import {
-  NotificationEvent,
-  UserBlockedData,
-  UserUnblockedData,
-  UserIgnoredData,
-  UserUnignoredData,
-} from '../../../common/Types/notification.types';
 import { UserNoteRepository } from 'src/common/database/repositories/User/UserNote.repository';
 import { ChannelRepository } from 'src/common/database/repositories/User/Channel.repository';
 import { ChannelRecipientRepository } from 'src/common/database/repositories/User/ChannelRecipient.repository';
+import { RelationNotifierService } from '../../websocket/User/relations/relations.notifier.service';
+import { ProfileNotifierService } from '../../websocket/User/profile/profile.notifier.service';
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
-
   constructor(
     private readonly userRepository: UserRepository,
     private readonly friendshipRepository: FriendshipRepository,
@@ -75,11 +78,16 @@ export class UsersService {
     private readonly UserNoteRepository: UserNoteRepository,
     private readonly ChannelRepository: ChannelRepository,
     private readonly ChannelRecipientRepository: ChannelRecipientRepository,
-    @Inject(forwardRef(() => WebSocketGatewayService)) private readonly websocketGatewayService: WebSocketGatewayService,
-    @Inject(forwardRef(() => FriendshipNotifierService)) private readonly friendshipNotifier: FriendshipNotifierService,
-    @Inject(forwardRef(() => UnifiedNotifierService)) private readonly unifiedNotifier: UnifiedNotifierService,
-    @Inject(forwardRef(() => UnifiedPresenceService)) private readonly presenceService: UnifiedPresenceService,
-    @Inject(forwardRef(() => FriendsCacheService)) private readonly friendsCache: FriendsCacheService,
+    @Inject(forwardRef(() => FriendshipNotifierService))
+    private readonly friendshipNotifier: FriendshipNotifierService,
+    @Inject(forwardRef(() => UnifiedPresenceService))
+    private readonly presenceService: UnifiedPresenceService,
+    @Inject(forwardRef(() => FriendsCacheService))
+    private readonly friendsCache: FriendsCacheService,
+    @Inject(forwardRef(() => RelationNotifierService))
+    private readonly relationNotifier: RelationNotifierService,
+    @Inject(forwardRef(() => ProfileNotifierService))
+    private readonly profileNotifier: ProfileNotifierService,
   ) { }
 
   // ==================== START PROFILE MANAGEMENT ====================
@@ -97,17 +105,21 @@ export class UsersService {
         presence: true;
         statusRecord: true;
       };
-    }>
+    }>,
   ): Promise<ApiResponse<UserProfileResponseDto>> {
     // Optimized: Get isOnline from Redis (uses MGET internally for single round-trip)
-    const presenceStatus = await this.presenceService.getPresenceStatus(user.id.toString());
+    const presenceStatus = await this.presenceService.getPresenceStatus(
+      user.id.toString(),
+    );
 
     // Build UserDto - use plainToInstance with excludeExtraneousValues for proper transformation
-    const userDto = plainToInstance(UserDto, user, { excludeExtraneousValues: true });
+    const userDto = plainToInstance(UserDto, user, {
+      excludeExtraneousValues: true,
+    });
 
     // Build PresenceDto - calculate status once
     const finalStatus = presenceStatus.isOnline
-      ? (presenceStatus.displayStatus || user.presence?.status || null)
+      ? presenceStatus.displayStatus || user.presence?.status || null
       : UserStatus.INVISIBLE;
 
     const presenceDto: PresenceDto = {
@@ -126,14 +138,18 @@ export class UsersService {
       };
 
     // Build UserProfileResponseDto - use plainToInstance for proper transformation and type safety
-    const profileData = plainToInstance(UserProfileResponseDto, {
-      user: userDto,
-      presence: presenceDto,
-      customStatus: presenceStatus.isOnline ? customStatusDto : null,
-      isOnline: presenceStatus.isOnline,
-    }, { excludeExtraneousValues: true });
+    const profileData = plainToInstance(
+      UserProfileResponseDto,
+      {
+        user: userDto,
+        presence: presenceDto,
+        customStatus: presenceStatus.isOnline ? customStatusDto : null,
+        isOnline: presenceStatus.isOnline,
+      },
+      { excludeExtraneousValues: true },
+    );
 
-    return success(RESPONSE_MESSAGES.USER.PROFILE_FETCHED, profileData as UserProfileResponseDto);
+    return success(RESPONSE_MESSAGES.USER.PROFILE_FETCHED, profileData);
   }
 
   // === [ update Password] ===
@@ -163,32 +179,32 @@ export class UsersService {
     });
   }
 
+
+
   // === [ update global name ] ===
   async updateglobalname(user: User, dto: UpdateglobalnameDto) {
     if (user.globalname === dto.globalname) {
-      // camouflage the response  
+      // camouflage the response
       return success(RESPONSE_MESSAGES.USER.GLOBALNAME_UPDATED);
     }
     await this.userRepository.update(user.id.toString(), {
       globalname: dto.globalname || null,
     });
 
-    // broadcast to all friends
     const friends = await this.friendsCache.getFriends(user.id.toString());
-    friends.forEach(friend => {
-      this.websocketGatewayService.sendToUser(friend, 'user:globalname:updated', {
-        userId: user.id.toString(),
-        globalname: dto.globalname,
-        timestamp: new Date(),
-      });
-    });
+    this.profileNotifier.notifyGlobalnameUpdated(
+      user,
+      friends,
+      dto.globalname || null,
+    );
     return success(RESPONSE_MESSAGES.USER.GLOBALNAME_UPDATED);
   }
 
   // === [ update custom status ] ===
   async updateCustomStatus(user: User, dto: UpdateCustomStatusDto) {
     // Get or create status record for user
-    let statusRecord = await this.statusRecordRepository.getStatusRecordByUserId(user.id);
+    let statusRecord =
+      await this.statusRecordRepository.getStatusRecordByUserId(user.id);
     if (!statusRecord) {
       statusRecord = await this.statusRecordRepository.createStatusRecord({
         userId: user.id,
@@ -203,18 +219,10 @@ export class UsersService {
         : undefined,
     });
 
-    // broadcast to all friends
     const friends = await this.friendsCache.getFriends(user.id.toString());
-    friends.forEach(friend => {
-      this.websocketGatewayService.sendToUser(friend, 'user:customstatus:updated', {
-        userId: user.id.toString(),
-        customstatus: {
-          text: dto.text,
-          emoji: dto.emoji,
-          expiresAt: dto.expiresAt,
-        },
-        timestamp: new Date(),
-      });
+    this.profileNotifier.notifyCustomStatusUpdated(user, friends, {
+      text: dto.text,
+      emoji: dto.emoji,
     });
     return success(RESPONSE_MESSAGES.USER.CUSTOM_STATUS_UPDATED);
   }
@@ -235,15 +243,8 @@ export class UsersService {
       username: dto.username,
     });
 
-    // broadcast to all friends
     const friends = await this.friendsCache.getFriends(user.id.toString());
-    friends.forEach(friend => {
-      this.websocketGatewayService.sendToUser(friend, 'user:username:updated', {
-        userId: user.id.toString(),
-        username: dto.username,
-        timestamp: new Date(),
-      });
-    });
+    this.profileNotifier.notifyUsernameUpdated(user, friends, dto.username);
     return success(RESPONSE_MESSAGES.USER.USERNAME_UPDATED);
   }
 
@@ -267,19 +268,25 @@ export class UsersService {
       if (!presence) {
         presence = await this.presenceRepository.createPresence(user.id);
       }
-      await this.presenceRepository.updateStatus(presence.id, dto.status, expiresAt);
+      await this.presenceRepository.updateStatus(
+        presence.id,
+        dto.status,
+        expiresAt,
+      );
     }
+
+    const friends = await this.friendsCache.getFriends(user.id.toString());
+    
+    this.profileNotifier.notifyStatusUpdated(
+      user,
+      friends,
+      dto.status as UserStatus,
+    );
 
     return success(RESPONSE_MESSAGES.PRESENCE.STATUS_UPDATED);
   }
 
   // ==================== END PROFILE MANAGEMENT ====================
-
-
-
-
-
-
 
   // ==================== START FRIENDSHIP MANAGEMENT ====================
   /**
@@ -579,21 +586,19 @@ export class UsersService {
    */
   // === [ get friends list ] ===
   async getFriends(user: User, query: GetFriendsQueryDto) {
-    const status = query.status || FriendshipStatus.ACCEPTED;
     const page = parseInt(query.page || '1');
-    const limit = parseInt(query.limit || '20');
+    const limit = parseInt(query.limit || '100');
     const skip = (page - 1) * limit;
 
     const [friends, total] = await Promise.all([
-      this.friendshipRepository.findByUserIdAndStatus(user.id, status),
-      this.friendshipRepository.countByUserIdAndStatus(user.id, status),
+      this.friendshipRepository.findByUserIdAndStatus(user.id, FriendshipStatus.ACCEPTED),
+      this.friendshipRepository.countByUserIdAndStatus(user.id, FriendshipStatus.ACCEPTED),
     ]);
 
     // Format friends data - SECURITY: Don't expose sensitive info
     const formattedFriends = await Promise.all(
       friends.map(async (friendship: any) => {
-        const friend =
-          friendship.user1Id === user.id ? friendship.user2 : friendship.user1;
+        const friend = friendship.user1Id === user.id ? friendship.user2 : friendship.user1;
 
         // Get friend's current presence status from Redis (real-time) and custom status from DB
         const [friendPresenceStatus, friendStatusRecord] = await Promise.all([
@@ -607,13 +612,15 @@ export class UsersService {
           avatar: friend.avatar,
           friendshipId: friendship.id,
           status: friendPresenceStatus.actualStatus,
-          customStatus: friendStatusRecord?.text || undefined,
+          customStatus:
+            friendPresenceStatus.actualStatus === UserStatus.INVISIBLE
+              ? undefined
+              : friendStatusRecord?.text || undefined,
           createdAt: friendship.createdAt,
           // SECURITY: Removed email - too sensitive for friends list
         };
       }),
     );
-
     return success(RESPONSE_MESSAGES.FRIEND.LIST_FETCHED, {
       friends: formattedFriends.slice(skip, skip + limit),
       pagination: {
@@ -629,7 +636,6 @@ export class UsersService {
   async getFriendRequests(user: User) {
     const all = await this.friendshipRepository.findAllPendingRequests(user.id);
 
-
     const incoming: FriendRequestItemDto[] = [];
     const outgoing: FriendRequestItemDto[] = [];
 
@@ -639,14 +645,15 @@ export class UsersService {
       const formatted = plainToInstance(FriendRequestItemDto, {
         id: request.id,
         user: {
-          id: (isIncoming ? request.user1.id : request.user2.id),
-          username: isIncoming ? request.user1.username : request.user2.username,
+          id: isIncoming ? request.user1.id : request.user2.id,
+          username: isIncoming
+            ? request.user1.username
+            : request.user2.username,
           avatar: isIncoming ? request.user1.avatar : request.user2.avatar,
         },
         status: request.status,
         createdAt: request.createdAt,
       });
-
 
       if (isIncoming) incoming.push(formatted);
       else outgoing.push(formatted);
@@ -707,9 +714,9 @@ export class UsersService {
     if (user.id === BigInt(dto.targetUserId)) {
       throw new BadRequestException('Bad Request');
     }
-    const targetUser = await this.userRepository.findById(dto.targetUserId)
+    const targetUser = await this.userRepository.findById(dto.targetUserId);
     if (!targetUser) {
-      throw new BadRequestException("target user not found")
+      throw new BadRequestException('target user not found');
     }
     // Update the relation
     const relation = (await this.userRelationRepository.createOrUpdateRelation({
@@ -717,7 +724,15 @@ export class UsersService {
       targetId: BigInt(dto.targetUserId),
       type: dto.type,
     })) as any;
-    this.notifyUserRelationUpdates(user, targetUser, relation, dto.type);
+
+    // Notify relation created/updated
+    this.relationNotifier.notifyRelationChange(
+      user,
+      targetUser,
+      dto.type,
+      relation,
+      false,
+    );
 
     return {
       id: relation.id,
@@ -764,8 +779,14 @@ export class UsersService {
       dto.type,
     );
 
-    // Send notifications based on relation type
-    this.notifyUserRelationRemoved(user, targetUser, dto.type);
+    // Notify relation removed
+    this.relationNotifier.notifyRelationChange(
+      user,
+      targetUser,
+      dto.type,
+      undefined,
+      true,
+    );
 
     return { message: 'Relation removed successfully' };
   }
@@ -773,7 +794,7 @@ export class UsersService {
   /**
    * Get user relations
    */
-  async getUserRelations(user: User, query: GetUserRelationsQueryDto) {
+  async getUserRelations(user: User, query: GetUserRelationsQueryDto): Promise<UserRelation[]> {
     let relations;
 
     if (query.type) {
@@ -801,7 +822,9 @@ export class UsersService {
         // Get target user's presence from Redis (real-time)
         const [targetPresenceStatus, targetStatusRecord] = await Promise.all([
           this.presenceService.getPresenceStatus(relation.target.id.toString()),
-          this.statusRecordRepository.getStatusRecordByUserId(relation.target.id),
+          this.statusRecordRepository.getStatusRecordByUserId(
+            relation.target.id,
+          ),
         ]);
 
         return {
@@ -837,7 +860,9 @@ export class UsersService {
         // Get target user's presence from Redis (real-time)
         const [targetPresenceStatus, targetStatusRecord] = await Promise.all([
           this.presenceService.getPresenceStatus(relation.target.id.toString()),
-          this.statusRecordRepository.getStatusRecordByUserId(relation.target.id),
+          this.statusRecordRepository.getStatusRecordByUserId(
+            relation.target.id,
+          ),
         ]);
 
         return {
@@ -860,8 +885,6 @@ export class UsersService {
     return formattedIgnoredUsers;
   }
 
-
-
   // ==================== START NOTE ====================
   // === [ create & update (upsert) ] ===
   async updateUserNote(user: User, dto: CreateUserNoteDto) {
@@ -873,7 +896,11 @@ export class UsersService {
       throw new NotFoundException('Target user not found');
     }
 
-    const note = await this.UserNoteRepository.upsert(user.id, dto.targetUserId, dto.note!);
+    const note = await this.UserNoteRepository.upsert(
+      user.id,
+      dto.targetUserId,
+      dto.note!,
+    );
     return note;
   }
   // === [ delete ] ===
@@ -881,20 +908,23 @@ export class UsersService {
     // if (user.id.toString() === dto.targetUserId) {
     //   throw new BadRequestException('Bad Request');
     // }
-    const deletenote = await this.UserNoteRepository.getByTargetId(user.id, dto.targetUserId);
+    const deletenote = await this.UserNoteRepository.getByTargetId(
+      user.id,
+      dto.targetUserId,
+    );
     if (!deletenote) {
       throw new NotFoundException('Note not found');
     }
-    const note = await this.UserNoteRepository.delete(user.id, dto.targetUserId);
+    const note = await this.UserNoteRepository.delete(
+      user.id,
+      dto.targetUserId,
+    );
     return note;
   }
   // ==================== END NOTE ====================
 
-
-
-
   // ==================== START DMS ====================
-  // === [ create ] ===
+  // === [ CREATE Dm Channel ] ===
   async createDM(user: User, dto: CreateDMDto) {
     if (user.id.toString() === dto.recipient) {
       throw new BadRequestException('Bad Request');
@@ -908,17 +938,17 @@ export class UsersService {
     // check if existing DM channel between users
     let channel = await this.ChannelRepository.findDMChannelBetweenUsers(
       user.id,
-      dto.recipient
+      dto.recipient,
     );
 
     if (channel) {
-      const updateChannelRecipient = await this.ChannelRecipientRepository.updateChannelRecipient(
-        channel.id,
-        user.id,
-        true
-      );
+      const updateChannelRecipient =
+        await this.ChannelRecipientRepository.updateChannelRecipient(
+          channel.id,
+          user.id,
+          true,
+        );
       console.log(updateChannelRecipient);
-
     } else {
       channel = await this.ChannelRepository.createChannel(ChannelType.DM);
 
@@ -927,20 +957,21 @@ export class UsersService {
         [
           { userId: user.id, show: true },
           { userId: dto.recipient, show: false },
-        ]
+        ],
       );
     }
 
     // جلب الطرف الآخر فقط
-    const recipient = await this.ChannelRecipientRepository.getChannelRecipients({
-      where: {
-        channelId: BigInt(channel.id),
-        userId: BigInt(dto.recipient),
-      },
-      userFields: ['id', 'username', 'avatar'],
-    });
+    const recipient =
+      await this.ChannelRecipientRepository.getChannelRecipients({
+        where: {
+          channelId: BigInt(channel.id),
+          userId: BigInt(dto.recipient),
+        },
+        userFields: ['id', 'username', 'avatar'],
+      });
 
-    const recipientData = recipient.map(r => r.user);
+    const recipientData = recipient.map((r) => r.user);
 
     // return clean channel object + recipient
     return success(RESPONSE_MESSAGES.DM.CREATED, {
@@ -952,153 +983,48 @@ export class UsersService {
       recipient: recipientData,
     });
   }
-
+  // === [GET Dms Channels] ===
   async getDMs(user: User) {
     const dmData = await this.ChannelRepository.getDMChannelsByUserId(user.id);
-    const dmChannels = dmData.map(channel => {
-      const visibleRecipients = channel.recipients
-        .filter(r => r.show)
-        .map(r => r.user);
+    const dmChannels = dmData
+      .map((channel) => {
+        const visibleRecipients = channel.recipients
+          .filter((r) => r.show)
+          .map((r) => r.user);
 
-      // لو مفيش recipients، ما نعرضش القناة
-      if (visibleRecipients.length === 0) return null;
+        // لو مفيش recipients، ما نعرضش القناة
+        if (visibleRecipients.length === 0) return null;
 
-      return {
-        channel: {
-          id: channel.id,
-          type: channel.type,
-          lastMessageAt: channel.lastMessageId ?? null,
-          recipient: visibleRecipients,
-        },
-      };
-    }).filter(Boolean); // remove channels back notHave recipien
+        return {
+          channel: {
+            id: channel.id,
+            type: channel.type,
+            lastMessageAt: channel.lastMessageId ?? null,
+            recipient: visibleRecipients,
+          },
+        };
+      })
+      .filter(Boolean); // remove channels back notHave recipien
 
     return success(RESPONSE_MESSAGES.DM.FETCHED, dmChannels);
   }
-
+  // === [DELETE Dms Channel]
   async deleteDM(user: User, dto: DeleteDMDto) {
-    const channel = await this.ChannelRepository.findChannelById(dto.channelId, user.id, true);
+    const channel = await this.ChannelRepository.findChannelById(
+      dto.channelId,
+      user.id,
+      true,
+    );
     if (!channel) {
       throw new NotFoundException('Channel not found');
     }
-    await this.ChannelRecipientRepository.updateChannelRecipient(channel.id, user.id, false)
+    await this.ChannelRecipientRepository.updateChannelRecipient(
+      channel.id,
+      user.id,
+      false,
+    );
     return success(RESPONSE_MESSAGES.DM.DELETED);
   }
 
-
-
   // ==================== END DMS ====================
-
-  /**
-   * Send notifications when a user relation is created
-   */
-  private notifyUserRelationUpdates(
-    sourceUser: User,
-    targetUser: User,
-    relation: any,
-    relationType: RelationType,
-  ): void {
-    const sourceUserInfo = {
-      id: sourceUser.id,
-      username: sourceUser.username,
-      avatar: sourceUser.avatar,
-    };
-
-    const targetUserInfo = {
-      id: targetUser.id,
-      username: targetUser.username,
-      avatar: targetUser.avatar,
-    };
-
-    switch (relationType) {
-      case RelationType.BLOCKED:
-        // When blocking, notify source user (BOTH pattern to support multi-device)
-        const blockData: UserBlockedData = {
-          relationId: relation.id,
-          blockedUser: targetUserInfo,
-          blockedByUser: sourceUserInfo,
-        };
-        this.unifiedNotifier.notifySource(
-          NotificationEvent.USER_BLOCKED,
-          sourceUser.id.toString(),
-          targetUser.id.toString(),
-          blockData,
-          'User blocked',
-        );
-        this.logger.log(`User ${sourceUser.id} blocked ${targetUser.id}`);
-        break;
-      case RelationType.IGNORED:
-        // When ignoring, notify source user (multi-device support)
-        const ignoreData: UserIgnoredData = {
-          relationId: relation.id,
-          ignoredUser: targetUserInfo,
-          ignoredByUser: sourceUserInfo,
-        };
-        this.unifiedNotifier.notifySource(
-          NotificationEvent.USER_IGNORED,
-          sourceUser.id.toString(),
-          targetUser.id.toString(),
-          ignoreData,
-          'User ignored',
-        );
-        this.logger.log(`User ${sourceUser.id} ignored ${targetUser.id}`);
-        break;
-    }
-  }
-
-
-  /**
-   * Send notifications when a user relation is removed
-   */
-  private notifyUserRelationRemoved(
-    sourceUser: User,
-    targetUser: User,
-    relationType: RelationType,
-  ): void {
-    const sourceUserInfo = {
-      id: sourceUser.id,
-      username: sourceUser.username,
-      avatar: sourceUser.avatar,
-    };
-
-    const targetUserInfo = {
-      id: targetUser.id,
-      username: targetUser.username,
-      avatar: targetUser.avatar,
-    };
-
-    switch (relationType) {
-      case RelationType.BLOCKED:
-        // When unblocking, notify source user (multi-device support)
-        const unblockData: UserUnblockedData = {
-          targetUser: targetUserInfo,
-          unblockedByUser: sourceUserInfo,
-        };
-        this.unifiedNotifier.notifySource(
-          NotificationEvent.USER_UNBLOCKED,
-          sourceUser.id.toString(),
-          targetUser.id.toString(),
-          unblockData,
-          'User unblocked',
-        );
-        this.logger.log(`User ${sourceUser.id} unblocked ${targetUser.id}`);
-        break;
-
-      case RelationType.IGNORED:
-        // When unignoring, notify source user (multi-device support)
-        const unignoreData: UserUnignoredData = {
-          targetUser: targetUserInfo,
-          unignoredByUser: sourceUserInfo,
-        };
-        this.unifiedNotifier.notifySource(
-          NotificationEvent.USER_UNIGNORED,
-          sourceUser.id.toString(),
-          targetUser.id.toString(),
-          unignoreData,
-          'User unignored',
-        );
-        this.logger.log(`User ${sourceUser.id} unignored ${targetUser.id}`);
-        break;
-    }
-  }
 }

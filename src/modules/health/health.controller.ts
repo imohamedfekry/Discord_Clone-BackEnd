@@ -8,12 +8,12 @@ import { HealthService } from './health.service';
   version: '1',
 })
 export class HealthController {
-  constructor(private readonly healthService: HealthService) { }
+  constructor(private readonly healthService: HealthService) {}
 
   @Get()
   @ApiOperation({
     summary: 'Health check endpoint',
-    description: 'Check if the API is running and database is connected'
+    description: 'Check if the API is running and database is connected',
   })
   @ApiResponse({
     status: 200,
@@ -28,10 +28,10 @@ export class HealthController {
           timestamp: '2025-10-19T01:00:00.000Z',
           uptime: 12345,
           database: 'connected',
-          version: '1.0.0'
-        }
-      }
-    }
+          version: '1.0.0',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 503,
@@ -46,10 +46,10 @@ export class HealthController {
           timestamp: '2025-10-19T01:00:00.000Z',
           uptime: 12345,
           database: 'disconnected',
-          version: '1.0.0'
-        }
-      }
-    }
+          version: '1.0.0',
+        },
+      },
+    },
   })
   async check() {
     return this.healthService.check();
@@ -58,7 +58,7 @@ export class HealthController {
   @Get('ready')
   @ApiOperation({
     summary: 'Readiness check endpoint',
-    description: 'Check if the API is ready to accept requests'
+    description: 'Check if the API is ready to accept requests',
   })
   @ApiResponse({
     status: 200,
@@ -71,10 +71,10 @@ export class HealthController {
         data: {
           status: 'ready',
           timestamp: '2025-10-19T01:00:00.000Z',
-          database: 'connected'
-        }
-      }
-    }
+          database: 'connected',
+        },
+      },
+    },
   })
   async ready() {
     return this.healthService.ready();
@@ -83,7 +83,7 @@ export class HealthController {
   @Get('live')
   @ApiOperation({
     summary: 'Liveness check endpoint',
-    description: 'Check if the API is alive (basic health check)'
+    description: 'Check if the API is alive (basic health check)',
   })
   @ApiResponse({
     status: 200,
@@ -95,10 +95,10 @@ export class HealthController {
         message: 'API is alive',
         data: {
           status: 'alive',
-          timestamp: '2025-10-19T01:00:00.000Z'
-        }
-      }
-    }
+          timestamp: '2025-10-19T01:00:00.000Z',
+        },
+      },
+    },
   })
   async live() {
     return this.healthService.live();

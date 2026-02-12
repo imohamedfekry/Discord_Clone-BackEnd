@@ -93,11 +93,11 @@ export class FriendsCacheService implements OnModuleDestroy {
   async getUsersWhoseFriend(userId: string): Promise<string[]> {
     const pattern = `friends:*`;
     const keys = await this.redis.keys(pattern);
-    
+
     if (keys.length === 0) return [];
 
     const results: string[] = [];
-    
+
     // Check each key to see if it contains this userId
     for (const key of keys) {
       const isMember = await this.redis.sismember(key, userId);
@@ -115,4 +115,3 @@ export class FriendsCacheService implements OnModuleDestroy {
     await this.redis.quit();
   }
 }
-

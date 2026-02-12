@@ -1,8 +1,17 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiBadRequestResponse, ApiConflictResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiBadRequestResponse,
+  ApiConflictResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { HttpCode, HttpStatus } from '@nestjs/common';
 // import { AuthResponseDto } from '../../../common/dto/auth-response.dto';
-import { ErrorResponseDto, ValidationErrorResponseDto } from '../../../common/dto/shared-response.dto';
+import {
+  ErrorResponseDto,
+  ValidationErrorResponseDto,
+} from '../../../common/dto/shared-response.dto';
 
 /**
  * Register API Documentation
@@ -10,12 +19,13 @@ import { ErrorResponseDto, ValidationErrorResponseDto } from '../../../common/dt
 export function RegisterApiDocs() {
   return applyDecorators(
     HttpCode(HttpStatus.CREATED),
-    ApiOperation({ 
+    ApiOperation({
       summary: 'Register a new user',
-      description: 'Create a new user account with username, email, password and phone number'
+      description:
+        'Create a new user account with username, email, password and phone number',
     }),
-    ApiResponse({ 
-      status: 201, 
+    ApiResponse({
+      status: 201,
       description: 'User successfully registered',
       // type: AuthResponseDto,
       schema: {
@@ -28,15 +38,15 @@ export function RegisterApiDocs() {
               id: '1234567890',
               username: 'johndoe',
               email: 'john@example.com',
-              avatar: null
+              avatar: null,
             },
             accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-            refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-          }
-        }
-      }
+            refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          },
+        },
+      },
     }),
-    ApiBadRequestResponse({ 
+    ApiBadRequestResponse({
       description: 'Validation failed',
       type: ValidationErrorResponseDto,
       schema: {
@@ -49,13 +59,13 @@ export function RegisterApiDocs() {
             {
               field: 'email',
               message: 'Invalid email format',
-              value: 'invalid-email'
-            }
-          ]
-        }
-      }
+              value: 'invalid-email',
+            },
+          ],
+        },
+      },
     }),
-    ApiConflictResponse({ 
+    ApiConflictResponse({
       description: 'User already exists',
       type: ErrorResponseDto,
       schema: {
@@ -63,10 +73,10 @@ export function RegisterApiDocs() {
           status: 'fail',
           code: 'USER_ALREADY_EXISTS',
           message: 'User with this email already exists',
-          timestamp: '2025-10-17T12:00:00.000Z'
-        }
-      }
-    })
+          timestamp: '2025-10-17T12:00:00.000Z',
+        },
+      },
+    }),
   );
 }
 
@@ -76,22 +86,22 @@ export function RegisterApiDocs() {
 export function LoginApiDocs() {
   return applyDecorators(
     HttpCode(HttpStatus.OK),
-    ApiOperation({ 
+    ApiOperation({
       summary: 'Login user',
-      description: 'Authenticate user with email and password'
+      description: 'Authenticate user with email and password',
     }),
-    ApiResponse({ 
-      status: 200, 
+    ApiResponse({
+      status: 200,
       description: 'User successfully logged in',
       schema: {
         example: {
           status: 'success',
           code: 'LOGIN_SUCCESS',
           message: 'Logged in successfully',
-        }
-      }
+        },
+      },
     }),
-    ApiBadRequestResponse({ 
+    ApiBadRequestResponse({
       description: 'Validation failed',
       type: ValidationErrorResponseDto,
       schema: {
@@ -104,13 +114,13 @@ export function LoginApiDocs() {
             {
               field: 'email',
               message: 'Email is required',
-              value: ''
-            }
-          ]
-        }
-      }
+              value: '',
+            },
+          ],
+        },
+      },
     }),
-    ApiUnauthorizedResponse({ 
+    ApiUnauthorizedResponse({
       description: 'Invalid credentials',
       type: ErrorResponseDto,
       schema: {
@@ -118,9 +128,9 @@ export function LoginApiDocs() {
           status: 'fail',
           code: 'INVALID_CREDENTIALS',
           message: 'Invalid email or password',
-          timestamp: '2025-10-17T12:00:00.000Z'
-        }
-      }
-    })
+          timestamp: '2025-10-17T12:00:00.000Z',
+        },
+      },
+    }),
   );
 }

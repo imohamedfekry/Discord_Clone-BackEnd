@@ -1,2 +1,1 @@
-export * from './friendship-notifier.service';
-
+export * from './friendship.notifier.service';

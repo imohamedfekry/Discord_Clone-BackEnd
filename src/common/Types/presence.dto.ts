@@ -5,5 +5,3 @@ export interface UserPresenceDto {
   status: UserStatus; // ONLINE | IDLE | DND | Invisible (treated as OFFLINE when not connected)
   lastSeen?: string | null; // ISO string if available
 }
-
-

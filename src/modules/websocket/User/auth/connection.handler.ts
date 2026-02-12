@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { UserRepository } from 'src/common/database/repositories';
+import { FriendshipRepository, UserRepository } from 'src/common/database/repositories';
 import { AuthService } from './auth.service';
 import { AuthenticatedSocket } from '../../../../common/Types/websocket.types';
 import { WebSocketEvents } from '../../../../common/Types/websocket.types';
@@ -7,6 +7,9 @@ import { UnifiedPresenceService } from '../services/unified-presence.service';
 import { FriendsCacheService } from '../../../../common/Global/cache/User/friends-cache.service';
 import { Events } from '../../../../common/constants/events.constants';
 import { ReadyService } from '../../Ready/ready.service';
+import { NOTIFICATION_EVENTS } from 'src/common/Types/notification.types';
+import { FriendshipStatus, UserStatus } from '@prisma/client';
+import { ProfileNotifierService } from '../profile/profile.notifier.service';
 
 /**
  * Connection Handler Service
@@ -22,6 +25,8 @@ export class ConnectionHandlerService {
     private readonly presenceService: UnifiedPresenceService,
     private readonly friendsCache: FriendsCacheService,
     private readonly readyService: ReadyService,
+    private readonly friendshipRepository: FriendshipRepository,
+    private readonly profileNotifier: ProfileNotifierService,
   ) { }
 
   /**
@@ -38,23 +43,34 @@ export class ConnectionHandlerService {
       // Setup session
       this.authService.setupSession(client, user);
 
+      // Join user-specific room so we can target this user by ID
+      // BroadcasterService.sendToUser(userId, ...) emits to `user:${userId}`
+      client.join(`user:${user.id.toString()}`);
+
       // Mark user as online in Redis
       const metadata = this.authService.createConnectionMetadata(client);
       await this.presenceService.markOnline(user.id, client.id, metadata);
 
       // Initial presence sync for friends (single pipeline/batch)
-      const friends = await this.friendsCache.getFriends(user);
+      // get friends from DB AND PUSH INTO REDIS
+      const friends = await this.friendshipRepository.findByUserIdAndStatus(user.id, FriendshipStatus.ACCEPTED);
+      const friendIds = friends.map((friend) => {
+        if (friend.user1Id === user.id) {
+          return friend.user2Id.toString();
+        } else {
+          return friend.user1Id.toString();
+        }
+      });
+      for (const friendId of friendIds) {
+        await this.friendsCache.addFriend(user.id.toString(), friendId);
+      }
       if (friends.length > 0) {
-        const presences = await this.presenceService.getBatchPresence(friends);
+        const presences = await this.presenceService.getBatchPresence(friendIds);
         client.emit(Events.INITIAL_PRESENCE_SYNC, presences);
       }
-
+      this.profileNotifier.notifyStatusUpdated(user, friendIds, UserStatus.ONLINE);
       // Handle user online status and notify friends
-      await this.presenceService.handleUserOnline(user.id, user.username);
-      // handle Ready Service
-      client.emit(Events.READY, await this.readyService.prepareUserData(user));
       this.logger.log(`User ${user.id} connected via socket ${client.id}`);
-
     } catch (error) {
       this.logger.error(`Connection error: ${error.message}`, error.stack);
       client.disconnect();
@@ -80,10 +96,12 @@ export class ConnectionHandlerService {
 
     if (socketCount === 0) {
       // Handle user offline status and notify friends
-      await this.presenceService.handleUserOffline(userId, user?.username || 'Unknown');
+      await this.presenceService.handleUserOffline(
+        userId,
+        user?.username || 'Unknown',
+      );
     }
 
     this.logger.log(`User ${userId} disconnected from socket ${client.id}`);
   }
 }
-

@@ -32,7 +32,7 @@ export class PresenceRepository {
             },
           },
         };
-    
+
     return this.prisma.presence.create({
       data: {
         id: snowflake.generate(),
@@ -63,7 +63,7 @@ export class PresenceRepository {
             },
           },
         };
-    
+
     return this.prisma.presence.findUnique({
       where: { userId: BigInt(userId) },
       ...options,
@@ -91,7 +91,7 @@ export class PresenceRepository {
             },
           },
         };
-    
+
     return this.prisma.presence.findUnique({
       where: { id: BigInt(presenceId) },
       ...options,
@@ -121,7 +121,7 @@ export class PresenceRepository {
             },
           },
         };
-    
+
     return this.prisma.presence.update({
       where: { id: BigInt(presenceId) },
       data: {
@@ -158,7 +158,7 @@ export class PresenceRepository {
         },
       },
     };
-    
+
     return this.prisma.presence.findUnique({
       where: { userId: BigInt(userId) },
       ...options,
@@ -187,10 +187,10 @@ export class PresenceRepository {
             },
           },
         };
-    
+
     return this.prisma.presence.findMany({
       where: {
-        userId: { in: userIds.map(id => BigInt(id)) },
+        userId: { in: userIds.map((id) => BigInt(id)) },
       },
       ...options,
     });

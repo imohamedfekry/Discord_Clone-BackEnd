@@ -5,7 +5,7 @@ import { snowflake } from 'src/common/utils/snowflake';
 
 @Injectable()
 export class UserRelationRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Create or update a user relation
@@ -22,25 +22,25 @@ export class UserRelationRepository {
     const options: any = select
       ? { select }
       : {
-        include: {
-          source: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            source: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
+            },
+            target: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-          target: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
-            },
-          },
-        },
-      };
+        };
 
     return this.prisma.userRelation.upsert({
       where: {
@@ -68,39 +68,33 @@ export class UserRelationRepository {
   /**
    * Get all relations for a user (both as source and target)
    */
-  async getUserRelations(
-    userId: bigint,
-    select?: Prisma.UserRelationSelect,
-  ) {
+  async getUserRelations(userId: bigint, select?: Prisma.UserRelationSelect) {
     const options: any = select
       ? { select }
       : {
-        include: {
-          source: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            source: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
+            },
+            target: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-          target: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
-            },
-          },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findMany({
       where: {
-        OR: [
-          { sourceId: userId },
-          { targetId: userId },
-        ],
+        OR: [{ sourceId: userId }, { targetId: userId }],
       },
       ...options,
       orderBy: {
@@ -128,17 +122,17 @@ export class UserRelationRepository {
     const options: any = select
       ? { select }
       : {
-        include: {
-          target: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            target: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findMany({
       where,
@@ -168,17 +162,17 @@ export class UserRelationRepository {
     const options: any = select
       ? { select }
       : {
-        include: {
-          source: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            source: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findMany({
       where,
@@ -222,25 +216,25 @@ export class UserRelationRepository {
     const options: any = select
       ? { select }
       : {
-        include: {
-          source: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            source: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
+            },
+            target: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-          target: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
-            },
-          },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findUnique({
       where: {
@@ -265,25 +259,25 @@ export class UserRelationRepository {
     const options: any = select
       ? { select }
       : {
-        include: {
-          source: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            source: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
+            },
+            target: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-          target: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
-            },
-          },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findMany({
       where: {
@@ -337,24 +331,21 @@ export class UserRelationRepository {
   /**
    * Get blocked users for a user
    */
-  async getBlockedUsers(
-    userId: bigint,
-    select?: Prisma.UserRelationSelect,
-  ) {
+  async getBlockedUsers(userId: bigint, select?: Prisma.UserRelationSelect) {
     const options: any = select
       ? { select }
       : {
-        include: {
-          target: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            target: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findMany({
       where: {
@@ -371,24 +362,21 @@ export class UserRelationRepository {
   /**
    * Get ignored users for a user
    */
-  async getIgnoredUsers(
-    userId: bigint,
-    select?: Prisma.UserRelationSelect,
-  ) {
+  async getIgnoredUsers(userId: bigint, select?: Prisma.UserRelationSelect) {
     const options: any = select
       ? { select }
       : {
-        include: {
-          target: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            target: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findMany({
       where: {
@@ -449,25 +437,25 @@ export class UserRelationRepository {
     const options: any = select
       ? { select }
       : {
-        include: {
-          source: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            source: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
+            },
+            target: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-          target: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
-            },
-          },
-        },
-      };
+        };
 
     return this.prisma.userRelation.update({
       where: {
@@ -488,24 +476,21 @@ export class UserRelationRepository {
   /**
    * Get all users that have blocked the given user
    */
-  async getUsersWhoBlocked(
-    userId: bigint,
-    select?: Prisma.UserRelationSelect,
-  ) {
+  async getUsersWhoBlocked(userId: bigint, select?: Prisma.UserRelationSelect) {
     const options: any = select
       ? { select }
       : {
-        include: {
-          source: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            source: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findMany({
       where: {
@@ -522,24 +507,21 @@ export class UserRelationRepository {
   /**
    * Get all users that have ignored the given user
    */
-  async getUsersWhoIgnored(
-    userId: bigint,
-    select?: Prisma.UserRelationSelect,
-  ) {
+  async getUsersWhoIgnored(userId: bigint, select?: Prisma.UserRelationSelect) {
     const options: any = select
       ? { select }
       : {
-        include: {
-          source: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            source: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findMany({
       where: {
@@ -577,7 +559,11 @@ export class UserRelationRepository {
     user2Id: bigint,
     select?: Prisma.UserRelationSelect,
   ) {
-    const relations = await this.getRelationsBetweenUsers(user1Id, user2Id, select);
+    const relations = await this.getRelationsBetweenUsers(
+      user1Id,
+      user2Id,
+      select,
+    );
 
     const status = {
       canInteract: true,
@@ -589,7 +575,7 @@ export class UserRelationRepository {
       user2Muted: false,
     };
 
-    relations.forEach(relation => {
+    relations.forEach((relation) => {
       if (relation.sourceId === user1Id) {
         switch (relation.type) {
           case RelationType.BLOCKED:
@@ -619,13 +605,15 @@ export class UserRelationRepository {
   /**
    * Bulk create relations
    */
-  async bulkCreateRelations(relations: Array<{
-    sourceId: bigint;
-    targetId: bigint;
-    type: RelationType;
-    note?: string;
-  }>) {
-    const data = relations.map(relation => ({
+  async bulkCreateRelations(
+    relations: Array<{
+      sourceId: bigint;
+      targetId: bigint;
+      type: RelationType;
+      note?: string;
+    }>,
+  ) {
+    const data = relations.map((relation) => ({
       id: snowflake.generate(),
       sourceId: relation.sourceId,
       targetId: relation.targetId,
@@ -653,10 +641,13 @@ export class UserRelationRepository {
       },
     });
 
-    return counts.reduce((acc, item) => {
-      acc[item.type] = item._count.type;
-      return acc;
-    }, {} as Record<RelationType, number>);
+    return counts.reduce(
+      (acc, item) => {
+        acc[item.type] = item._count.type;
+        return acc;
+      },
+      {} as Record<RelationType, number>,
+    );
   }
 
   /**
@@ -698,17 +689,17 @@ export class UserRelationRepository {
     const options: any = select
       ? { select }
       : {
-        include: {
-          target: {
-            select: {
-              id: true,
-              username: true,
-              globalname: true,
-              avatar: true,
+          include: {
+            target: {
+              select: {
+                id: true,
+                username: true,
+                globalname: true,
+                avatar: true,
+              },
             },
           },
-        },
-      };
+        };
 
     return this.prisma.userRelation.findMany({
       where,

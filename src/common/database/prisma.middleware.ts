@@ -30,7 +30,7 @@ export function extendPrisma(prisma: PrismaClient) {
 
 async function handleIdsnowflake(model: string, args: any) {
   if (!args.data?.id) {
-    (args.data as any).id = snowflake.generate().toString();
+    args.data.id = snowflake.generate().toString();
   }
 }
 
@@ -43,7 +43,6 @@ async function handelPhoneEncryption(model: string, args: any) {
   if (model === 'User' && args.data?.phone) {
     args.data.phone = encrypt(args.data.phone);
   }
-  
 }
 // convert bigints to strings, preserve Date objects
 function convert(obj: any): any {

@@ -15,15 +15,17 @@ import { ResponseInterceptor } from '../interceptors/response.interceptor';
 
 @Global()
 @Module({
-  imports: [
-    DatabaseModule,
-  ],
+  imports: [DatabaseModule],
   providers: [
     RedisService,
     JwtService,
     {
       provide: JwtHelper,
-      useFactory: (jwtService: JwtService, userRepository: UserRepository, configService: ConfigService) => {
+      useFactory: (
+        jwtService: JwtService,
+        userRepository: UserRepository,
+        configService: ConfigService,
+      ) => {
         return new JwtHelper(jwtService, userRepository, configService);
       },
       inject: [JwtService, UserRepository, ConfigService],
@@ -49,6 +51,12 @@ import { ResponseInterceptor } from '../interceptors/response.interceptor';
       useClass: ResponseInterceptor,
     },
   ],
-  exports: [RedisService, JwtService, JwtHelper, 'SNOWFLAKE', 'VALIDATION_UTIL'],
+  exports: [
+    RedisService,
+    JwtService,
+    JwtHelper,
+    'SNOWFLAKE',
+    'VALIDATION_UTIL',
+  ],
 })
 export class GlobalModule {}

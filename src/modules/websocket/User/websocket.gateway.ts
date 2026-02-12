@@ -36,9 +36,9 @@ import {
   namespace: '/',
   transports: ['websocket', 'polling'],
 })
-
 export class WebSocketGatewayService
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -50,7 +50,7 @@ export class WebSocketGatewayService
     private readonly presenceService: UnifiedPresenceService,
     private readonly broadcaster: BroadcasterService,
     private readonly friendsCache: FriendsCacheService,
-  ) { }
+  ) {}
 
   /**
    * Initialize gateway
@@ -68,7 +68,8 @@ export class WebSocketGatewayService
     });
 
     this.presenceSubscriber.subscribe('presence:updates', (err) => {
-      if (err) this.logger.error('Failed to subscribe to presence:updates', err.stack);
+      if (err)
+        this.logger.error('Failed to subscribe to presence:updates', err.stack);
     });
 
     this.presenceSubscriber.on('message', async (_channel, message) => {
@@ -89,7 +90,9 @@ export class WebSocketGatewayService
         };
 
         // Broadcast to all watchers user-rooms
-        watchers.forEach((wid) => this.broadcaster.sendToUser(wid, Events.PRESENCE_UPDATE, payload));
+        watchers.forEach((wid) =>
+          this.broadcaster.sendToUser(wid, Events.PRESENCE_UPDATE, payload),
+        );
       } catch (e: any) {
         this.logger.error('presence:updates handler error', e?.stack);
       }
@@ -130,7 +133,9 @@ export class WebSocketGatewayService
    */
   @WSAuth()
   @SubscribeMessage(WebSocketMessages.STATUS_GET)
-  async handleGetStatus(@ConnectedSocket() client: AuthenticatedSocket): Promise<void> {
+  async handleGetStatus(
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ): Promise<void> {
     await this.presenceService.handleGetStatus(client);
   }
 

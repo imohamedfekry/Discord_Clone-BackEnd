@@ -40,11 +40,11 @@ export class AuthGuard implements CanActivate {
     //    token = cookiesHeader ['Authorization'];
 
     // } else {
-      // HTTP request
-      request = context.switchToHttp().getRequest<Request>();
-      // token = request.headers['authorization'];
-      token =
-        request.cookies['Authorization'] || request.headers['authorization'];
+    // HTTP request
+    request = context.switchToHttp().getRequest<Request>();
+    // token = request.headers['authorization'];
+    token =
+      request.cookies['Authorization'] || request.headers['authorization'];
     // }
 
     // Extract, verify token and get user in one step

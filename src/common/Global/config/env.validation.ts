@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 const zodSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
 
   PORT: z.coerce.number().default(3000),
 
@@ -42,7 +44,7 @@ export const envValidationSchema = {
       if (error instanceof z.ZodError) {
         return {
           error: {
-            details: error.issues.map(err => ({
+            details: error.issues.map((err) => ({
               message: err.message,
               path: err.path.join('.'),
             })),

@@ -126,9 +126,10 @@ export class UpdatePresenceStatusDto {
 
 export class SendFriendRequestDto {
   @ApiProperty({
-    description: 'The username of the user to send friend request to (optional if userId is provided)',
+    description:
+      'The username of the user to send friend request to (optional if userId is provided)',
     example: 'john_doe',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -136,9 +137,10 @@ export class SendFriendRequestDto {
   username?: string;
 
   @ApiProperty({
-    description: 'The ID of the user to send friend request to (optional if username is provided)',
+    description:
+      'The ID of the user to send friend request to (optional if username is provided)',
     example: '123456789012345678',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -149,7 +151,7 @@ export class SendFriendRequestDto {
 export class RespondToFriendRequestDto {
   @ApiProperty({
     description: 'The ID of the friendship request',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -159,10 +161,10 @@ export class RespondToFriendRequestDto {
   @ApiProperty({
     description: 'The response to the friend request - ACCEPTED or REJECTED',
     enum: FriendRequestResponseStatus,
-    example: FriendRequestResponseStatus.ACCEPTED
+    example: FriendRequestResponseStatus.ACCEPTED,
   })
   @IsEnum(FriendRequestResponseStatus, {
-    message: 'Status must be either ACCEPTED or REJECTED'
+    message: 'Status must be either ACCEPTED or REJECTED',
   })
   status: FriendRequestResponseStatus;
 }
@@ -170,7 +172,7 @@ export class RespondToFriendRequestDto {
 export class RemoveFriendDto {
   @ApiProperty({
     description: 'The ID of the user to remove from friends',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -179,20 +181,20 @@ export class RemoveFriendDto {
 }
 
 export class GetFriendsQueryDto {
-  @ApiProperty({
-    description: 'Filter friends by status',
-    enum: FriendshipStatus,
-    required: false,
-    example: FriendshipStatus.ACCEPTED
-  })
-  @IsOptional()
-  @IsEnum(FriendshipStatus)
-  status?: FriendshipStatus;
+  // @ApiProperty({
+  //   description: 'Filter friends by status',
+  //   enum: FriendshipStatus,
+  //   required: false,
+  //   example: FriendshipStatus.ACCEPTED,
+  // })
+  // @IsOptional()
+  // @IsEnum(FriendshipStatus)
+  // status?: FriendshipStatus;
 
   @ApiProperty({
     description: 'Page number for pagination',
     required: false,
-    example: 1
+    example: 1,
   })
   @IsOptional()
   @IsString()
@@ -201,7 +203,7 @@ export class GetFriendsQueryDto {
   @ApiProperty({
     description: 'Number of items per page',
     required: false,
-    example: 20
+    example: 20,
   })
   @IsOptional()
   @IsString()
@@ -211,7 +213,7 @@ export class GetFriendsQueryDto {
 export class GetMutualFriendsDto {
   @ApiProperty({
     description: 'The ID of the user to get mutual friends with',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -222,7 +224,7 @@ export class GetMutualFriendsDto {
 export class CheckFriendshipDto {
   @ApiProperty({
     description: 'The ID of the user to check friendship with',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -233,7 +235,7 @@ export class CheckFriendshipDto {
 export class CancelFriendRequestDto {
   @ApiProperty({
     description: 'The ID of the friendship request to cancel',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -246,7 +248,7 @@ export class CancelFriendRequestDto {
 export class UserRelationDto {
   @ApiProperty({
     description: 'The ID of the target user',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -256,18 +258,17 @@ export class UserRelationDto {
   @ApiProperty({
     description: 'The type of relation to create',
     enum: RelationType,
-    example: RelationType.BLOCKED
+    example: RelationType.BLOCKED,
   })
   @IsEnum(RelationType)
   @IsNotEmpty()
   type: RelationType;
 }
 
-
 export class RemoveUserRelationDto {
   @ApiProperty({
     description: 'The ID of the target user',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -277,18 +278,17 @@ export class RemoveUserRelationDto {
   @ApiProperty({
     description: 'The type of relation to remove',
     enum: RelationType,
-    example: RelationType.BLOCKED
+    example: RelationType.BLOCKED,
   })
   @IsEnum(RelationType)
   @IsNotEmpty()
   type: RelationType;
 }
 
-
 export class CreateUserNoteDto {
   @ApiProperty({
     description: 'The ID of the target user',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -298,7 +298,7 @@ export class CreateUserNoteDto {
   @ApiProperty({
     description: 'Optional note for the relation',
     example: 'Spam user',
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -310,7 +310,7 @@ export class CreateUserNoteDto {
 export class DeleteUserNoteDto {
   @ApiProperty({
     description: 'The ID of the target user',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -318,26 +318,23 @@ export class DeleteUserNoteDto {
   targetUserId: string;
 }
 
-
-
 export class GetUserRelationsQueryDto {
   @ApiProperty({
     description: 'Filter by relation type',
     enum: RelationType,
     required: false,
-    example: RelationType.BLOCKED
+    example: RelationType.BLOCKED,
   })
   @IsOptional()
   @IsEnum(RelationType)
   type?: RelationType;
 }
 
-
 // Crate DM want user id only in body
 export class CreateDMDto {
   @ApiProperty({
     description: 'The ID of the target user',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()
@@ -347,7 +344,7 @@ export class CreateDMDto {
 export class DeleteDMDto {
   @ApiProperty({
     description: 'The ID of the DM',
-    example: '123456789012345678'
+    example: '123456789012345678',
   })
   @IsString()
   @IsNotEmpty()

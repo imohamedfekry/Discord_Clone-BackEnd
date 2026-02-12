@@ -37,7 +37,7 @@ export class UserStatusRecordRepository {
             },
           },
         };
-    
+
     return this.prisma.userStatusRecord.create({
       data: {
         id: snowflake.generate(),
@@ -71,7 +71,7 @@ export class UserStatusRecordRepository {
             },
           },
         };
-    
+
     return this.prisma.userStatusRecord.findUnique({
       where: { id: BigInt(recordId) },
       ...options,
@@ -99,7 +99,7 @@ export class UserStatusRecordRepository {
             },
           },
         };
-    
+
     return this.prisma.userStatusRecord.findUnique({
       where: { userId: BigInt(userId) },
       ...options,

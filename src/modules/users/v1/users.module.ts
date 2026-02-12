@@ -7,7 +7,7 @@ import {
   PresenceRepository,
   UserRepository,
   UserStatusRecordRepository,
-  UserRelationRepository
+  UserRelationRepository,
 } from 'src/common/database/repositories';
 import { UserNoteRepository } from 'src/common/database/repositories/User/UserNote.repository';
 import { ChannelRepository } from 'src/common/database/repositories/User/Channel.repository';
@@ -25,8 +25,8 @@ import { ChannelRecipientRepository } from 'src/common/database/repositories/Use
     UserRelationRepository,
     UserNoteRepository,
     ChannelRepository,
-    ChannelRecipientRepository
+    ChannelRecipientRepository,
   ],
   exports: [UsersService],
 })
-export class UsersModule { }
+export class UsersModule {}

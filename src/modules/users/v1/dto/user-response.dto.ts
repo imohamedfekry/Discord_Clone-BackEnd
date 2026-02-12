@@ -10,11 +10,12 @@ import { UserDto } from './user-types.dto';
  */
 export class PresenceDto {
   @Expose()
-  @ApiProperty({ 
-    description: 'Presence status (Display Status from Database). Returns OFFLINE if user is offline',
+  @ApiProperty({
+    description:
+      'Presence status (Display Status from Database). Returns OFFLINE if user is offline',
     enum: UserStatus,
     required: false,
-    nullable: true
+    nullable: true,
   })
   status?: UserStatus | null;
 }
@@ -25,20 +26,20 @@ export class PresenceDto {
  */
 export class UserStatusRecordDto {
   @Expose()
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Custom status text',
     example: 'Playing Minecraft',
     required: false,
-    nullable: true
+    nullable: true,
   })
   text?: string | null;
 
   @Expose()
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Custom status emoji',
     example: '🎮',
     required: false,
-    nullable: true
+    nullable: true,
   })
   emoji?: string | null;
 }
@@ -51,42 +52,40 @@ export class UserProfileResponseDto {
   // User fields - using UserDto
   @Expose()
   @Type(() => UserDto)
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'User information',
-    type: UserDto
+    type: UserDto,
   })
   user: UserDto;
 
   // Presence fields - using PresenceDto
   @Expose()
   @Type(() => PresenceDto)
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Presence information (Display Status from Database)',
     type: PresenceDto,
-    required: false
+    required: false,
   })
   presence?: PresenceDto | null;
 
   // Custom Status fields - using UserStatusRecordDto
   @Expose()
   @Type(() => UserStatusRecordDto)
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Custom status information',
     type: UserStatusRecordDto,
-    required: false
+    required: false,
   })
   customStatus?: UserStatusRecordDto | null;
 
   // Connection status from Redis (WebSocket) - real-time
   @Expose()
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Connection status from Redis (WebSocket) - real-time',
-    example: true
+    example: true,
   })
   isOnline: boolean;
 }
-
-
 
 export class FriendRequestUserDto extends OmitType(UserDto, [
   'email',
@@ -106,20 +105,20 @@ export class FriendRequestItemDto {
   @Type(() => FriendRequestUserDto)
   @ApiProperty({
     description: 'User involved in this request',
-    type: FriendRequestUserDto
+    type: FriendRequestUserDto,
   })
   user: FriendRequestUserDto;
 
   @Expose()
   @ApiProperty({
     description: 'Friendship status',
-    enum: FriendshipStatus
+    enum: FriendshipStatus,
   })
   status: FriendshipStatus;
 
   @Expose()
   @ApiProperty({
-    description: 'Date when request was created'
+    description: 'Date when request was created',
   })
   createdAt: Date;
 }
@@ -131,4 +130,13 @@ export class FriendRequestsResponseDto {
   @Expose()
   @Type(() => FriendRequestItemDto)
   outgoing: FriendRequestItemDto[];
+}
+export interface FriendDto {
+  id: bigint;            
+  username: string;
+  avatar: string | null;
+  friendshipId: bigint;
+  status: UserStatus;
+  customStatus?: string;
+  createdAt: Date;
 }

@@ -7,11 +7,21 @@ import { BigIntInterceptor } from '../Global/Interceptors/BigInt.interceptors';
 import cookieParser from 'cookie-parser';
 
 export class BootstrapConfig {
-  static async configureApp(app: NestApplication, configService: ConfigService) {
+  static async configureApp(
+    app: NestApplication,
+    configService: ConfigService,
+  ) {
     // Enable CORS
     app.enableCors({
       origin: configService.get('app.cors.origin') || '*',
-      methods: configService.get('app.cors.methods') || ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      methods: configService.get('app.cors.methods') || [
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'OPTIONS',
+      ],
       credentials: configService.get('app.cors.credentials') || true,
     });
 
@@ -59,7 +69,7 @@ export class BootstrapConfig {
     });
   }
   // configure cookie parser middleware
-    private static configureCookieParser(app: NestApplication) {
+  private static configureCookieParser(app: NestApplication) {
     app.use(cookieParser());
   }
 

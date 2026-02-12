@@ -28,7 +28,12 @@ export class UserDto {
 
   @Expose()
   @DateTransform({ nullable: true })
-  @ApiProperty({ description: 'User birthdate', required: false, type: String, nullable: true })
+  @ApiProperty({
+    description: 'User birthdate',
+    required: false,
+    type: String,
+    nullable: true,
+  })
   birthdate?: string | null;
 
   @Expose()
@@ -53,7 +58,11 @@ export class UserDto {
 
   @Expose()
   @DateTransform({ nullable: true })
-  @ApiProperty({ description: 'User creation date', type: String, nullable: true })
+  @ApiProperty({
+    description: 'User creation date',
+    type: String,
+    nullable: true,
+  })
   createdAt?: string | null;
 }
 

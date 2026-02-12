@@ -26,6 +26,4 @@ export const RESPONSE_CODES = {
   NOT_FOUND: 'NOT_FOUND',
 } as const;
 
-export type ResponseCode = typeof RESPONSE_CODES[keyof typeof RESPONSE_CODES];
-
-
+export type ResponseCode = (typeof RESPONSE_CODES)[keyof typeof RESPONSE_CODES];

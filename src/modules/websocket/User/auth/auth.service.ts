@@ -30,7 +30,7 @@ export class AuthService {
       client.disconnect();
       return;
     }
-    
+
     const user = await this.jwtHelper.VerifyAndGetUser(token);
 
     if (!user) {
@@ -85,4 +85,3 @@ export class AuthService {
     };
   }
 }
-

@@ -15,7 +15,7 @@ export function IsEmoji(
   emojiOptions?: EmojiOptions,
   validationOptions?: ValidationOptions,
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isEmoji',
       target: object.constructor,

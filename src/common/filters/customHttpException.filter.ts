@@ -1,4 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { ApiResponseHelper } from '../helpers/api-response.helper';
 import { RESPONSE_CODES } from '../constants/response-codes';
@@ -36,8 +41,10 @@ export default class CustomHttpException implements ExceptionFilter {
   }
 
   errorProd(status: number, res: Response, message: string) {
-    res.status(status).json(
-      ApiResponseHelper.error({ code: RESPONSE_CODES.SERVER_ERROR, message }),
-    );
+    res
+      .status(status)
+      .json(
+        ApiResponseHelper.error({ code: RESPONSE_CODES.SERVER_ERROR, message }),
+      );
   }
 }

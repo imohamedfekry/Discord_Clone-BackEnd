@@ -7,5 +7,7 @@ export default registerAs('database', () => ({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASS || 'password',
   database: process.env.DB_NAME || 'discord_clone',
-  url: process.env.DATABASE_URL || `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASS || 'password'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'discord_clone'}`,
+  url:
+    process.env.DATABASE_URL ||
+    `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASS || 'password'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'discord_clone'}`,
 }));

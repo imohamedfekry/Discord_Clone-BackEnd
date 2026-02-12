@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Put, Delete, Body, Request, Query, Param, ValidationPipe, UsePipes } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Request,
+  Query,
+  Param,
+  ValidationPipe,
+  UsePipes,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import {
-  GetProfileApiDocs,
-} from './decorators/user-api.decorators';
+import { GetProfileApiDocs } from './decorators/user-api.decorators';
 import { Auth } from '../../../common/decorators/auth-user.decorator';
 import {
   // Profile DTOs
@@ -35,7 +45,7 @@ import {
 })
 @Auth()
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
   // Start Profile Cruds Endpoints
   @Get('@me')
   @GetProfileApiDocs()
@@ -45,32 +55,46 @@ export class UsersController {
 
   @Put('@me/update/password')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async updatePassword(@Request() request: any, @Body() dto: UpdatePasswordDto) {
+  async updatePassword(
+    @Request() request: any,
+    @Body() dto: UpdatePasswordDto,
+  ) {
     return this.usersService.updatePassword(request.user, dto);
   }
 
   @Put('@me/update/globalname')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async updateglobalname(@Request() request: any, @Body() dto: UpdateglobalnameDto) {
+  async updateglobalname(
+    @Request() request: any,
+    @Body() dto: UpdateglobalnameDto,
+  ) {
     return this.usersService.updateglobalname(request.user, dto);
   }
 
   @Put('@me/update/username')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async updateUsername(@Request() request: any, @Body() dto: UpdateUsernameDto) {
-
+  async updateUsername(
+    @Request() request: any,
+    @Body() dto: UpdateUsernameDto,
+  ) {
     return this.usersService.updateUsername(request.user, dto);
   }
 
   @Put('@me/update/customstatus')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async updateCustomStatus(@Request() request: any, @Body() dto: UpdateCustomStatusDto) {
+  async updateCustomStatus(
+    @Request() request: any,
+    @Body() dto: UpdateCustomStatusDto,
+  ) {
     // custom status like emoji and text
     return this.usersService.updateCustomStatus(request.user, dto);
   }
   @Put('@me/update/presenceStatus')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async updatePresenceStatus(@Request() request: any, @Body() dto: UpdatePresenceStatusDto) {
+  async updatePresenceStatus(
+    @Request() request: any,
+    @Body() dto: UpdatePresenceStatusDto,
+  ) {
     // status like online, idle, dnd, invisible
     return this.usersService.updatePresenceStatus(request.user, dto);
   }
@@ -81,17 +105,26 @@ export class UsersController {
   // Send friend request
   @Post('friends/request')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async sendFriendRequest(@Request() request: any, @Body() dto: SendFriendRequestDto) {
+  async sendFriendRequest(
+    @Request() request: any,
+    @Body() dto: SendFriendRequestDto,
+  ) {
     return this.usersService.sendFriendRequest(request.user, dto);
   }
 
   @Put('friends/respond')
-  async respondToFriendRequest(@Request() request: any, @Body() dto: RespondToFriendRequestDto) {
+  async respondToFriendRequest(
+    @Request() request: any,
+    @Body() dto: RespondToFriendRequestDto,
+  ) {
     return this.usersService.respondToFriendRequest(request.user, dto);
   }
 
   @Delete('friends/cancel')
-  async cancelFriendRequest(@Request() request: any, @Body() dto: CancelFriendRequestDto) {
+  async cancelFriendRequest(
+    @Request() request: any,
+    @Body() dto: CancelFriendRequestDto,
+  ) {
     return this.usersService.cancelFriendRequest(request.user, dto);
   }
 
@@ -101,7 +134,10 @@ export class UsersController {
   }
 
   @Get('friends')
-  async getFriends(@Request() request: any, @Query() query: GetFriendsQueryDto) {
+  async getFriends(
+    @Request() request: any,
+    @Query() query: GetFriendsQueryDto,
+  ) {
     return this.usersService.getFriends(request.user, query);
   }
 
@@ -111,17 +147,26 @@ export class UsersController {
   }
 
   @Get('friends/mutual/:userId')
-  async getMutualFriends(@Request() request: any, @Param() params: GetMutualFriendsDto) {
+  async getMutualFriends(
+    @Request() request: any,
+    @Param() params: GetMutualFriendsDto,
+  ) {
     return this.usersService.getMutualFriends(request.user, params);
   }
 
   @Put('@me/notes')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async updateUserRelationNote(@Request() request: any, @Body() dto: CreateUserNoteDto) {
+  async updateUserRelationNote(
+    @Request() request: any,
+    @Body() dto: CreateUserNoteDto,
+  ) {
     return this.usersService.updateUserNote(request.user, dto);
   }
   @Delete('@me/notes')
-  async deleteUserRelationNote(@Request() request: any, @Body() dto: CreateUserNoteDto) {
+  async deleteUserRelationNote(
+    @Request() request: any,
+    @Body() dto: CreateUserNoteDto,
+  ) {
     return this.usersService.deleteUserNote(request.user, dto);
   }
   // ==================== USER RELATIONS ====================
@@ -134,13 +179,19 @@ export class UsersController {
 
   @Delete('relations')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async removeUserRelation(@Request() request: any, @Body() dto: RemoveUserRelationDto) {
+  async removeUserRelation(
+    @Request() request: any,
+    @Body() dto: RemoveUserRelationDto,
+  ) {
     return this.usersService.removeUserRelation(request.user, dto);
   }
 
   @Get('relations')
   @UsePipes(new ValidationPipe({ transform: true }))
-  async getUserRelations(@Request() request: any, @Query() query: GetUserRelationsQueryDto) {
+  async getUserRelations(
+    @Request() request: any,
+    @Query() query: GetUserRelationsQueryDto,
+  ) {
     return this.usersService.getUserRelations(request.user, query);
   }
 
@@ -153,8 +204,6 @@ export class UsersController {
   async getIgnoredUsers(@Request() request: any) {
     return this.usersService.getIgnoredUsers(request.user);
   }
-
-
 
   // ==================== USER DMS ====================
 

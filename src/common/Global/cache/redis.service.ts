@@ -16,8 +16,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.client.on('connect', () => console.log('Redis connecting...'));
     this.client.on('ready', () => console.log('✅ Redis ready for commands'));
     this.client.on('error', (err) => console.error('❌ Redis error:', err));
-    this.client.on('close', () => console.warn('⚠️ Redis connection closed'));  
-}
+    this.client.on('close', () => console.warn('⚠️ Redis connection closed'));
+  }
 
   async onModuleDestroy() {
     await this.client.quit();

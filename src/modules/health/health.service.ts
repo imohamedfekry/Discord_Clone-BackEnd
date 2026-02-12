@@ -32,9 +32,9 @@ export class HealthService {
           memory: {
             used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
             total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
-            unit: 'MB'
-          }
-        }
+            unit: 'MB',
+          },
+        },
       };
     } catch (error) {
       return {
@@ -48,8 +48,8 @@ export class HealthService {
           database: 'disconnected',
           version: process.env.npm_package_version || '1.0.0',
           environment: process.env.NODE_ENV || 'development',
-          error: error.message
-        }
+          error: error.message,
+        },
       };
     }
   }
@@ -72,8 +72,8 @@ export class HealthService {
         data: {
           status: 'ready',
           timestamp,
-          database: databaseStatus
-        }
+          database: databaseStatus,
+        },
       };
     } catch (error) {
       return {
@@ -84,8 +84,8 @@ export class HealthService {
           status: 'not ready',
           timestamp,
           database: 'disconnected',
-          error: error.message
-        }
+          error: error.message,
+        },
       };
     }
   }
@@ -102,8 +102,8 @@ export class HealthService {
       message: 'API is alive',
       data: {
         status: 'alive',
-        timestamp
-      }
+        timestamp,
+      },
     };
   }
 }

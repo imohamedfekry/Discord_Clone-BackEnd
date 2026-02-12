@@ -37,23 +37,22 @@ export class JwtHelper {
         Logger.warn('No token provided');
         return null;
       }
-    
-      
+
       Logger.log(`Attempting to verify token...`);
-      
+
       const decoded = this.verifyToken(token);
       if (!decoded || !decoded.sub) {
         Logger.warn('Token decoded but missing sub or decoded is null');
         return null;
       }
-      
+
       Logger.log(`Token decoded successfully for user: ${decoded.sub}`);
-        const user = await this.userRepository.findById(decoded.sub, {
-          include: {
-            presence: true,
-            statusRecord: true,
-          },
-        });      
+      const user = await this.userRepository.findById(decoded.sub, {
+        include: {
+          presence: true,
+          statusRecord: true,
+        },
+      });
       if (!user) {
         Logger.warn(`User not found in database: ${decoded.sub}`);
         return null;

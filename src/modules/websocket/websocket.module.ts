@@ -5,9 +5,10 @@ import { AuthService } from './User/auth/auth.service';
 import { BroadcasterService } from './User/presence/broadcaster.service';
 import { UnifiedPresenceService } from './User/services/unified-presence.service';
 import { UnifiedNotifierService } from './User/services/unified-notifier.service';
-import { PresenceNotifierService } from './User/services/presence-notifier.service';
 import { FriendsCacheService } from '../../common/Global/cache/User/friends-cache.service';
-import { FriendshipNotifierService } from './User/friends/friendship-notifier.service';
+import { FriendshipNotifierService } from './User/friends/friendship.notifier.service';
+import { RelationNotifierService } from './User/relations/relations.notifier.service';
+import { ProfileNotifierService } from './User/profile/profile.notifier.service';
 import {
   UserRepository,
   PresenceRepository,
@@ -39,8 +40,9 @@ import { ReadyLoader } from './Ready/loaders/loader.service';
 
     // Domain Services (Layer 3 - Business logic)
     UnifiedPresenceService,
-    PresenceNotifierService,
     FriendshipNotifierService,
+    RelationNotifierService,
+    ProfileNotifierService,
 
     // Cache & Database
     FriendsCacheService,
@@ -50,17 +52,18 @@ import { ReadyLoader } from './Ready/loaders/loader.service';
     FriendshipRepository,
     UserRelationRepository,
     ReadyService,
-    ReadyLoader
+    ReadyLoader,
   ],
   exports: [
     WebSocketGatewayService,
     UnifiedNotifierService,
     FriendshipNotifierService,
-    PresenceNotifierService,
+    RelationNotifierService,
+    ProfileNotifierService,
     ReadyService,
     ReadyLoader,
     UnifiedPresenceService,
     FriendsCacheService,
   ],
 })
-export class WebSocketModule { }
+export class WebSocketModule {}

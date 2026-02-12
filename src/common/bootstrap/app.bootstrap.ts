@@ -24,7 +24,6 @@ export class AppBootstrap {
     };
   }
 
-
   static logServerInfo(serverInfo: any) {
     console.log(`🚀 Server is running on port ${serverInfo.port}`);
     console.log(`🌍 Environment: ${serverInfo.nodeEnv}`);

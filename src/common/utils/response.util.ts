@@ -11,7 +11,10 @@ export function success<T>(msg: Msg, data?: T): ApiResponse<T> {
   };
 }
 
-export function fail<T = undefined>(msg: Msg, extra?: Partial<ApiResponse<T>>): ApiResponse<T> {
+export function fail<T = undefined>(
+  msg: Msg,
+  extra?: Partial<ApiResponse<T>>,
+): ApiResponse<T> {
   return {
     status: 'fail',
     code: msg.code,
@@ -20,7 +23,10 @@ export function fail<T = undefined>(msg: Msg, extra?: Partial<ApiResponse<T>>): 
   } as ApiResponse<T>;
 }
 
-export function error(msg: Msg, extra?: Partial<ApiResponse>): ApiResponse<undefined> {
+export function error(
+  msg: Msg,
+  extra?: Partial<ApiResponse>,
+): ApiResponse<undefined> {
   return {
     status: 'error',
     code: msg.code,
@@ -28,5 +34,3 @@ export function error(msg: Msg, extra?: Partial<ApiResponse>): ApiResponse<undef
     ...extra,
   } as ApiResponse<undefined>;
 }
-
-
