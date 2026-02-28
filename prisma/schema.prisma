@@ -34,15 +34,17 @@ model User {
     friendships1 Friendship[] @relation("UserFriend1")
     friendships2 Friendship[] @relation("UserFriend2")
 
-    sourceRelations    UserRelation[]     @relation("SourceUser")
-    targetRelations    UserRelation[]     @relation("TargetUser")
-    channelRecipients  ChannelRecipient[]
+    sourceRelations   UserRelation[]     @relation("SourceUser")
+    targetRelations   UserRelation[]     @relation("TargetUser")
+    channelRecipients ChannelRecipient[]
 
-    userSettings       UserSettings?      @relation(fields: [userSettingsUserId], references: [userId])
+    userSettings       UserSettings? @relation(fields: [userSettingsUserId], references: [userId])
     userSettingsUserId BigInt?
 
-    notesWritten       UserNote[]         @relation("UserSource")
-    notesAboutMe       UserNote[]         @relation("UserTarget")
+    notesWritten     UserNote[]        @relation("UserSource")
+    notesAboutMe     UserNote[]        @relation("UserTarget")
+    messages         Message[]
+    messageReactions MessageReaction[]
 
     @@index([username])
 }
@@ -104,15 +106,15 @@ model UserRelation {
 }
 
 model UserNote {
-    id        BigInt   @id @default(autoincrement())
+    id BigInt @id @default(autoincrement())
 
-    sourceId   BigInt
-    source     User     @relation("UserSource", fields: [sourceId], references: [id], onDelete: Cascade)
+    sourceId BigInt
+    source   User   @relation("UserSource", fields: [sourceId], references: [id], onDelete: Cascade)
 
-    targetId   BigInt
-    target    User     @relation("UserTarget", fields: [targetId], references: [id], onDelete: Cascade)
+    targetId BigInt
+    target   User   @relation("UserTarget", fields: [targetId], references: [id], onDelete: Cascade)
 
-    note      String?
+    note String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -132,8 +134,12 @@ model Channel {
     createdAt DateTime    @default(now())
     updatedAt DateTime    @updatedAt
 
-    recipients          ChannelRecipient[]
-    lastMessageId       BigInt?
+    recipients ChannelRecipient[]
+    messages   Message[]
+
+    lastMessageId BigInt?
+    lastMessage   Message? @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
+
     channelUserSettings ChannelUserSettings[]
 
     @@index([type])
@@ -154,10 +160,13 @@ model ChannelRecipient {
     show Boolean @default(true)
 
     lastReadMessageId BigInt?
-    unreadCount       Int     @default(0)
+    lastReadMessage   Message? @relation(fields: [lastReadMessageId], references: [id], onDelete: SetNull)
+
+    unreadCount Int @default(0)
 
     @@id([channelId, userId])
     @@index([userId])
+    @@index([channelId])
 }
 
 model UserSettings {
@@ -220,4 +229,76 @@ model ChannelUserSettings {
 
     @@id([channelId, UserSettingsId])
     @@index([UserSettingsId])
+}
+
+model Message {
+    id BigInt @id @default(autoincrement())
+
+    channelId BigInt
+    channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+    authorId BigInt
+    author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+    content String? @db.Text
+
+    type MessageType @default(DEFAULT)
+
+    replyToId BigInt?
+    replyTo   Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+    replies   Message[] @relation("MessageReplies")
+
+    lastMessageOf Channel[] @relation("LastMessage")
+
+    editedAt  DateTime?
+    deletedAt DateTime?
+
+    attachments MessageAttachment[]
+    reactions   MessageReaction[]
+
+    createdAt         DateTime           @default(now())
+    updatedAt         DateTime           @updatedAt
+    channelRecipients ChannelRecipient[]
+
+    @@index([channelId])
+    @@index([authorId])
+    @@index([createdAt])
+    @@index([channelId, createdAt]) // 🔥 مهم جداً
+}
+
+enum MessageType {
+    DEFAULT
+    SYSTEM
+    IMAGE
+    FILE
+}
+
+model MessageAttachment {
+    id BigInt @id @default(autoincrement())
+
+    messageId BigInt
+    message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+    url      String
+    fileName String
+    fileSize Int
+    mimeType String
+
+    createdAt DateTime @default(now())
+
+    @@index([messageId])
+}
+
+model MessageReaction {
+    messageId BigInt
+    userId    BigInt
+
+    emoji String
+
+    message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+
+    @@id([messageId, userId, emoji])
 }

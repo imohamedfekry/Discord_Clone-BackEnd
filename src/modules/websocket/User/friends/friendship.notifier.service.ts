@@ -1,25 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { UnifiedNotifierService } from '../services/unified-notifier.service';
 import {
-  NOTIFICATION_EVENTS,
-  FriendRequestReceivedData,
-  FriendRequestSentData,
-  FriendRequestAcceptedData,
-  FriendRequestRejectedData,
-  FriendRequestCancelledData,
-  FriendRequestCancelledBySenderData,
-  FriendRemovedData,
-} from '../../../../common/Types/notification.types';
+  SOCKET_EVENTS,
+  FriendRequestReceivedPayload,
+  FriendRequestSentPayload,
+  FriendRequestAcceptedPayload,
+  FriendRequestRejectedPayload,
+  FriendRequestCancelledPayload,
+  FriendRequestCancelledBySenderPayload,
+  FriendRemovedPayload,
+} from '../../../../common/Types/socket.types';
+import { NotificationService } from '../services/notification.service';
 
-/**
- * Friendship Notifier Service
- * Handles sending WebSocket notifications for friend requests
- */
 @Injectable()
 export class FriendshipNotifierService {
   private readonly logger = new Logger(FriendshipNotifierService.name);
 
-  constructor(private readonly unifiedNotifier: UnifiedNotifierService) {}
+  constructor(private readonly notifier: NotificationService) {}
 
   /**
    * Notify user that they received a friend request
@@ -51,28 +47,26 @@ export class FriendshipNotifierService {
       `Notifying ${recipientId} about friend request from ${senderInfo.username}`,
     );
 
-    // Notify TARGET (recipient) - they received a friend request
-    const receivedData: FriendRequestReceivedData = {
+    const receivedData: FriendRequestReceivedPayload = {
       friendshipId,
       fromUser: senderInfo,
       status,
     };
-    this.unifiedNotifier.notifyTarget(
-      NOTIFICATION_EVENTS.FRIEND.REQUEST.RECEIVED,
+    this.notifier.notifyTarget(
+      SOCKET_EVENTS.FRIEND.REQUEST.RECEIVED,
       senderId,
       recipientId,
       receivedData,
       'Friend request received',
     );
 
-    // Notify SOURCE (sender) - they sent a friend request
-    const sentData: FriendRequestSentData = {
+    const sentData: FriendRequestSentPayload = {
       friendshipId,
       toUser: recipientInfo,
       status,
     };
-    this.unifiedNotifier.notifySource(
-      NOTIFICATION_EVENTS.FRIEND.REQUEST.SENT,
+    this.notifier.notifySource(
+      SOCKET_EVENTS.FRIEND.REQUEST.SENT,
       senderId,
       recipientId,
       sentData,
@@ -82,14 +76,10 @@ export class FriendshipNotifierService {
 
   notifyFriendRequestAccepted(
     userId: string,
-    data: FriendRequestAcceptedData,
+    data: FriendRequestAcceptedPayload,
   ): void {
-    this.logger.log(
-      `Notifying ${userId} that friend request was accepted by ${data.newFriend.username}`,
-    );
-
-    this.unifiedNotifier.notifySource(
-      NOTIFICATION_EVENTS.FRIEND.REQUEST.ACCEPTED,
+    this.notifier.notifySource(
+      SOCKET_EVENTS.FRIEND.REQUEST.ACCEPTED,
       userId,
       data.newFriend.id.toString(),
       data,
@@ -97,21 +87,13 @@ export class FriendshipNotifierService {
     );
   }
 
-  /**
-   * Notify user that their friend request was rejected
-   * @param userId - User who sent the request
-   * @param data - Rejection data
-   */
   notifyFriendRequestRejected(
     userId: string,
     recipientId: string,
-    data: FriendRequestRejectedData,
+    data: FriendRequestRejectedPayload,
   ): void {
-    this.logger.log(
-      `Notifying ${userId} that friend request was rejected by ${recipientId}`,
-    );
-    this.unifiedNotifier.notifySource(
-      NOTIFICATION_EVENTS.FRIEND.REQUEST.REJECTED,
+    this.notifier.notifySource(
+      SOCKET_EVENTS.FRIEND.REQUEST.REJECTED,
       userId,
       recipientId,
       data,
@@ -119,48 +101,28 @@ export class FriendshipNotifierService {
     );
   }
 
-  /**
-   * Notify that a friend request was cancelled
-   * Notifies the recipient that request was cancelled
-   * Notifies the sender as confirmation
-   * @param senderId - User who cancelled the request
-   * @param recipientId - User who was receiving the request
-   * @param senderInfo - Sender user info
-   * @param friendshipId - Friendship ID
-   */
   notifyFriendRequestCancelled(
     senderId: string,
     recipientId: string,
-    senderInfo: {
-      id: string | bigint;
-      username: string;
-      avatar: string | null;
-    },
+    senderInfo: { id: string | bigint; username: string; avatar: string | null },
     friendshipId: string | bigint,
   ): void {
-    this.logger.log(
-      `Notifying ${recipientId} that friend request from ${senderInfo.username} was cancelled`,
-    );
-
-    // Notify TARGET (recipient) - request from sender was cancelled
-    const cancelledData: FriendRequestCancelledData = {
+    const cancelledData: FriendRequestCancelledPayload = {
       friendshipId,
       fromUser: senderInfo,
     };
-    this.unifiedNotifier.notifyTarget(
-      NOTIFICATION_EVENTS.FRIEND.REQUEST.CANCELLED,
+    this.notifier.notifyTarget(
+      SOCKET_EVENTS.FRIEND.REQUEST.CANCELLED,
       senderId,
       recipientId,
       cancelledData,
       'Friend request cancelled',
     );
-
-    // Notify SOURCE (sender) - confirmation that they cancelled
-    const cancelledBySenderData: FriendRequestCancelledBySenderData = {
+    const cancelledBySenderData: FriendRequestCancelledBySenderPayload = {
       friendshipId,
     };
-    this.unifiedNotifier.notifySource(
-      NOTIFICATION_EVENTS.FRIEND.REQUEST.CANCELLED_BY_SENDER,
+    this.notifier.notifySource(
+      SOCKET_EVENTS.FRIEND.REQUEST.CANCELLED_BY_SENDER,
       senderId,
       recipientId,
       cancelledBySenderData,
@@ -168,22 +130,13 @@ export class FriendshipNotifierService {
     );
   }
 
-  /**
-   * Notify both users that friendship was removed
-   * @param user1Id - First user ID
-   * @param user2Id - Second user ID
-   * @param data - Friend removal data
-   */
   notifyFriendRemoved(
     user1Id: string,
     user2Id: string,
-    data: FriendRemovedData,
+    data: FriendRemovedPayload,
   ): void {
-    this.logger.log(`Notifying both users that friendship was removed`);
-
-    // Notify BOTH parties - all their devices will receive updates in real-time
-    this.unifiedNotifier.notifyBoth(
-      NOTIFICATION_EVENTS.FRIEND.REMOVED,
+    this.notifier.notifyBoth(
+      SOCKET_EVENTS.FRIEND.REMOVED,
       user1Id,
       user2Id,
       data,

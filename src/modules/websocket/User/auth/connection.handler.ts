@@ -1,75 +1,70 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { FriendshipRepository, UserRepository } from 'src/common/database/repositories';
-import { AuthService } from './auth.service';
-import { AuthenticatedSocket } from '../../../../common/Types/websocket.types';
-import { WebSocketEvents } from '../../../../common/Types/websocket.types';
-import { UnifiedPresenceService } from '../services/unified-presence.service';
-import { FriendsCacheService } from '../../../../common/Global/cache/User/friends-cache.service';
-import { Events } from '../../../../common/constants/events.constants';
-import { ReadyService } from '../../Ready/ready.service';
-import { NOTIFICATION_EVENTS } from 'src/common/Types/notification.types';
+import { FriendshipRepository } from 'src/common/database/repositories';
 import { FriendshipStatus, UserStatus } from '@prisma/client';
+import { AuthenticatedSocket, SOCKET_EVENTS, WebSocketEvents } from '../../../../common/Types/socket.types';
+import { AuthService } from './auth.service';
+import { PresenceService } from '../services/presence.service';
+import { FriendsCacheService } from '../../../../common/Global/cache/User/friends-cache.service';
+import { ReadyService } from '../../Ready/ready.service';
 import { ProfileNotifierService } from '../profile/profile.notifier.service';
 
-/**
- * Connection Handler Service
- * Handles WebSocket connection and disconnection logic
- */
 @Injectable()
 export class ConnectionHandlerService {
   private readonly logger = new Logger(ConnectionHandlerService.name);
 
   constructor(
     private readonly authService: AuthService,
-    private readonly userRepository: UserRepository,
-    private readonly presenceService: UnifiedPresenceService,
+    private readonly presenceService: PresenceService,
     private readonly friendsCache: FriendsCacheService,
     private readonly readyService: ReadyService,
     private readonly friendshipRepository: FriendshipRepository,
     private readonly profileNotifier: ProfileNotifierService,
-  ) { }
+    
+  ) {}
 
-  /**
-   * Handle new WebSocket connection
-   */
   async handleConnection(client: AuthenticatedSocket): Promise<void> {
     try {
-      // Authenticate user
       const user = await this.authService.authenticateClient(client);
-      if (!user) {
-        return;
-      }
+      if (!user) return;
 
-      // Setup session
       this.authService.setupSession(client, user);
-
-      // Join user-specific room so we can target this user by ID
-      // BroadcasterService.sendToUser(userId, ...) emits to `user:${userId}`
       client.join(`user:${user.id.toString()}`);
 
-      // Mark user as online in Redis
+      const userIdStr = user.id.toString();
       const metadata = this.authService.createConnectionMetadata(client);
-      await this.presenceService.markOnline(user.id, client.id, metadata);
+      const { displayStatus } = await this.presenceService.markOnline(
+        userIdStr,
+        client.id,
+        metadata,
+      );
 
-      // Initial presence sync for friends (single pipeline/batch)
-      // get friends from DB AND PUSH INTO REDIS
-      const friends = await this.friendshipRepository.findByUserIdAndStatus(user.id, FriendshipStatus.ACCEPTED);
-      const friendIds = friends.map((friend) => {
-        if (friend.user1Id === user.id) {
-          return friend.user2Id.toString();
-        } else {
-          return friend.user1Id.toString();
-        }
-      });
+      const friends = await this.friendshipRepository.findByUserIdAndStatus(
+        user.id,
+        FriendshipStatus.ACCEPTED,
+      );
+      const friendIds = friends.map((f) =>
+        f.user1Id === user.id ? f.user2Id.toString() : f.user1Id.toString(),
+      );
       for (const friendId of friendIds) {
-        await this.friendsCache.addFriend(user.id.toString(), friendId);
+        await this.friendsCache.addFriend(userIdStr, friendId);
       }
-      if (friends.length > 0) {
-        const presences = await this.presenceService.getBatchPresence(friendIds);
-        client.emit(Events.INITIAL_PRESENCE_SYNC, presences);
+      if (friendIds.length > 0) {
+        client.emit(
+          WebSocketEvents.INITIAL_PRESENCE_SYNC,
+          await this.presenceService.getBatchPresence(friendIds),
+        );
       }
-      this.profileNotifier.notifyStatusUpdated(user, friendIds, UserStatus.ONLINE);
-      // Handle user online status and notify friends
+      console.log(displayStatus)
+      this.logger.warn("displayStatus",displayStatus)
+      if (displayStatus !== UserStatus.INVISIBLE) {
+        this.profileNotifier.notifyStatusUpdated(user, friendIds, displayStatus);
+      }
+
+      client.emit(
+        SOCKET_EVENTS.CONNECTION.CONNECTED,
+        await this.readyService.prepareUserData(user),
+      );
+
       this.logger.log(`User ${user.id} connected via socket ${client.id}`);
     } catch (error) {
       this.logger.error(`Connection error: ${error.message}`, error.stack);
@@ -77,9 +72,6 @@ export class ConnectionHandlerService {
     }
   }
 
-  /**
-   * Handle WebSocket disconnection
-   */
   async handleDisconnect(client: AuthenticatedSocket): Promise<void> {
     if (!this.authService.isAuthenticated(client)) {
       return;
@@ -88,18 +80,26 @@ export class ConnectionHandlerService {
     const userId = client.userId!;
     const user = this.authService.getUserFromClient(client);
 
-    // Mark socket as offline in Redis
     await this.presenceService.markOffline(userId, client.id);
-
-    // Check if user has any remaining connections
     const socketCount = await this.presenceService.getSocketCount(userId);
 
     if (socketCount === 0) {
-      // Handle user offline status and notify friends
+      const friendIds = await this.friendsCache.getFriends(userId);
+      console.log(friendIds);
+      
+      this.profileNotifier.notifyStatusUpdated(
+        user,
+        friendIds,
+        UserStatus.INVISIBLE,
+      );
+      
       await this.presenceService.handleUserOffline(
         userId,
-        user?.username || 'Unknown',
+        user?.username ?? 'Unknown',
+        user
       );
+
+      
     }
 
     this.logger.log(`User ${userId} disconnected from socket ${client.id}`);

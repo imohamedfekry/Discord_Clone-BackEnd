@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtHelper } from '../../../../common/Global/security/jwt.helper';
-import { AuthenticatedSocket } from '../../../../common/Types/websocket.types';
+import { AuthenticatedSocket } from '../../../../common/Types/socket.types';
 import * as cookie from 'cookie';
 
 /**

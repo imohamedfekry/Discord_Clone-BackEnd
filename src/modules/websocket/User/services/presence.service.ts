@@ -1,50 +1,46 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-import { FriendsCacheService } from '../../../../common/Global/cache/User/friends-cache.service';
-import { AuthService } from '../auth/auth.service';
-import { UserStatus } from '@prisma/client';
-import { UserPresenceDto } from '../../../../common/Types/presence.dto';
-import { BroadcasterService } from '../presence/broadcaster.service';
+import { User, UserStatus } from '@prisma/client';
 import {
   AuthenticatedSocket,
-  SocketMetadata,
   StatusUpdateData,
   WebSocketEvents,
 } from '../../../../common/Types/socket.types';
-import { PresenceRepository } from '../../../../common/database/repositories/User';
-
-
-// تعديل كل حاجه مختصة ب حاجه تروح للفولدر بتاعه ويتعمل فيها السيرفيسس والملف ده يتحذف
+import type { SocketMetadata } from '../../../../common/Types/socket.types';
+import { UserPresenceDto } from '../../../../common/Types/presence.dto';
+import { PresenceRepository } from 'src/common/database/repositories';
+import { FriendsCacheService } from '../../../../common/Global/cache/User/friends-cache.service';
+import { AuthService } from '../auth/auth.service';
+import { BroadcasterService } from '../presence/broadcaster.service';
+import { ProfileNotifierService } from '../profile/profile.notifier.service';
 
 @Injectable()
-export class UnifiedPresenceService implements OnModuleDestroy {
-  private redis: Redis;
-  private readonly logger = new Logger(UnifiedPresenceService.name);
-
+export class PresenceService implements OnModuleDestroy {
+  private readonly redis: Redis;
+  private readonly logger = new Logger(PresenceService.name);
   private readonly PRESENCE_TTL = 90;
   private readonly DISPLAY_STATUS_TTL = 86400;
 
   constructor(
-    private readonly configService: ConfigService,
+    configService: ConfigService,
     private readonly presenceRepository: PresenceRepository,
     private readonly broadcaster: BroadcasterService,
     private readonly friendsCache: FriendsCacheService,
     private readonly authService: AuthService,
+    private readonly profileNotifier: ProfileNotifierService,
   ) {
     this.redis = new Redis({
-      host: this.configService.get('CACHE_HOST') || 'localhost',
-      port: this.configService.get('CACHE_PORT') || 6379,
-      password: this.configService.get('CACHE_PASS'),
+      host: configService.get('CACHE_HOST') ?? 'localhost',
+      port: configService.get('CACHE_PORT') ?? 6379,
+      password: configService.get('CACHE_PASS'),
     });
+    this.redis.on('connect', () => this.logger.log('Presence Redis connected'));
+    this.redis.on('error', (err) => this.logger.error('Presence Redis error', err));
+  }
 
-    this.redis.on('connect', () => {
-      this.logger.log('Unified Presence Redis connected');
-    });
-
-    this.redis.on('error', (err) => {
-      this.logger.error('Unified Presence Redis error:', err);
-    });
+  async onModuleDestroy() {
+    await this.redis.quit();
   }
 
   async markOnline(
@@ -116,34 +112,29 @@ export class UnifiedPresenceService implements OnModuleDestroy {
   }
 
   async isOnline(userId: string): Promise<boolean> {
-    const isOnline = await this.redis.get(`presence:online:${userId}`);
-    return isOnline === 'true';
+    return (await this.redis.get(`presence:online:${userId}`)) === 'true';
   }
 
   async getSocketCount(userId: string): Promise<number> {
-    const socketsSetKey = `presence:sockets:${userId}`;
-    return await this.redis.scard(socketsSetKey);
+    return this.redis.scard(`presence:sockets:${userId}`);
   }
 
   async getOnlineUsersCount(): Promise<number> {
     const keys = await this.redis.keys('presence:online:*');
     if (keys.length === 0) return 0;
-
     const values = await this.redis.mget(...keys);
     return values.filter((v) => v === 'true').length;
   }
 
   async setDisplayStatus(userId: string, status: UserStatus): Promise<void> {
-    const key = `display:status:${userId}`;
-    await this.redis.setex(key, this.DISPLAY_STATUS_TTL, status);
+    await this.redis.setex(`display:status:${userId}`, this.DISPLAY_STATUS_TTL, status);
   }
 
   async getDisplayStatus(userId: string): Promise<UserStatus | null> {
-    const key = `display:status:${userId}`;
-    return (await this.redis.get(key)) as UserStatus | null;
+    return (await this.redis.get(`display:status:${userId}`)) as UserStatus | null;
   }
 
-  async getPresenceStatus(userId: string  ): Promise<{
+  async getPresenceStatus(userId: string): Promise<{
     isOnline: boolean;
     displayStatus: UserStatus;
     actualStatus: UserStatus;
@@ -152,16 +143,15 @@ export class UnifiedPresenceService implements OnModuleDestroy {
       `presence:online:${userId}`,
       `display:status:${userId}`,
     );
-
     const isOnline = isOnlineValue === 'true';
     const displayStatus = displayStatusValue as UserStatus | null;
     const actualStatus = !isOnline
       ? UserStatus.INVISIBLE
-      : displayStatus || UserStatus.ONLINE;
+      : displayStatus ?? UserStatus.ONLINE;
 
     return {
       isOnline,
-      displayStatus: displayStatus || UserStatus.INVISIBLE,
+      displayStatus: displayStatus ?? UserStatus.ONLINE,
       actualStatus,
     };
   }
@@ -175,58 +165,40 @@ export class UnifiedPresenceService implements OnModuleDestroy {
       pipeline.get(`display:status:${id}`);
     }
     const results = await pipeline.exec();
-    const presences: UserPresenceDto[] = [];
-    for (let i = 0; i < userIds.length; i++) {
+    return userIds.map((userId, i) => {
       const isOnlineVal = results?.[i * 2]?.[1] as string | null;
       const displayVal = results?.[i * 2 + 1]?.[1] as string | null;
       const isOnline = isOnlineVal === 'true';
-      const displayStatus =
-        (displayVal as UserStatus | null) || UserStatus.INVISIBLE;
-      const status: UserStatus = isOnline
-        ? displayStatus || UserStatus.ONLINE
-        : UserStatus.INVISIBLE;
-      presences.push({ userId: userIds[i], status, lastSeen: null });
-    }
-    return presences;
+      const displayStatus = (displayVal as UserStatus | null) ?? UserStatus.ONLINE;
+      const status = isOnline ? displayStatus : UserStatus.INVISIBLE;
+      return { userId, status, lastSeen: null };
+    });
   }
 
   async removeDisplayStatus(userId: string): Promise<void> {
-    const key = `display:status:${userId}`;
-    await this.redis.del(key);
+    await this.redis.del(`display:status:${userId}`);
   }
 
   async updatePresenceStatus(
     userId: string,
-    username: string,
+    _username: string,
     status: UserStatus,
-    updateDisplayStatus: boolean = true,
+    updateDisplay = true,
   ): Promise<void> {
-    try {
-      let presence = await this.presenceRepository.getPresenceByUserId(userId);
-      if (!presence) {
-        presence = await this.presenceRepository.createPresence(userId);
-      }
-
-      await this.presenceRepository.updateStatus(presence.id, status);
-      if (updateDisplayStatus) {
-        await this.setDisplayStatus(userId, status);
-      }
-      this.broadcaster.sendToUserStd(
-        userId,
-        WebSocketEvents.STATUS_UPDATED,
-        'Status updated',
-        { userId, status },
-      );
-    } catch (error) {
-      this.logger.error(
-        `Error updating presence for user ${userId}: ${error.message}`,
-        error.stack,
-      );
-      throw error;
+    let presence = await this.presenceRepository.getPresenceByUserId(userId);
+    if (!presence) {
+      presence = await this.presenceRepository.createPresence(userId);
     }
+    await this.presenceRepository.updateStatus(presence.id, status);
+    if (updateDisplay) await this.setDisplayStatus(userId, status);
+    this.broadcaster.sendToUserStd(userId, WebSocketEvents.STATUS_UPDATED, 'Status updated', {
+      userId,
+      status,
+    });
   }
 
-  async handleUserOffline(userId: string, username: string): Promise<void> {
+  async handleUserOffline(userId: string, username: string , user : User): Promise<void> {
+ 
     this.logger.log(`User ${userId} (${username}) disconnected`);
   }
 
@@ -244,47 +216,18 @@ export class UnifiedPresenceService implements OnModuleDestroy {
   ): Promise<void> {
     const user = this.authService.getUserFromClient(client);
     if (!user) return;
-
-    const { status } = data;
-    await this.handleManualStatusUpdate(
-      String(user.id),
-      user.username,
-      status as UserStatus,
-    );
-    this.logger.log(`User ${user.id} set display status to ${status}`);
+    await this.handleManualStatusUpdate(String(user.id), user.username, data.status as UserStatus);
+    this.logger.log(`User ${user.id} set display status to ${data.status}`);
   }
 
   async handleGetStatus(client: AuthenticatedSocket): Promise<void> {
     const user = this.authService.getUserFromClient(client);
     if (!user) return;
-
     const presence = await this.getPresenceStatus(String(user.id));
-
     client.emit(WebSocketEvents.STATUS_CURRENT, {
       connectionStatus: presence.isOnline ? UserStatus.ONLINE : UserStatus.INVISIBLE,
       displayStatus: presence.displayStatus,
       actualStatus: presence.actualStatus,
     });
-  }
-
-  async handlePresenceUpdate(
-    client: AuthenticatedSocket,
-    data: StatusUpdateData,
-  ): Promise<void> {
-    const user = this.authService.getUserFromClient(client);
-    if (!user) return;
-
-    const { status } = data;
-    await this.updatePresenceStatus(
-      String(user.id),
-      user.username,
-      status as UserStatus,
-      true,
-    );
-    this.logger.warn(`User ${user.id} used deprecated presence:update event`);
-  }
-
-  async onModuleDestroy(): Promise<void> {
-    await this.redis.quit();
   }
 }

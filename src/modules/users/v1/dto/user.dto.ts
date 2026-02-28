@@ -11,7 +11,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { UserStatus, FriendshipStatus, RelationType } from '@prisma/client';
 import { IsEmoji } from 'src/common/decorators/is-emoji.decorator';
-import { PresenceExpireDuration } from 'src/common/Types/presence.types';
+import { PresenceExpireDuration } from 'src/common/Types/socket.types';
 import { IsId } from '../../../../common/Global/validators/isId.validator';
 import { IsUsername } from '../../../../common/Global/validators/username.validator';
 import { FriendRequestResponseStatus } from './user-types.dto';

@@ -1,18 +1,27 @@
-import { Friendship, User, UserRelation } from '@prisma/client';
+import { User, UserRelation } from '@prisma/client';
 import { UserDto } from 'src/common/dto';
-import { FriendDto, FriendRequestItemDto } from 'src/modules/users/v1/dto/user-response.dto';
+import { FriendRequestItemDto } from 'src/modules/users/v1/dto/user-response.dto';
 
 export interface IFriendRequestLoader {
-  FriendRequestLoader(user: any): Promise<any>;
+  FriendRequestLoader(user: User): Promise<{ data?: { incoming: FriendRequestItemDto[]; outgoing: FriendRequestItemDto[] } }>;
+}
+
+export interface ReadyFriendPayload {
+  id: string;
+  username: string;
+  avatar: string | null;
+  friendshipId: string;
+  status: string;
+  createdAt: string;
+  customStatus?: string;
 }
 
 export interface ReadyPayload {
-  friendRequests?: {
+  currentUser: UserDto;
+  friendRequests: {
     incoming: FriendRequestItemDto[];
     outgoing: FriendRequestItemDto[];
   };
-  userRelations?: UserRelation[];
-  currentUser: UserDto;
-  friends: FriendDto[];
-  // future fields like guilds, etc.
+  userRelations: UserRelation[];
+  friends: ReadyFriendPayload[];
 }

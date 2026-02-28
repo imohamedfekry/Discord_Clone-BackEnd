@@ -48,7 +48,6 @@ export class BroadcasterService {
     message: string,
     data?: any,
   ): void {
-    console.log(' socket: ', userId, code);
     this.sendToUser(userId, code, {
       code,
       message,

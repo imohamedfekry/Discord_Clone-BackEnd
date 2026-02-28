@@ -47,7 +47,7 @@ import {
 } from 'src/common/database/repositories/User';
 import { verifyHash } from 'src/common/Global/security/hash.helper';
 import { FriendshipNotifierService } from '../../websocket/User/friends/friendship.notifier.service';
-import { UnifiedPresenceService } from '../../websocket/User/services/unified-presence.service';
+import { PresenceService } from '../../websocket/User/services/presence.service';
 import { FriendsCacheService } from '../../../common/Global/cache/User/friends-cache.service';
 import { plainToInstance } from 'class-transformer';
 import { ApiResponse } from 'src/common/shared/types';
@@ -62,8 +62,8 @@ import {
 import { UserDto } from './dto/user-types.dto';
 import ms from 'ms';
 import { UserNoteRepository } from 'src/common/database/repositories/User/UserNote.repository';
-import { ChannelRepository } from 'src/common/database/repositories/User/Channel.repository';
-import { ChannelRecipientRepository } from 'src/common/database/repositories/User/ChannelRecipient.repository';
+import { ChannelRepository } from 'src/common/database/repositories/Channel';
+import { ChannelRecipientRepository } from 'src/common/database/repositories/Channel';
 import { RelationNotifierService } from '../../websocket/User/relations/relations.notifier.service';
 import { ProfileNotifierService } from '../../websocket/User/profile/profile.notifier.service';
 
@@ -80,8 +80,8 @@ export class UsersService {
     private readonly ChannelRecipientRepository: ChannelRecipientRepository,
     @Inject(forwardRef(() => FriendshipNotifierService))
     private readonly friendshipNotifier: FriendshipNotifierService,
-    @Inject(forwardRef(() => UnifiedPresenceService))
-    private readonly presenceService: UnifiedPresenceService,
+    @Inject(forwardRef(() => PresenceService))
+    private readonly presenceService: PresenceService,
     @Inject(forwardRef(() => FriendsCacheService))
     private readonly friendsCache: FriendsCacheService,
     @Inject(forwardRef(() => RelationNotifierService))
@@ -276,7 +276,7 @@ export class UsersService {
     }
 
     const friends = await this.friendsCache.getFriends(user.id.toString());
-    
+
     this.profileNotifier.notifyStatusUpdated(
       user,
       friends,
@@ -621,6 +621,7 @@ export class UsersService {
         };
       }),
     );
+
     return success(RESPONSE_MESSAGES.FRIEND.LIST_FETCHED, {
       friends: formattedFriends.slice(skip, skip + limit),
       pagination: {

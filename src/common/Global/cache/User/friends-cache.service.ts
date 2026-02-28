@@ -64,9 +64,7 @@ export class FriendsCacheService implements OnModuleDestroy {
   async getFriends(userId: string): Promise<string[]> {
     const key = `friends:${userId}`;
     const friends = await this.redis.smembers(key);
-    console.log('friends', friends);
-    console.log('key', key);
-    return friends || [];
+    return friends ?? [];
   }
 
   /**

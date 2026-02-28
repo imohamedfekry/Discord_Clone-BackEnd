@@ -133,7 +133,7 @@ export class UserRepository {
 
   /**
    * Get user statistics
-   * @deprecated online count should use UnifiedPresenceService.getOnlineUsersCount() for real-time data
+   * @deprecated online count should use PresenceService.getOnlineUsersCount() for real-time data
    * This method still uses DB which may not reflect actual online users
    */
   async getUserStats() {
