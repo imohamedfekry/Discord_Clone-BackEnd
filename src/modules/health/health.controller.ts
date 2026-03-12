@@ -8,7 +8,7 @@ import { HealthService } from './health.service';
   version: '1',
 })
 export class HealthController {
-  constructor(private readonly healthService: HealthService) {}
+  constructor(private readonly healthService: HealthService) { }
 
   @Get()
   @ApiOperation({

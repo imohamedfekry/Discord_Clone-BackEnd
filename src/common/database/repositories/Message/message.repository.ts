@@ -8,7 +8,7 @@ import { Prisma } from '@prisma/client';
  */
 @Injectable()
 export class MessageRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * Create a new message
@@ -43,38 +43,27 @@ export class MessageRepository {
   }
 
   /**
-   * Get messages by channel ID with cursor-based pagination (for infinite scroll / load more)
-   * Returns messages ordered by createdAt desc (newest first)
+   * Get messages
    */
-  async findManyByChannelId(
-    channelId: string | bigint,
+  async findMany(
+    where: Prisma.MessageWhereInput,
     options?: {
       limit?: number;
-      before?: string | bigint; // message id - get messages before this message
+      cursor?: string | bigint;
+      orderBy?: Prisma.MessageOrderByWithRelationInput;
       select?: Prisma.MessageSelect;
-      include?: Prisma.MessageInclude | Record<string, boolean>;
+      include?: Prisma.MessageInclude;
     },
   ) {
-    const { limit = 50, before, select, include } = options || {};
-
-    const where: Prisma.MessageWhereInput = {
-      channelId: BigInt(channelId),
-      deletedAt: null,
-    };
-
-    if (before) {
-      const beforeMessage = await this.prisma.message.findUnique({
-        where: { id: BigInt(before) },
-        select: { createdAt: true },
-      });
-      if (beforeMessage) {
-        where.createdAt = { lt: beforeMessage.createdAt };
-      }
-    }
+    const { limit = 50, cursor, orderBy, select, include } = options || {};
 
     return this.prisma.message.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      ...(cursor && {
+        cursor: { id: BigInt(cursor) },
+        skip: 1,
+      }),
+      orderBy: orderBy ?? { id: 'desc' },
       take: limit,
       ...(select && { select }),
       ...(include && { include }),

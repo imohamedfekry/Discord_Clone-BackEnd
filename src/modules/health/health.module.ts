@@ -8,4 +8,4 @@ import { PrismaService } from '../../common/database/prisma.service';
   providers: [HealthService, PrismaService],
   exports: [HealthService],
 })
-export class HealthModule {}
+export class HealthModule { }

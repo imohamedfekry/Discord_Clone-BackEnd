@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './common/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/v1/users.module';
-import { HealthModule } from './modules/health/health.module';
+import { HealthModule } from './modules/Health/health.module';
 import { WebSocketModule } from './modules/websocket/websocket.module';
 import { GlobalModule } from './common/Global/global.module';
 import databaseConfig from './common/Global/config/database.config';
@@ -11,6 +11,7 @@ import jwtConfig from './common/Global/config/jwt.config';
 import mainConfig from './common/Global/config/main.config';
 import { appConfig } from './common/config';
 import { envValidationSchema } from './common/Global/config/env.validation';
+import { MessageModule } from './modules/Message/message.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { envValidationSchema } from './common/Global/config/env.validation';
     DatabaseModule,
     AuthModule,
     UsersModule,
+    MessageModule,
     HealthModule,
     WebSocketModule,
   ],
@@ -31,4 +33,4 @@ import { envValidationSchema } from './common/Global/config/env.validation';
   providers: [],
   exports: [],
 })
-export class AppModule {}
+export class AppModule { }
